@@ -91,6 +91,5 @@ class SDL_Arduino_INA3221 {
     void INA3221SetConfig(void);
     int16_t getBusVoltage_raw(int channel);
     int16_t getShuntVoltage_raw(int channel);
-
 };
 

@@ -9,13 +9,12 @@
  */
 
 #include "Arduino.h"
-
 #include <Time.h>
 #include "SDL_Weather_80422.h"
-
 #include "OWMAdafruit_ADS1015.h"
 
 extern Adafruit_ADS1015 ads1015;
+
 #define ESP8266
 // Factor dervied from empherical analysis.  The ESP8266 screws with interrupt timing
 #define ESP8266_Factor 0.298

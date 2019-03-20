@@ -65,5 +65,4 @@ class SDL_ESP8266_HR_AM2315 {
     // check CRC
     uint16_t calcCRC;
     uint16_t sentCRC;
-
 };

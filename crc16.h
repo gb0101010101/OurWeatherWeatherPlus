@@ -31,9 +31,9 @@
 #define LIBRARY_VERSION_CRC16_H   "0.1.1"
 
 #if defined(ARDUINO) && ARDUINO >= 100
-#include "Arduino.h"
+  #include "Arduino.h"
 #else
-#include "WProgram.h"
+  #include "WProgram.h"
 #endif
 
 class Crc16 {
@@ -96,8 +96,9 @@ void Crc16::clearCrc() {
 // Update crc with new data
 //---------------------------------------------------
 void Crc16::updateCrc(uint8_t data) {
-  if (_reflectIn != 0)
+  if (_reflectIn != 0) {
     data = (uint8_t) reflect(data, 8);
+  }
 
   int j = 0x80;
 
@@ -145,14 +146,16 @@ unsigned int Crc16::fastCrc(uint8_t data[], uint8_t start, uint16_t length,
   uint8_t c;
   unsigned int bit;
 
-  if (length == 0)
+  if (length == 0) {
     return crc;
+  }
 
   for (int i = start; i < (start + length); i++) {
     c = data[i];
 
-    if (reflectIn != 0)
+    if (reflectIn != 0) {
       c = (uint8_t) reflect(c, 8);
+    }
 
     j = 0x80;
 
@@ -172,8 +175,9 @@ unsigned int Crc16::fastCrc(uint8_t data[], uint8_t start, uint16_t length,
     }
   }
 
-  if (reflectOut != 0)
+  if (reflectOut != 0) {
     crc = (unsigned int) ((reflect(crc) ^ xorOut) & mask);
+  }
 
   return crc;
 }

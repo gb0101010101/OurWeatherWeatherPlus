@@ -8,8 +8,7 @@ int getAirQuality(void) {
 
 #ifdef DEBUG
   int i;
-  for (i=0;i<4;i++)
-  {
+  for (i=0; i<4; i++) {
     int16_t sensor_value = adsAirQuality.readADC_SingleEnded(i);
     // int16_t sensor_value = adsAirQuality.readADC_SingleEnded(0);
     Serial.print("Sensor_Value=");
@@ -44,7 +43,6 @@ int getAirQuality(void) {
   } else {
     //Serial.println("Fresh Air");
     return 4;
-
   }
 
   return -1;

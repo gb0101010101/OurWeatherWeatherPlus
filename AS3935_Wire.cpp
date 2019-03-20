@@ -49,8 +49,9 @@ void AS3935::begin(int sda, int scl) {
  */
 uint8_t AS3935::_getShift(uint8_t mask) {
   uint8_t i = 0;
-  for (i = 0; ~mask & 1; i++)
+  for (i = 0; ~mask & 1; i++) {
     mask >>= 1;
+  }
   return i;
 }
 
@@ -327,8 +328,9 @@ uint8_t AS3935::getNoiseFloor(void) {
  @return true or false whether if setting the level is succeeded
  */
 bool AS3935::setNoiseFloor(int level) {
-  if (level < 0 || level > 7)
+  if (level < 0 || level > 7) {
     return false;
+  }
   writeRegisterWithMask(0x01, 0b01110000, level);
   return getNoiseFloor() == level;
 }
@@ -338,8 +340,9 @@ uint16_t AS3935::getSpikeRejection() {
 }
 
 bool AS3935::setSpikeRejection(int level) {
-  if (level < 0 || level > 15)
+  if (level < 0 || level > 15) {
     return false;
+  }
   writeRegisterWithMask(AS3935_SREJ, level);
   return getSpikeRejection() == level;
 }

@@ -36,56 +36,56 @@ void updateDisplay(int displayMode) {
   switch (displayMode) {
 
     case DISPLAY_UPDATING:
-    Serial.println("Updating OurWeather Software");
+      Serial.println("Updating OurWeather Software");
 
-    setDisplayLine(0, "OurWeather Updating");
-    setDisplayLine(1, "");
-    setDisplayLine(2, "");
-    setDisplayLine(3, "");
-    setDisplayLine(4, "");
-    setDisplayLine(5, "");
-    break;
+      setDisplayLine(0, "OurWeather Updating");
+      setDisplayLine(1, "");
+      setDisplayLine(2, "");
+      setDisplayLine(3, "");
+      setDisplayLine(4, "");
+      setDisplayLine(5, "");
+      break;
 
     case DISPLAY_UPDATE_FINISHED:
-    Serial.println("Finish OurWeather Software");
+      Serial.println("Finish OurWeather Software");
 
-    setDisplayLine(0, "OurWeather Updated");
-    setDisplayLine(1, "Wait 120 Seconds");
-    setDisplayLine(2, "Unplug Power");
-    setDisplayLine(3, "Wait 15 Seconds");
-    setDisplayLine(4, "Plug Power In");
-    setDisplayLine(5, "");
-    break;
+      setDisplayLine(0, "OurWeather Updated");
+      setDisplayLine(1, "Wait 120 Seconds");
+      setDisplayLine(2, "Unplug Power");
+      setDisplayLine(3, "Wait 15 Seconds");
+      setDisplayLine(4, "Plug Power In");
+      setDisplayLine(5, "");
+      break;
 
     case DISPLAY_NO_UPDATE_AVAILABLE:
-    setDisplayLine(0, "You have the most");
-    setDisplayLine(1, "recent software");
-    setDisplayLine(2, "");
-    setDisplayLine(3, "");
-    setDisplayLine(4, "");
-    setDisplayLine(5, "");
-    break;
+      setDisplayLine(0, "You have the most");
+      setDisplayLine(1, "recent software");
+      setDisplayLine(2, "");
+      setDisplayLine(3, "");
+      setDisplayLine(4, "");
+      setDisplayLine(5, "");
+      break;
 
     case DISPLAY_NO_UPDATE_FAILED:
-    setDisplayLine(0, "Update Failed.");
-    setDisplayLine(1, "Try again later.");
-    setDisplayLine(2, "");
-    setDisplayLine(3, "");
-    setDisplayLine(4, "");
-    setDisplayLine(5, "");
-    break;
+      setDisplayLine(0, "Update Failed.");
+      setDisplayLine(1, "Try again later.");
+      setDisplayLine(2, "");
+      setDisplayLine(3, "");
+      setDisplayLine(4, "");
+      setDisplayLine(5, "");
+      break;
 
     case DISPLAY_POWERUP:
-    Serial.println("OurWeather Booting Up");
+      Serial.println("OurWeather Booting Up");
 
-    strcpy(buffer, "Ver: ");
-    strcat(buffer, WEATHERPLUSESP8266VERSION);
+      strcpy(buffer, "Ver: ");
+      strcat(buffer, WEATHERPLUSESP8266VERSION);
 
-    setDisplayLine(0, "OurWeather Booting");
-    setDisplayLine(1, buffer);
-    setDisplayLine(2, "");
-    setDisplayLine(3, "");
-    break;
+      setDisplayLine(0, "OurWeather Booting");
+      setDisplayLine(1, buffer);
+      setDisplayLine(2, "");
+      setDisplayLine(3, "");
+      break;
 
     case DISPLAY_ACCESSPOINT: {
       Serial.println("OurWeather Setup");
@@ -187,7 +187,6 @@ void updateDisplay(int displayMode) {
       setDisplayLine(1, "----------------");
 
       String stringSolar;
-
       stringSolar = "Last:" + as3935_LastLightning;
 
       setDisplayLine(2, const_cast<char*>(stringSolar.c_str()) );
@@ -202,7 +201,6 @@ void updateDisplay(int displayMode) {
 
     case DISPLAY_LIGHTNING_DISPLAY: {
       String stringSolar;
-
       stringSolar = as3935_LastLightning + " away";
 
       setDisplayLine(0, "LIGHTNING!");
@@ -235,14 +233,12 @@ void updateDisplay(int displayMode) {
     break;
 
     case DISPLAY_WEATHER_SMALL: {
-
       String airQual;
       airQual = "Air Qual:" + reportAirQuality(currentAirQuality);
       setDisplayLine(6, const_cast<char*>(airQual.c_str()) );
 
       if (EnglishOrMetric == 0) {
         // English Units
-
         char floatString[15];
 
         buffer[0] = '\0';
@@ -307,7 +303,6 @@ void updateDisplay(int displayMode) {
          */
       } else {
         // Metric Units
-
         char floatString[15];
 
         buffer[0] = '\0';
@@ -362,7 +357,6 @@ void updateDisplay(int displayMode) {
         strcat(buffer, floatString);
         strcat(buffer, "deg");
         setDisplayLine(5, buffer);
-
       }
     }
     break;
@@ -434,7 +428,8 @@ void updateDisplay(int displayMode) {
         strcat(buffer, "d");
         setDisplayLine(7, buffer);
 
-        /*           OutTemp:  OutHum:
+        /*
+         OutTemp:  OutHum:
          InTemp:  BP:
          Alt:
          WindSpeed:
@@ -509,7 +504,6 @@ void updateDisplay(int displayMode) {
       }
 
       // display date and time
-
       buffer[0] = '\0';
       strcat(buffer, currentTimeString.c_str());
       setDisplayLine(8, buffer);
@@ -588,7 +582,8 @@ void updateDisplay(int displayMode) {
         strcat(buffer, "d");
         setDisplayLine(15, buffer);
 
-        /*           OutTemp:  OutHum:
+        /*
+         OutTemp:  OutHum:
          InTemp:  BP:
          Alt:
          WindSpeed:
@@ -597,7 +592,6 @@ void updateDisplay(int displayMode) {
          */
       } else {
         // Metric Units
-
         char floatString[15];
 
         buffer[0] = '\0';
@@ -661,7 +655,6 @@ void updateDisplay(int displayMode) {
         strcat(buffer, floatString);
         strcat(buffer, "d");
         setDisplayLine(15, buffer);
-
       }
       // display date and time
       buffer[0] = '\0';
@@ -670,7 +663,6 @@ void updateDisplay(int displayMode) {
       String airQual;
       airQual = " Air Qual " + reportAirQuality(currentAirQuality);
       setDisplayLine(17, const_cast<char*>(airQual.c_str()) );
-
     }
     break;
 
@@ -717,7 +709,8 @@ void updateDisplay(int displayMode) {
         strcat(buffer, "in");
         setDisplayLine(9, buffer);
 
-        /*           OutTemp:  OutHum:
+        /*
+         OutTemp:  OutHum:
          InTemp:  BP:
          Alt:
          WindSpeed:
@@ -777,14 +770,14 @@ void updateDisplay(int displayMode) {
     break;
 
     case DISPLAY_STATUS:
-    setDisplayLine(0, "WeatherPlus Status");
-    setDisplayLine(1, "# hits, etc");
-    setDisplayLine(2, "");
-    setDisplayLine(3, "");
-    break;
+      setDisplayLine(0, "WeatherPlus Status");
+      setDisplayLine(1, "# hits, etc");
+      setDisplayLine(2, "");
+      setDisplayLine(3, "");
+      break;
 
     default:
-    break;
+      break;
 
   }
   writeAllDisplayLines(displayMode);
@@ -902,13 +895,14 @@ void writeAllDisplayLines(int DisplayMode) {
       int i;
       for (i = 0; i < 6; i++) {
         display.clearDisplay();
+
         int j;
         for (j = 0; j < 2; j++) {
           display.setCursor(0, 20 * (j));
 
           display.println(displayLines[i * 2 + j]);
-
         }
+
         display.display();
         // Handle REST calls
         WiFiClient client = server.available();
@@ -933,8 +927,8 @@ void writeAllDisplayLines(int DisplayMode) {
       int textSize = 4;
       display.setTextSize(textSize);
       display.setTextColor(WHITE);
-      int i;
 
+      int i;
       for (i = 0; i < 10; i++) {
         display.clearDisplay();
         int j;
@@ -950,8 +944,8 @@ void writeAllDisplayLines(int DisplayMode) {
             display.setTextSize(2);
 
           display.println(displayLines[i * 2 + j]);
-
         }
+
         display.display();
         // Handle REST calls
         WiFiClient client = server.available();
@@ -965,7 +959,6 @@ void writeAllDisplayLines(int DisplayMode) {
         }
         delay(1800);
       }
-
     }
       break;
 
@@ -990,9 +983,9 @@ void writeAllDisplayLines(int DisplayMode) {
             display.setTextSize(2);
 
           display.println(displayLines[i * 2 + j]);
-
         }
         display.display();
+
         // Handle REST calls
         WiFiClient client = server.available();
         if (client) {
@@ -1010,9 +1003,7 @@ void writeAllDisplayLines(int DisplayMode) {
 
     default:
       break;
-
   }
-
 }
 
 #define LOGO16_GLCD_HEIGHT 16
@@ -1074,11 +1065,13 @@ void testdrawchar(void) {
   display.setCursor(0, 0);
 
   for (uint8_t i = 0; i < 168; i++) {
-    if (i == '\n')
+    if (i == '\n') {
       continue;
+    }
     display.write(i);
-    if ((i > 0) && (i % 21 == 0))
+    if ((i > 0) && (i % 21 == 0)) {
       display.println();
+    }
   }
   display.display();
 }
@@ -1094,8 +1087,7 @@ void testfillrect(void) {
   uint8_t color = 1;
   for (int16_t i = 0; i < display.height() / 2; i += 3) {
     // alternate colors
-    display.fillRect(i, i, display.width() - i * 2, display.height() - i * 2,
-        color % 2);
+    display.fillRect(i, i, display.width() - i * 2, display.height() - i * 2, color % 2);
     display.display();
     color++;
   }
@@ -1116,10 +1108,11 @@ void testfilltriangle(void) {
     display.fillTriangle(display.width() / 2, display.height() / 2 - i,
         display.width() / 2 - i, display.height() / 2 + i,
         display.width() / 2 + i, display.height() / 2 + i, WHITE);
-    if (color == WHITE)
+    if (color == WHITE) {
       color = BLACK;
-    else
+    } else {
       color = WHITE;
+    }
     display.display();
   }
 }
@@ -1137,18 +1130,18 @@ void testfillroundrect(void) {
   for (int16_t i = 0; i < display.height() / 2 - 2; i += 2) {
     display.fillRoundRect(i, i, display.width() - 2 * i,
         display.height() - 2 * i, display.height() / 4, color);
-    if (color == WHITE)
+    if (color == WHITE) {
       color = BLACK;
-    else
+    } else {
       color = WHITE;
+    }
     display.display();
   }
 }
 
 void testdrawrect(void) {
   for (int16_t i = 0; i < display.height() / 2; i += 2) {
-    display.drawRect(i, i, display.width() - 2 * i, display.height() - 2 * i,
-        WHITE);
+    display.drawRect(i, i, display.width() - 2 * i, display.height() - 2 * i, WHITE);
     display.display();
   }
 }
@@ -1335,10 +1328,4 @@ void OLEDDisplaySetup() {
    testdrawbitmap(logo16_glcd_bmp, LOGO16_GLCD_HEIGHT, LOGO16_GLCD_WIDTH);
    */
 }
-
-/*
- void loop() {
-
- }
- */
 

@@ -116,8 +116,8 @@ RtcDateTime RtcDS3231::GetDateTime() {
   uint8_t monthRaw = Wire.Read();
   uint16_t year = BcdToUint8(Wire.Read()) + 2000;
 
-  if (monthRaw & _BV(7)) // century wrap flag
-  {
+  if (monthRaw & _BV(7)) {
+    // century wrap flag
     year += 100;
   }
   uint8_t month = BcdToUint8(monthRaw & 0x7f);

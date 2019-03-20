@@ -79,16 +79,18 @@ boolean SDL_ESP8266_HR_AM2315::readData(float *dataArray) {
       switch (returnValue) {
         case GOODREAD: {
           goodReads++;
-          if (count > highBadReadCount)
+          if (count > highBadReadCount) {
             highBadReadCount = count;
+          }
 
           // now set high and low
-
-          if (dataArray[1] > highTemp)
+          if (dataArray[1] > highTemp) {
             highTemp = dataArray[1];
+          }
 
-          if (dataArray[1] < lowTemp)
+          if (dataArray[1] < lowTemp) {
             lowTemp = dataArray[1];
+          }
           return true;
         }
           break;
@@ -96,13 +98,11 @@ boolean SDL_ESP8266_HR_AM2315::readData(float *dataArray) {
         case CRCERROR:
           badCRCReads++;
           badReads++;
-
           break;
 
         case BADTEMPERATURE:
           badSpikeReads++;
           badReads++;
-
           break;
 
         case BADMESSAGE:
@@ -111,7 +111,6 @@ boolean SDL_ESP8266_HR_AM2315::readData(float *dataArray) {
           break;
 
         default:
-
           break;
 
       } // end of switch
@@ -125,19 +124,19 @@ boolean SDL_ESP8266_HR_AM2315::readData(float *dataArray) {
   }  // end of Not GOODREAD clause
 
   // ah, good reads
-
   goodReads++;
   highBadReadCount = 0;
 
   // now set high and low
-
-  if (dataArray[1] > highTemp)
+  if (dataArray[1] > highTemp) {
     highTemp = dataArray[1];
+  }
 
-  if (dataArray[1] < lowTemp)
+  if (dataArray[1] < lowTemp) {
     lowTemp = dataArray[1];
-  return true;
+  }
 
+  return true;
 }
 
 int SDL_ESP8266_HR_AM2315::internalReadData(float * dataArray) {
@@ -257,9 +256,8 @@ int SDL_ESP8266_HR_AM2315::internalReadData(float * dataArray) {
 
 #define TEMPERATUREBAND 14.0
 
-      if (lastGoodTemp > (TEMPERATUREBAND + temp)) // too high compared to last good value
-          {
-
+      if (lastGoodTemp > (TEMPERATUREBAND + temp)) {
+        // too high compared to last good value
         for (uint8_t i = 0; i < 8; i++) {
           lastBadRead[i] = reply[i];
         }
@@ -268,9 +266,8 @@ int SDL_ESP8266_HR_AM2315::internalReadData(float * dataArray) {
         dataArray[1] = NAN;
         return BADTEMPERATURE;
       }
-      if (lastGoodTemp < (temp - TEMPERATUREBAND)) // too low compared to last good value
-          {
-
+      if (lastGoodTemp < (temp - TEMPERATUREBAND)) {
+        // too low compared to last good value
         for (uint8_t i = 0; i < 8; i++) {
           lastBadRead[i] = reply[i];
         }
@@ -279,7 +276,6 @@ int SDL_ESP8266_HR_AM2315::internalReadData(float * dataArray) {
         dataArray[1] = NAN;
         return BADTEMPERATURE;
       }
-
     }
 
     // Now we have passed the spike with good CRC problem, so we have goodness.
@@ -288,9 +284,7 @@ int SDL_ESP8266_HR_AM2315::internalReadData(float * dataArray) {
     lastGoodTemp = temp;
 
     return GOODREAD;
-  }
-
-  else {
+  } else {
     dataArray[0] = NAN;
     dataArray[1] = NAN;
 
@@ -345,10 +339,8 @@ int delayByCPU(long delaycount) {
     //Serial.println("outside loop");
     for (j = 0; j < 1000; j++) {
       for (index = 0; index < COUNT; index++) {
-
         test = 30.4 + i;
         test = test / 50.0;
-
       }
       test = test + j;
     }
@@ -392,6 +384,5 @@ void SDL_ESP8266_HR_AM2315::printStatistics() {
   Serial.println();
 
   Serial.println("-----------------");
-
 }
 

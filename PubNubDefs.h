@@ -7,15 +7,15 @@
 #include <string.h>
 
 #if !defined(PubNub_BASE_CLIENT)
-#define PubNub_BASE_CLIENT EthernetClient
+  #define PubNub_BASE_CLIENT EthernetClient
 #endif
 
 #ifdef PUBNUB_DEBUG
-#define DBGprint(x...) Serial.print(x)
-#define DBGprintln(x...) Serial.println(x)
+  #define DBGprint(x...) Serial.print(x)
+  #define DBGprintln(x...) Serial.println(x)
 #else
-#define DBGprint(x...)
-#define DBGprintln(x...)
+  #define DBGprint(x...)
+  #define DBGprintln(x...)
 #endif
 
 /* Under some board support libraries, like ESP8266,
@@ -358,9 +358,11 @@ inline void PubSubClient::_state_input(uint8_t ch, uint8_t *nextbuf, size_t next
         if (braces_depth == 0)
           goto body_end;
         return;
+
       case '\\':
         after_backslash = true;
         return;
+
       default:
         return;
     }
@@ -370,22 +372,26 @@ inline void PubSubClient::_state_input(uint8_t ch, uint8_t *nextbuf, size_t next
       case '"':
         in_string = true;
         return;
+
       case '{':
       case '[':
         braces_depth++;
         return;
+
       case '}':
       case ']':
         braces_depth--;
         if (braces_depth == 0)
           goto body_end;
         return;
+
       default:
         return;
     }
   }
 
   return;
+
   body_end:
   /* End of data here. */
   this->_grab_timetoken(nextbuf, nextsize);
@@ -431,11 +437,13 @@ inline void PubSubClient::_grab_timetoken(uint8_t *nextbuf, size_t nextsize) {
           state = await_quote;
         }
         break;
+
       case await_quote:
         if ('"' == ch) {
           state = read_timetoken;
         }
         break;
+
       case read_timetoken:
         if (ch == '"') {
           state = done;
@@ -448,6 +456,7 @@ inline void PubSubClient::_grab_timetoken(uint8_t *nextbuf, size_t nextsize) {
           break;
         }
         break;
+
       default:
         break;
     }
@@ -544,15 +553,15 @@ inline PubNub_BASE_CLIENT *PubNub::publish(const char *channel,
   switch (ret) {
     case PubNub_BH_OK:
       return &client;
+
     case PubNub_BH_ERROR:
       client.stop();
-      while (client.connected())
-        ;
+      while (client.connected());
       return 0;
+
     case PubNub_BH_TIMEOUT:
       client.stop();
-      while (client.connected())
-        ;
+      while (client.connected());
       goto retry;
   }
 }
@@ -614,14 +623,12 @@ inline PubSubClient *PubNub::subscribe(const char *channel, int timeout) {
 
     case PubNub_BH_ERROR:
       client.stop();
-      while (client.connected())
-        ;
+      while (client.connected());
       return 0;
 
     case PubNub_BH_TIMEOUT:
       client.stop();
-      while (client.connected())
-        ;
+      while (client.connected());
       goto retry;
   }
 }
@@ -651,15 +658,15 @@ inline PubNub_BASE_CLIENT *PubNub::history(const char *channel, int limit,
   switch (ret) {
     case PubNub_BH_OK:
       return &client;
+
     case PubNub_BH_ERROR:
       client.stop();
-      while (client.connected())
-        ;
+      while (client.connected());
       return 0;
+
     case PubNub_BH_TIMEOUT:
       client.stop();
-      while (client.connected())
-        ;
+      while (client.connected());
       goto retry;
   }
 }

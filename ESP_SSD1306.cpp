@@ -351,14 +351,14 @@ static uint8_t buffer[SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8] = {
 
 // the most basic function, set a single pixel
 void ESP_SSD1306::drawPixel(int16_t x, int16_t y, uint16_t color) {
-  if ((x < 0) || (x >= width()) || (y < 0) || (y >= height()))
+  if ((x < 0) || (x >= width()) || (y < 0) || (y >= height())) {
     return;
+  }
 
   // check rotation, move pixel around if necessary
   switch (getRotation()) {
     case 1:
-      adagfxswap(x, y)
-      ;
+      adagfxswap(x, y);
       x = WIDTH - x - 1;
       break;
     case 2:
@@ -366,8 +366,7 @@ void ESP_SSD1306::drawPixel(int16_t x, int16_t y, uint16_t color) {
       y = HEIGHT - y - 1;
       break;
     case 3:
-      adagfxswap(x, y)
-      ;
+      adagfxswap(x, y);
       y = HEIGHT - y - 1;
       break;
   }
@@ -387,8 +386,7 @@ void ESP_SSD1306::drawPixel(int16_t x, int16_t y, uint16_t color) {
 
 }
 
-ESP_SSD1306::ESP_SSD1306(int8_t SID, int8_t SCLK, int8_t DC, int8_t RST,
-    int8_t CS) :
+ESP_SSD1306::ESP_SSD1306(int8_t SID, int8_t SCLK, int8_t DC, int8_t RST, int8_t CS) :
     Adafruit_GFX(SSD1306_LCDWIDTH, SSD1306_LCDHEIGHT) {
   cs = CS;
   rst = RST;
@@ -422,21 +420,24 @@ void ESP_SSD1306::begin(uint8_t vccstate, uint8_t i2caddr, bool reset) {
   if (sid != -1) {
     pinMode(dc, OUTPUT);
     pinMode(cs, OUTPUT);
-//commented for ESP8266 compatibility
-//    csport      = portOutputRegister(digitalPinToPort(cs));
-//    cspinmask   = digitalPinToBitMask(cs);
-//    dcport      = portOutputRegister(digitalPinToPort(dc));
-//    dcpinmask   = digitalPinToBitMask(dc);
+
+    // commented for ESP8266 compatibility
+    //   csport      = portOutputRegister(digitalPinToPort(cs));
+    //   cspinmask   = digitalPinToBitMask(cs);
+    //   dcport      = portOutputRegister(digitalPinToPort(dc));
+    //   dcpinmask   = digitalPinToBitMask(dc);
+
     if (!hwSPI) {
       // set pins for software-SPI
       pinMode(sid, OUTPUT);
       pinMode(sclk, OUTPUT);
-//commented for ESP8266 compatibility
-//      clkport     = portOutputRegister(digitalPinToPort(sclk));
-//      clkpinmask  = digitalPinToBitMask(sclk);
-//      mosiport    = portOutputRegister(digitalPinToPort(sid));
-//      mosipinmask = digitalPinToBitMask(sid);
+      // commented for ESP8266 compatibility
+      //   clkport     = portOutputRegister(digitalPinToPort(sclk));
+      //   clkpinmask  = digitalPinToBitMask(sclk);
+      //   mosiport    = portOutputRegister(digitalPinToPort(sid));
+      //   mosipinmask = digitalPinToBitMask(sid);
     }
+
     if (hwSPI) {
 //      SPI.begin ();
 #ifdef __SAM3X8E__
@@ -820,24 +821,25 @@ void ESP_SSD1306::drawFastHLine(int16_t x, int16_t y, int16_t w,
     case 0:
       // 0 degree rotation, do nothing
       break;
+
     case 1:
       // 90 degree rotation, swap x & y for rotation, then invert x
       bSwap = true;
-      adagfxswap(x, y)
-      ;
+      adagfxswap(x, y);
       x = WIDTH - x - 1;
       break;
+
     case 2:
       // 180 degree rotation, invert x and y - then shift y around for height.
       x = WIDTH - x - 1;
       y = HEIGHT - y - 1;
       x -= (w - 1);
       break;
+
     case 3:
       // 270 degree rotation, swap x & y for rotation, then invert y  and adjust y for w (not to become h)
       bSwap = true;
-      adagfxswap(x, y)
-      ;
+      adagfxswap(x, y);
       y = HEIGHT - y - 1;
       y -= (w - 1);
       break;
@@ -850,8 +852,7 @@ void ESP_SSD1306::drawFastHLine(int16_t x, int16_t y, int16_t w,
   }
 }
 
-void ESP_SSD1306::drawFastHLineInternal(int16_t x, int16_t y, int16_t w,
-    uint16_t color) {
+void ESP_SSD1306::drawFastHLineInternal(int16_t x, int16_t y, int16_t w, uint16_t color) {
   // Do bounds/limit checks
   if (y < 0 || y >= HEIGHT) {
     return;
@@ -886,50 +887,49 @@ void ESP_SSD1306::drawFastHLineInternal(int16_t x, int16_t y, int16_t w,
     case WHITE:
       while (w--) {
         *pBuf++ |= mask;
-      }
-      ;
+      };
       break;
+
     case BLACK:
       mask = ~mask;
       while (w--) {
         *pBuf++ &= mask;
-      }
-      ;
+      };
       break;
+
     case INVERSE:
       while (w--) {
         *pBuf++ ^= mask;
-      }
-      ;
+      };
       break;
   }
 }
 
-void ESP_SSD1306::drawFastVLine(int16_t x, int16_t y, int16_t h,
-    uint16_t color) {
+void ESP_SSD1306::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color) {
   bool bSwap = false;
   switch (rotation) {
     case 0:
       break;
+
     case 1:
       // 90 degree rotation, swap x & y for rotation, then invert x and adjust x for h (to become w)
       bSwap = true;
-      adagfxswap(x, y)
-      ;
+      adagfxswap(x, y);
       x = WIDTH - x - 1;
       x -= (h - 1);
       break;
+
     case 2:
       // 180 degree rotation, invert x and y - then shift y around for height.
       x = WIDTH - x - 1;
       y = HEIGHT - y - 1;
       y -= (h - 1);
       break;
+
     case 3:
       // 270 degree rotation, swap x & y for rotation, then invert y 
       bSwap = true;
-      adagfxswap(x, y)
-      ;
+      adagfxswap(x, y);
       y = HEIGHT - y - 1;
       break;
   }
@@ -941,8 +941,7 @@ void ESP_SSD1306::drawFastVLine(int16_t x, int16_t y, int16_t h,
   }
 }
 
-void ESP_SSD1306::drawFastVLineInternal(int16_t x, int16_t __y, int16_t __h,
-    uint16_t color) {
+void ESP_SSD1306::drawFastVLineInternal(int16_t x, int16_t __y, int16_t __h, uint16_t color) {
 
   // do nothing if we're off the left or right side of the screen
   if (x < 0 || x >= WIDTH) {
@@ -954,7 +953,6 @@ void ESP_SSD1306::drawFastVLineInternal(int16_t x, int16_t __y, int16_t __h,
     // __y is negative, this will subtract enough from __h to account for __y being 0
     __h += __y;
     __y = 0;
-
   }
 
   // make sure we don't go past the height of the display
@@ -999,12 +997,15 @@ void ESP_SSD1306::drawFastVLineInternal(int16_t x, int16_t __y, int16_t __h,
       case WHITE:
         *pBuf |= mask;
         break;
+
       case BLACK:
         *pBuf &= ~mask;
         break;
+
       case INVERSE:
         *pBuf ^= mask;
         break;
+
     }
 
     // fast exit if we're done here!

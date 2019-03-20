@@ -17,13 +17,12 @@
  */
 /**************************************************************************/
 #if ARDUINO >= 100
-#include "Arduino.h"
+  #include "Arduino.h"
 #else
-#include "WProgram.h"
+  #include "WProgram.h"
 #endif
 
 #include <Wire.h>
-
 #include "OWMAdafruit_ADS1015.h"
 
 /**************************************************************************/
@@ -317,8 +316,7 @@ void Adafruit_ADS1015::startComparator_SingleEnded(uint8_t channel,
 
   // Set the high threshold register
   // Shift 12-bit results left 4 bits for the ADS1015
-  writeRegister(m_i2cAddress, ADS1015_REG_POINTER_HITHRESH,
-      threshold << m_bitShift);
+  writeRegister(m_i2cAddress, ADS1015_REG_POINTER_HITHRESH, threshold << m_bitShift);
 
   // Write config register to the ADC
   writeRegister(m_i2cAddress, ADS1015_REG_POINTER_CONFIG, config);

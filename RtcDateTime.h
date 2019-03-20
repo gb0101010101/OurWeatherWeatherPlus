@@ -89,16 +89,19 @@ class RtcDateTime {
 
       for (_yearFrom2000 = 0;; ++_yearFrom2000) {
         leapDays = (_yearFrom2000 % 4 == 0) ? 1 : 0;
-        if (days < 365U + leapDays)
+        if (days < 365U + leapDays) {
           break;
+        }
         days -= 365 + leapDays;
       }
       for (_month = 1;; ++_month) {
         uint8_t daysPerMonth = pgm_read_byte(c_daysInMonth + _month - 1);
-        if (leapDays && _month == 2)
+        if (leapDays && _month == 2) {
           daysPerMonth++;
-        if (days < daysPerMonth)
+        }
+        if (days < daysPerMonth) {
           break;
+        }
         days -= daysPerMonth;
       }
       _dayOfMonth = days + 1;

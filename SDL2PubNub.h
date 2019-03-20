@@ -230,11 +230,12 @@ int setThunderBoardParams(String command) {
         int error;
         // execute and set them!
         error = parseOutAS3935Parameters();
-        if (error == 2)
+
+        if (error == 2) {
           return 2;
+        }
 
         setAS3935Parameters();
-
         writeEEPROMState();
       }
       return 1;

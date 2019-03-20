@@ -7,8 +7,9 @@
 #include "RtcDateTime.h"
 #include <Arduino.h>
 
-const uint8_t c_daysInMonth[] PROGMEM = { 31, 28, 31, 30, 31, 30, 31, 31, 30,
-    31, 30, 31 };
+const uint8_t c_daysInMonth[] PROGMEM = {
+    31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+};
 
 RtcDateTime::RtcDateTime(uint32_t secondsFrom2000) {
   _initWithSecondsFrom2000<uint32_t>(secondsFrom2000);
@@ -28,6 +29,7 @@ uint8_t StringToUint8(const char* pString) {
     value += *pString - '0';
     pString++;
   }
+
   return value;
 }
 
@@ -40,43 +42,52 @@ RtcDateTime::RtcDateTime(const char* date, const char* time) {
 
   switch (date[0]) {
     case 'J':
-      if (date[1] == 'a')
+      if (date[1] == 'a') {
         _month = 1;
-      else if (date[2] == 'n')
+      } else if (date[2] == 'n') {
         _month = 6;
-      else
+      } else {
         _month = 7;
+      }
       break;
+
     case 'F':
       _month = 2;
       break;
+
     case 'A':
       _month = date[1] == 'p' ? 4 : 8;
       break;
+
     case 'M':
       _month = date[2] == 'r' ? 3 : 5;
       break;
+
     case 'S':
       _month = 9;
       break;
+
     case 'O':
       _month = 10;
       break;
+
     case 'N':
       _month = 11;
       break;
+
     case 'D':
       _month = 12;
       break;
+
   }
+
   _dayOfMonth = StringToUint8(date + 4);
   _hour = StringToUint8(time);
   _minute = StringToUint8(time + 3);
   _second = StringToUint8(time + 6);
 }
 
-template<typename T> T DaysSinceFirstOfYear2000(uint16_t year, uint8_t month,
-    uint8_t dayOfMonth) {
+template<typename T> T DaysSinceFirstOfYear2000(uint16_t year, uint8_t month, uint8_t dayOfMonth) {
   T days = dayOfMonth;
   for (uint8_t indexMonth = 1; indexMonth < month; ++indexMonth) {
     days += pgm_read_byte(c_daysInMonth + indexMonth - 1);
@@ -87,8 +98,7 @@ template<typename T> T DaysSinceFirstOfYear2000(uint16_t year, uint8_t month,
   return days + 365 * year + (year + 3) / 4 - 1;
 }
 
-template<typename T> T SecondsIn(T days, uint8_t hours, uint8_t minutes,
-    uint8_t seconds) {
+template<typename T> T SecondsIn(T days, uint8_t hours, uint8_t minutes, uint8_t seconds) {
   return ((days * 24L + hours) * 60 + minutes) * 60 + seconds;
 }
 

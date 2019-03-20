@@ -32,8 +32,9 @@ bool Adafruit_BMP280::begin(uint8_t a) {
   // i2c
   Wire.begin(5, 4);
 
-  if (read8(BMP280_REGISTER_CHIPID) != 0x58)
+  if (read8(BMP280_REGISTER_CHIPID) != 0x58) {
     return false;
+  }
 
   readCoefficients();
   write8(BMP280_REGISTER_CONTROL, 0x3F);
@@ -46,12 +47,10 @@ bool Adafruit_BMP280::begin(uint8_t a) {
  */
 /**************************************************************************/
 void Adafruit_BMP280::write8(byte reg, byte value) {
-
   Wire.beginTransmission((uint8_t) _i2caddr);
   Wire.write((uint8_t) reg);
   Wire.write((uint8_t) value);
   Wire.endTransmission();
-
 }
 
 /**************************************************************************/
@@ -91,7 +90,6 @@ uint16_t Adafruit_BMP280::read16(byte reg) {
 uint16_t Adafruit_BMP280::read16_LE(byte reg) {
   uint16_t temp = read16(reg);
   return (temp >> 8) | (temp << 8);
-
 }
 
 /**************************************************************************/
@@ -101,12 +99,10 @@ uint16_t Adafruit_BMP280::read16_LE(byte reg) {
 /**************************************************************************/
 int16_t Adafruit_BMP280::readS16(byte reg) {
   return (int16_t) read16(reg);
-
 }
 
 int16_t Adafruit_BMP280::readS16_LE(byte reg) {
   return (int16_t) read16_LE(reg);
-
 }
 
 /**************************************************************************/

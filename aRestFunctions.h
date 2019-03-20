@@ -9,10 +9,12 @@ int ledControl(String command) {
   // Get state from command
   int state = command.toInt();
 
-  if (state == 0)  // ESP8266 inverts sense (HIGH = off, LOW = ON)
+  // ESP8266 inverts sense (HIGH = off, LOW = ON)
+  if (state == 0) {
     state = 1;
-  else
+  } else {
     state = 0;
+  }
 
   digitalWrite(blinkPin, state);
   return 1;
@@ -32,8 +34,9 @@ int resetWiFiAccessPoint(String command) {
     Wssid = "XXX";
     writeEEPROMState();
     return 1;
-  } else
+  } else {
     return 0;
+  }
 
   //http://192.168.1.134/resetWiFiAccessPoint?params=adminpassword
   return 1;
@@ -43,16 +46,14 @@ int resetOurWeather(String command) {
   Serial.println("resetOurWeather - settings invalidated");
   Serial.print("Command =");
   Serial.println(command);
+
   if (command == adminPassword) {
-
     invalidateEEPROMState();
-
     system_restart();
-
     // qdelay(10000);
-
     return 1;
   }
+
   return 0;
 }
 
@@ -70,12 +71,12 @@ int setAdminPassword(String command) {
     adminPassword = newPassword;
     writeEEPROMState();
     return 1;
-  } else
+  } else {
     return 0;
+  }
 
   //http://192.168.1.134/setAdminPassword?params=oldpassword,newpassword
   return 1;
-
 }
 
 int setWUSID(String command) {
@@ -97,8 +98,9 @@ int setWUSID(String command) {
     WeatherUnderground_StationID = WUSID;
     writeEEPROMState();
     return 1;
-  } else
+  } else {
     return 0;
+  }
 
   return 1;
 }
@@ -116,15 +118,16 @@ int setWUKEY(String command) {
   if (sentPassword == adminPassword) {
     WeatherUnderground_StationKey = WUKEY;
     writeEEPROMState();
-
     return 1;
-  } else
+  } else {
     return 0;
+  }
 
   return 1;
 }
 
 void startBlynk();
+
 int setBAKEY(String command) {
   Serial.print("Command =");
   Serial.println(command);
@@ -140,8 +143,9 @@ int setBAKEY(String command) {
     writeEEPROMState();
     startBlynk();
     return 1;
-  } else
+  } else {
     return 0;
+  }
 
   return 1;
 }
@@ -184,8 +188,9 @@ int setDateTime(String command) {
       return 2;
     }
     return 1;
-  } else
+  } else {
     return 0;
+  }
 }
 
 // FOTA update commands
@@ -206,25 +211,23 @@ int updateOurWeather(String command) {
         Serial.println("[update] Update failed.");
         updateDisplay (DISPLAY_NO_UPDATE_FAILED);
         delay(5000);
-
         return 1;
-
         break;
+
       case HTTP_UPDATE_NO_UPDATES:
         Serial.println("[update] Update no Updates.");
         updateDisplay (DISPLAY_NO_UPDATE_AVAILABLE);
         delay(5000);
         return 2;
         break;
+
       case HTTP_UPDATE_OK:
-
         Serial.println("[update] Update ok."); // may not called we reboot the ESP
-
         return 3;
         break;
     }
-
   }
+
   return 0;
 }
 
@@ -237,14 +240,12 @@ int resetToDefaults(String command) {
 int enableCWOPControl(String command) {
   // Get state from command
   int state = command.toInt();
-
-  return 1;
+    return 1;
 }
 
 int enableTwitterControl(String command) {
   // Get state from command
   int state = command.toInt();
-
   return 1;
 }
 
@@ -252,7 +253,6 @@ int enableTwitterControl(String command) {
 int weatherSmallControl(String command) {
   WeatherDisplayMode = DISPLAY_WEATHER_SMALL;
   writeEEPROMState();
-
   return 1;
 }
 
@@ -299,68 +299,55 @@ int jsonCmd(String command) {
 }
 
 /*
- void jsonCmd(WebServer &server, WebServer::ConnectionType type, char *url_tail, bool tail_complete)
- {
+void jsonCmd(WebServer &server, WebServer::ConnectionType type, char *url_tail, bool tail_complete) {
+  currentObjectStructure parsedObject;
+  initParsedObject(&parsedObject);
 
- currentObjectStructure parsedObject;
- initParsedObject(&parsedObject);
+#ifdef DEBUG
+  Serial.println("------------------");
+#endif
 
- #ifdef DEBUG
- Serial.println("------------------");
- #endif
+  char myBuffer[1024];
 
+  server.httpSuccess("application/json");
 
- char myBuffer[1024];
+  if (type == WebServer::HEAD) {
+    return;
+  }
 
+  int myChar;
+  int count;
+  myChar = server.read();
+  count = 0;
 
+  while (myChar > 0) {
+    myBuffer[count] = (char) myChar;
+    myChar = server.read();
+    count++;
+  }
+  myBuffer[count] = '\0';
 
+  delay(25);
 
- server.httpSuccess("application/json");
+  messageCount++;
 
- if (type == WebServer::HEAD)
- return;
+  char returnJSON[500] = "";
 
- int myChar;
- int count;
- myChar = server.read();
- count = 0;
+  ExecuteCommandAndReturnJSONString(myBuffer, messageCount, md5str, &parsedObject, returnJSON, returnJSON);
 
+#ifdef DEBUG
+  Serial.print("returnJSON =");
+  Serial.println(returnJSON);
+#endif
 
- while (myChar > 0)
- {
- myBuffer[count] = (char) myChar;
+  server << returnJSON;
 
- myChar = server.read();
+#ifdef DEBUG
+  Serial.print("Mem1=");
+  Serial.println(freeMemory());
+  Serial.println("------------------");
+#endif
 
- count++;
+}
+*/
 
- }
- myBuffer[count] = '\0';
-
- delay(25);
-
- messageCount++;
-
- char returnJSON[500] = "";
-
-
- ExecuteCommandAndReturnJSONString(myBuffer, messageCount, md5str, &parsedObject, returnJSON, returnJSON);
-
-
- #ifdef DEBUG
- Serial.print("returnJSON =");
- Serial.println(returnJSON);
- #endif
-
-
-
- server << returnJSON;
-
- #ifdef DEBUG
- Serial.print("Mem1=");
- Serial.println(freeMemory());
- Serial.println("------------------");
- #endif
- }
-
- */

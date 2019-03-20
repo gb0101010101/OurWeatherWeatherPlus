@@ -18,7 +18,6 @@ float rain60Minutes = 0;                  // the running total
 float rain60MinutesAverage = 0; // the average
 
 void initialize60MinuteRain() {
-
   // initialize all the readings to 0:
   for (int thisReading = 0; thisReading < numReadings; thisReading++) {
     Rainreadings[thisReading] = 0.0;
@@ -43,5 +42,4 @@ void add60MinuteRainReading(float incrRain) {
 
   // calculate the average:
   rain60MinutesAverage = rain60Minutes / numReadings;
-
 }

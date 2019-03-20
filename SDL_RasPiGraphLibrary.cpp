@@ -35,30 +35,30 @@ int SDL_RasPiGraphLibrary::add_value(float value) {
   }
 }
 
-void SDL_RasPiGraphLibrary::getRasPiString(char returnRasPiString[],
-    char *buffer) {
+void SDL_RasPiGraphLibrary::getRasPiString(char returnRasPiString[], char *buffer) {
   int i;
   strcpy(returnRasPiString, "");
 
   for (i = 0; i < _currentItemCount; i++) {
-//        Serial.print("_currentItemCount=");
-//        Serial.println(_currentItemCount);
+//    Serial.print("_currentItemCount=");
+//    Serial.println(_currentItemCount);
 
     char tempString[30];
     char floatString[20];
     dtostrf((double) _myFloatArray[i], 6, 2, floatString);
     sprintf(tempString, "%s^^", floatString);
-    //strcat(returnRasPiString, tempString);
+
     strcat(returnRasPiString, tempString);
 
-    //Serial.print("returnRasPiString =");
-    //Serial.println(returnRasPiString);
+//    Serial.print("returnRasPiString =");
+//    Serial.println(returnRasPiString);
   }
+
   if (strlen(returnRasPiString) > 2) {
     returnRasPiString[strlen(returnRasPiString) - 2] = '\0';
   }
-  // now add the labels
 
+  // now add the labels
   strcat(returnRasPiString, "||");
 
   for (i = 0; i < _currentItemCount; i++) {
@@ -71,8 +71,8 @@ void SDL_RasPiGraphLibrary::getRasPiString(char returnRasPiString[],
     returnRasPiString[strlen(returnRasPiString) - 2] = '\0';
   }
 
-//      Serial.print("returnRasPiString=");
-//      Serial.println(returnRasPiString);
+//  Serial.print("returnRasPiString=");
+//  Serial.println(returnRasPiString);
 
   strcpy(returnRasPiString, buffer);
 }

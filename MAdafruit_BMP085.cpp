@@ -27,8 +27,9 @@ boolean Adafruit_BMP085::begin(uint8_t mode) {
 
   Wire.begin(5, 4);
 
-  if (read8(0xD0) != 0x55)
+  if (read8(0xD0) != 0x55) {
     return false;
+  }
 
   /* read calibration data */
   ac1 = read16(BMP085_CAL_AC1);
@@ -83,14 +84,15 @@ uint32_t Adafruit_BMP085::readRawPressure(void) {
 
   write8(BMP085_CONTROL, BMP085_READPRESSURECMD + (oversampling << 6));
 
-  if (oversampling == BMP085_ULTRALOWPOWER)
+  if (oversampling == BMP085_ULTRALOWPOWER) {
     delay(5);
-  else if (oversampling == BMP085_STANDARD)
+  } else if (oversampling == BMP085_STANDARD) {
     delay(8);
-  else if (oversampling == BMP085_HIGHRES)
+  } else if (oversampling == BMP085_HIGHRES) {
     delay(14);
-  else
+  } else {
     delay(26);
+  }
 
   raw = read16(BMP085_PRESSUREDATA);
 
@@ -176,6 +178,7 @@ int32_t Adafruit_BMP085::readPressure(void) {
   } else {
     p = (B7 / B4) * 2;
   }
+
   X1 = (p >> 8) * (p >> 8);
   X1 = (X1 * 3038) >> 16;
   X2 = (-7357 * p) >> 16;
@@ -187,6 +190,7 @@ int32_t Adafruit_BMP085::readPressure(void) {
 #endif
 
   p = p + ((X1 + X2 + (int32_t) 3791) >> 4);
+
 #if BMP085_DEBUG == 1
   Serial.print("p = "); Serial.println(p);
 #endif
@@ -222,7 +226,6 @@ float Adafruit_BMP085::readTemperature(void) {
 
 float Adafruit_BMP085::readAltitude(float sealevelPressure) {
   float altitude;
-
   float pressure = readPressure();
 
   altitude = 44330 * (1.0 - pow(pressure / sealevelPressure, 0.1903));

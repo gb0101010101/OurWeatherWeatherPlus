@@ -22,12 +22,9 @@ void startBlynk() {
 void myBTimerInstantEvent();
 
 /*
- void writeToBlynkStatusTerminal(String statement)
- {
-
- statusTerminalStatement = statement;
- Btimer.setTimeout(100, myBTimerInstantEvent);
-
+ void writeToBlynkStatusTerminal(String statement) {
+   statusTerminalStatement = statement;
+   Btimer.setTimeout(100, myBTimerInstantEvent);
  }
  */
 
@@ -55,15 +52,10 @@ void myBTimerEvent() {
 #endif
   Blynk.connect();
 #ifdef DEBUGBLYNK
-  if (Blynk.connected())
-  {
+  if (Blynk.connected()) {
     Serial.println("Blynk Connected");
-
-  }
-  else
-  {
+  } else {
     Serial.println("Blynk NOT Connected");
-
   }
 #endif
 

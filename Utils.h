@@ -225,8 +225,9 @@ void readEEPROMState() {
     if (pubNubEnabled == 1) {
       for (i = 232; i < 232 + 43; ++i) {
         myChar = EEPROM.read(i);
-        if (myChar == 0)
+        if (myChar == 0) {
           break;
+        }
         SDL2PubNubCode += myChar;
       }
     } else
@@ -236,12 +237,14 @@ void readEEPROMState() {
     if (pubNubEnabled == 1) {
       for (i = 275; i < 275 + 43; ++i) {
         myChar = EEPROM.read(i);
-        if (myChar == 0)
+        if (myChar == 0) {
           break;
+        }
         SDL2PubNubCode_Sub += myChar;
       }
-    } else
+    } else {
       SDL2PubNubCode_Sub = "XX";
+    }
 
     // now read params list for AS3935
     String tempString;
@@ -249,13 +252,15 @@ void readEEPROMState() {
     for (i = 318; i < 318 + 31; i++) {
       myChar = EEPROM.read(i);
 
-      if (myChar == 0)
+      if (myChar == 0) {
         break;
+      }
       tempString += myChar;
     }
 
-    if (tempString.length() > 0)
+    if (tempString.length() > 0) {
       as3935_Params = tempString;
+    }
 
     // now read Blynk Authorization Code
     BlynkAuthCode = "";
@@ -263,15 +268,17 @@ void readEEPROMState() {
     for (i = 349; i < 349 + 43; i++) {
       myChar = EEPROM.read(i);
 
-      if (myChar == 0)
+      if (myChar == 0) {
         break;
+      }
       BlynkAuthCode += myChar;
     }
 
-    if (BlynkAuthCode.length() == 0)
+    if (BlynkAuthCode.length() == 0) {
       UseBlynk = false;
-    else
+    } else {
       UseBlynk = true;
+    }
 
   } else {
     Serial.println("EEPROM not Initialized");
@@ -554,17 +561,18 @@ void blinkIPAddress() {
 
 void printDigits(int digits) {
   // utility function for digital clock display: prints an leading 0
-  if (digits < 10)
+  if (digits < 10) {
     Serial.print('0');
+  }
   Serial.print(digits);
 }
 
 void digitalClockDisplay() {
   // digital clock display of the time
   Serial.print(hour());
-  printDigits (minute());printDigits
-  (second());Serial
-  .print(" ");
+  printDigits(minute());
+  printDigits(second());
+  Serial.print(" ");
   Serial.print(day());
   Serial.print(" ");
   Serial.print(month());
@@ -574,16 +582,15 @@ void digitalClockDisplay() {
 }
 
 void return2Digits(char returnString[], char *buffer2, int digits) {
-  if (digits < 10)
+  if (digits < 10) {
     sprintf(returnString, "0%i", digits);
-  else
+  } else {
     sprintf(returnString, "%i", digits);
-
+  }
   strcpy(returnString, buffer2);
 }
 
-void buildTimeString(char returnString[], char *buffer2,
-    tmElements_t convertTime) {
+void buildTimeString(char returnString[], char *buffer2, tmElements_t convertTime) {
   char myBuffer[5];
   sprintf(myBuffer, "%i-", tmYearToCalendar(convertTime.Year));
   strcat(returnString, myBuffer);
@@ -630,8 +637,9 @@ float returnPercentLeftInBattery(float currentVoltage, float maxVolt) {
   float returnPercent;
   float scaledVolts = currentVoltage / maxVolt;
 
-  if (scaledVolts > 1.0)
+  if (scaledVolts > 1.0) {
     scaledVolts = 1.0;
+  }
 
   if (scaledVolts > .9686) {
     returnPercent = 10 * (1 - (1.0 - scaledVolts) / (1.0 - .9686)) + 90;

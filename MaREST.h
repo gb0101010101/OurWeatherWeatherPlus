@@ -135,27 +135,26 @@
 // Default number of max. exposed variables
 #ifndef NUMBER_VARIABLES
   #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(CORE_WILDFIRE) || defined(ESP8266)|| defined(ESP32) || !defined(ADAFRUIT_CC3000_H)
-  #define NUMBER_VARIABLES 30
-#else
-  #define NUMBER_VARIABLES 5
-#endif
+    #define NUMBER_VARIABLES 30
+  #else
+    #define NUMBER_VARIABLES 5
+  #endif
 #endif
 
 // Default number of max. exposed functions
 #ifndef NUMBER_FUNCTIONS
-#if defined(__AVR_ATmega1280__) || defined(ESP32) || defined(__AVR_ATmega2560__) || defined(CORE_WILDFIRE) || defined(ESP8266)
-#define NUMBER_FUNCTIONS 30
-#else
-#define NUMBER_FUNCTIONS 5
-#endif
+  #if defined(__AVR_ATmega1280__) || defined(ESP32) || defined(__AVR_ATmega2560__) || defined(CORE_WILDFIRE) || defined(ESP8266)
+    #define NUMBER_FUNCTIONS 30
+  #else
+    #define NUMBER_FUNCTIONS 5
+  #endif
 #endif
 
 #ifdef AREST_BUFFER_SIZE
-#define OUTPUT_BUFFER_SIZE AREST_BUFFER_SIZE
+  #define OUTPUT_BUFFER_SIZE AREST_BUFFER_SIZE
 #endif
 
 class aREST {
-
   private:
     struct Variable {
         virtual void addToBuffer(aREST *arest) const = 0;
@@ -177,20 +176,15 @@ class aREST {
     };
 
   public:
-
-  public:
-
     aREST() {
       initialize();
     }
 
     aREST(char* rest_remote_server, int rest_port) {
-
       initialize();
 
       remote_server = rest_remote_server;
       port = rest_port;
-
     }
 
     template<typename T>
@@ -206,7 +200,6 @@ class aREST {
     }
 
   private:
-
     void initialize() {
       reset();
       status_led_pin = 255;
@@ -225,23 +218,19 @@ class aREST {
 
 // With default server
     aREST(PubSubClient& client) {
-
       initialize();
 
       private_mqtt_server = false;
       client.setServer(mqtt_server, 1883);
-
     }
 
 // With another server
     aREST(PubSubClient& client, char* new_mqtt_server) {
-
       initialize();
 
       private_mqtt_server = true;
       setMQTTServer(new_mqtt_server);
       client.setServer(new_mqtt_server, 1883);
-
     }
 
 // Get topic
@@ -251,7 +240,6 @@ class aREST {
 
 // Subscribe to events
     void subscribe(const String& device, const String& eventName) {
-
       // Build topic
       String topic = device + "_" + eventName + "_in";
 
@@ -261,13 +249,11 @@ class aREST {
 
       subscriptions_names[subscriptions_index] = charBuf;
       subscriptions_index++;
-
     }
 
 // Publish to cloud
     template <typename T>
     void publish(PubSubClient& client, const String& eventName, T data) {
-
       // Get event data
       if (DEBUG_MODE) {
         Serial.print("Publishing event " + eventName + " with data: ");
@@ -288,19 +274,15 @@ class aREST {
 
       // Publish
       client.publish(publish_topic, charBuf);
-
     }
 
     void setKey(char* api_key) {
-
       // Set
       proKey = String(api_key);
 
       if (id.length() == 0) {
-
         // Generate MQTT random ID
         id = gen_random(6);
-
       }
 
       // Build topics IDs
@@ -312,19 +294,15 @@ class aREST {
 
       // Build client ID
       client_id = id + String(api_key);
-
     }
 
     void setKey(char* api_key, PubSubClient& client) {
-
       // Set
       proKey = String(api_key);
 
       if (id.length() == 0) {
-
         // Generate MQTT random ID
         id = gen_random(6);
-
       }
 
       // Build topics IDs
@@ -337,14 +315,12 @@ class aREST {
       // Build client ID
       client_id = id + String(api_key);
       client_id = id + String(proKey);
-
     }
 
 #endif
 
 // Set status LED
     void set_status_led(uint8_t pin) {
-
       // Set variables
       status_led_pin = pin;
 
@@ -366,7 +342,6 @@ class aREST {
 #endif
 
     void addToBufferF(const __FlashStringHelper *toAdd) {
-
       if (DEBUG_MODE) {
 #if defined(ESP8266)|| defined (ESP32)
         Serial.print("Memory loss:");
@@ -390,16 +365,13 @@ class aREST {
 
 // Send HTTP headers for Ethernet & WiFi
     void send_http_headers() {
-
       addToBufferF(
           F(
               "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: POST, GET, PUT, OPTIONS\r\nContent-Type: application/json\r\nConnection: close\r\n\r\n"));
-
     }
 
 // Reset variables after a request
     void reset_status() {
-
       if (DEBUG_MODE) {
 #if defined(ESP8266)|| defined (ESP32)
         Serial.print("Memory loss before reset:");
@@ -424,7 +396,6 @@ class aREST {
         Serial.println(freeMemory, DEC);
 #endif
       }
-
     }
 
 // Handle request with the Adafruit CC3000 WiFi library
@@ -448,18 +419,14 @@ class aREST {
 
     template <typename T>
     void publish(Adafruit_CC3000_ClientRef& client, const String& eventName, T value) {
-
       // Publish request
       publish_proto(client, eventName, value);
-
     }
 
 // Handle request with the Arduino Yun
 #elif defined(_YUN_CLIENT_H_)
     void handle(YunClient& client) {
-
       if (client.available()) {
-
         // Handle request
         handle_proto(client,false,0,false);
 
@@ -483,9 +450,7 @@ class aREST {
 // Handle request with the Adafruit BLE board
 #elif defined(_ADAFRUIT_BLE_UART_H_)
     void handle(Adafruit_BLE_UART& serial) {
-
       if (serial.available()) {
-
         // Handle request
         handle_proto(serial,false,0,false);
 
@@ -499,18 +464,14 @@ class aREST {
 
 // template <typename T>
 // void publish(Adafruit_BLE_UART& serial, const String& eventName, T value) {
-
 //   // Publish request
 //   publish_proto(client, eventName, value);
-
 // }
 
 // Handle request for the Arduino Ethernet shield
 #elif defined(ethernet_h)
     void handle(EthernetClient& client) {
-
       if (client.available()) {
-
         // Handle request
         handle_proto(client,true,0,false);
 
@@ -525,18 +486,14 @@ class aREST {
 
     template <typename T>
     void publish(EthernetClient& client, const String& eventName, T value) {
-
       // Publish request
       publish_proto(client, eventName, value);
-
     }
 
 // Handle request for the Cytron Clone ESP8266
 #elif defined(_CYTRONWIFISERVER_H_)
     void handle(ESP8266Client& client) {
-
       if (client.available()) {
-
         // Handle request
         handle_proto(client,true,0,true);
 
@@ -546,22 +503,18 @@ class aREST {
 
         // Reset variables for the next command
         reset_status();
-
       }
     }
 
 // Handle request for the ESP8266 chip
 #elif defined(ESP8266) || defined (ESP32)
     void handle(WiFiClient& client) {
-
       if (DEBUG_MODE) {
         Serial.print("Memory loss before available:");
         Serial.println(freeMemory - ESP.getFreeHeap(), DEC);
         freeMemory = ESP.getFreeHeap();
       }
-
       if (client.available()) {
-
         if (DEBUG_MODE) {
           Serial.print("Memory loss before handling:");
           Serial.println(freeMemory - ESP.getFreeHeap(), DEC);
@@ -583,15 +536,12 @@ class aREST {
 
         // Reset variables for the next command
         reset_status();
-
       }
     }
 
 // Handle request on the Serial port
     void handle(HardwareSerial& serial) {
-
       if (serial.available()) {
-
         // Handle request
         handle_proto(serial, false, 1, false);
 
@@ -605,20 +555,15 @@ class aREST {
 
     template<typename T>
     void publish(WiFiClient& client, const String& eventName, T value) {
-
       // Publish request
       publish_proto(client, eventName, value);
-
     }
 
 // Handle request for the Arduino MKR1000 board
 #elif defined(WIFI_H)
     void handle(WiFiClient& client) {
-
       if (client.available()) {
-
         if (DEBUG_MODE) {Serial.println("Request received");}
-
         // Handle request
         handle_proto(client,true,0,true);
 
@@ -633,20 +578,15 @@ class aREST {
 
     template <typename T>
     void publish(WiFiClient& client, const String& eventName, T value) {
-
       // Publish request
       publish_proto(client, eventName, value);
-
     }
 
 // Handle request for the Arduino WiFi shield
 #elif defined(WiFi_h)
     void handle(WiFiClient& client) {
-
       if (client.available()) {
-
         if (DEBUG_MODE) {Serial.println("Request received");}
-
         // Handle request
         handle_proto(client,true,0,true);
 
@@ -661,18 +601,14 @@ class aREST {
 
     template <typename T>
     void publish(WiFiClient& client, const String& eventName, T value) {
-
       // Publish request
       publish_proto(client, eventName, value);
-
     }
 
 #elif defined(CORE_TEENSY)
 // Handle request on the Serial port
     void handle(usb_serial_class& serial) {
-
       if (serial.available()) {
-
         // Handle request
         handle_proto(serial,false,1,false);
 
@@ -686,18 +622,14 @@ class aREST {
 
     template <typename T>
     void publish(usb_serial_class& client, const String& eventName, T value) {
-
       // Publish request
       publish_proto(client, eventName, value);
-
     }
 
 #elif defined(__AVR_ATmega32U4__)
 // Handle request on the Serial port
     void handle(Serial_& serial) {
-
       if (serial.available()) {
-
         // Handle request
         handle_proto(serial,false,1,false);
 
@@ -711,18 +643,14 @@ class aREST {
 
     template <typename T>
     void publish(Serial_& client, const String& eventName, T value) {
-
       // Publish request
       publish_proto(client, eventName, value);
-
     }
 
 #else
 // Handle request on the Serial port
     void handle(HardwareSerial& serial) {
-
       if (serial.available()) {
-
         // Handle request
         handle_proto(serial,false,1,false);
 
@@ -736,7 +664,6 @@ class aREST {
 
     template <typename T>
     void publish(HardwareSerial& client, const String& eventName, T value) {
-
       // Publish request
       publish_proto(client, eventName, value);
 
@@ -744,7 +671,6 @@ class aREST {
 #endif
 
     void handle(char * string) {
-
       // Process String
       handle_proto(string);
 
@@ -755,13 +681,11 @@ class aREST {
     void handle_proto(char * string) {
       // Check if there is data available to read
       for (int i = 0; i < strlen(string); i++) {
-
         char c = string[i];
         answer = answer + c;
 
         // Process data
         process(c);
-
       }
 
       // Send command
@@ -770,7 +694,6 @@ class aREST {
 
     template<typename T, typename V>
     void publish_proto(T& client, const String& eventName, V value) {
-
       // Format data
       String data = "name=" + eventName + "&data=" + String(value);
 
@@ -790,16 +713,12 @@ class aREST {
       client.println(data.length());
       client.println();
       client.print(data);
-
     }
 
     template<typename T>
-    void handle_proto(T& serial, bool headers, uint8_t read_delay,
-        bool decode) {
-
+    void handle_proto(T& serial, bool headers, uint8_t read_delay, bool decode) {
       // Check if there is data available to read
       while (serial.available()) {
-
         // Get the server answer
         char c = serial.read();
         delay(read_delay);
@@ -808,7 +727,6 @@ class aREST {
 
         // Process data
         process(c);
-
       }
 
       // Send command
@@ -819,7 +737,6 @@ class aREST {
 
     // Process callback
     void handle_callback(PubSubClient& client, char* topic, byte* payload, unsigned int length) {
-
       // Process received message
       int i;
       char mqtt_msg[100];
@@ -859,9 +776,7 @@ class aREST {
 
       if (strlen(answer) < max_message_size) {
         client.publish(out_topic, answer);
-      }
-      else {
-
+      } else {
         // Max iteration
         uint8_t max_iteration = (int)(strlen(answer)/max_message_size) + 1;
 
@@ -879,9 +794,7 @@ class aREST {
           }
 
           client.publish(out_topic, intermediate_buffer);
-
         }
-
       }
 
       // Send message
@@ -889,32 +802,26 @@ class aREST {
 
       // Reset buffer
       resetBuffer();
-
     }
 
     // Handle request on the Serial port
     void loop(PubSubClient& client) {
-
       // Connect to cloud
       if (!client.connected()) {
         reconnect(client);
       }
       client.loop();
-
     }
 
     void handle(PubSubClient& client) {
-
       // Connect to cloud
       if (!client.connected()) {
         reconnect(client);
       }
       client.loop();
-
     }
 
     void reconnect(PubSubClient& client) {
-
       // Loop until we're reconnected
       while (!client.connected()) {
         Serial.print(F("Attempting MQTT connection..."));
@@ -923,10 +830,10 @@ class aREST {
         if (client.connect(client_id.c_str())) {
           if (private_mqtt_server) {
             Serial.println(F("Connected to MQTT server"));
-          }
-          else {
+          } else {
             Serial.println(F("Connected to aREST.io"));
           }
+
           client.subscribe(in_topic);
 
           // Subscribe to all
@@ -951,20 +858,19 @@ class aREST {
           // Wait 5 seconds before retrying
           delay(5000);
         }
-
       }
     }
 #endif
 
     void process(char c) {
-
       // Check if we are receveing useful data and process it
-
-      if (state != 'u')
+      if (state != 'u') {
         return;
+      }
 
-      if (c != '/' && c != '\r')
+      if (c != '/' && c != '\r') {
         return;
+      }
 
       if (DEBUG_MODE) {
         // #if defined(ESP8266)|| defined (ESP32)
@@ -977,21 +883,17 @@ class aREST {
 
       // If the command is mode, and the pin is already selected
       if (command == 'm' && pin_selected && state == 'u') {
-
         // Get state
         state = answer[0];
       }
 
       // If a digital command has been received, process the data accordingly
       if (command == 'd' && pin_selected && state == 'u') {
-
         // If it's a read command, read from the pin and send data back
         if (answer[0] == 'r') {
           state = 'r';
-        }
-
-        // If not, get value we want to apply to the pin
-        else {
+        } else {
+          // If not, get value we want to apply to the pin
           value = answer.toInt();
           state = 'w';
         }
@@ -999,14 +901,11 @@ class aREST {
 
       // If analog command has been selected, process the data accordingly
       if (command == 'a' && pin_selected && state == 'u') {
-
         // If it's a read, read from the correct pin
         if (answer[0] == 'r') {
           state = 'r';
-        }
-
-        // Else, write analog value
-        else {
+        } else {
+          // Else, write analog value
           value = answer.toInt();
           state = 'w';
         }
@@ -1014,7 +913,6 @@ class aREST {
 
       // If the command is already selected, get the pin
       if (command != 'u' && pin_selected == false) {
-
         // Get pin
         if (answer[0] == 'A') {
           pin = 14 + answer[1] - '0';
@@ -1049,24 +947,19 @@ class aREST {
             // Read all digital ?
             if (answer[0] == 'a') {
               state = 'a';
-            }
-
-            // Save state & end there
-            else {
+            } else {
+              // Save state & end there
               state = 'r';
             }
           }
 
           // Nothing more & analog ?
           if (command == 'a') {
-
             // Read all analog ?
             if (answer[0] == 'a') {
               state = 'a';
-            }
-
-            // Save state & end there
-            else {
+            } else {
+              // Save state & end there
               state = 'r';
             }
           }
@@ -1114,7 +1007,6 @@ class aREST {
         // Check if function name is in array
         for (uint8_t i = 0; i < functions_index; i++) {
           if (answer.startsWith(functions_names[i])) {
-
             // End here
             pin_selected = true;
             state = 'x';
@@ -1131,17 +1023,20 @@ class aREST {
             uint16_t header_length = strlen(functions_names[i]);
             if (answer.substring(header_length, header_length + 1) == "?") {
               uint16_t footer_start = answer.length();
-              if (answer.endsWith(" HTTP/"))
+
+              if (answer.endsWith(" HTTP/")) {
                 footer_start -= 6; // length of " HTTP/"
+              }
 
               // Standard operation --> strip off anything preceeding the first "=", pass the rest to the function
               if (AREST_PARAMS_MODE == 0) {
                 uint16_t eq_position = answer.indexOf('=', header_length); // Replacing 'magic number' 8 for fixed location of '='
-                if (eq_position != -1)
+                if (eq_position != -1) {
                   arguments = answer.substring(eq_position + 1, footer_start);
-              }
-              // All params mode --> pass all parameters, if any, to the function.  Function will be resonsible for parsing
-              else if (AREST_PARAMS_MODE == 1) {
+                }
+              } else if (AREST_PARAMS_MODE == 1) {
+                // All params mode --> pass all parameters, if any, to the function.
+                // Function will be responsible for parsing.
                 arguments = answer.substring(header_length + 1, footer_start);
               }
             }
@@ -1152,7 +1047,6 @@ class aREST {
 
         // If the command is "id", return device id, name and status
         if (command == 'u' && (answer[0] == 'i' && answer[1] == 'd')) {
-
           // Set state
           command = 'i';
 
@@ -1162,7 +1056,6 @@ class aREST {
         }
 
         if (command == 'u' && answer[0] == ' ') {
-
           // Set state
           command = 'r';
 
@@ -1186,7 +1079,7 @@ class aREST {
       answer = "";
     }
 
-// Modifies arguments in place
+    // Modifies arguments in place
     void urldecode(String &arguments) {
       char a, b;
       int j = 0;
@@ -1195,19 +1088,23 @@ class aREST {
         if ((arguments[i] == '%')
             && ((a = arguments[i + 1]) && (b = arguments[i + 2]))
             && (isxdigit(a) && isxdigit(b))) {
-          if (a >= 'a')
+          if (a >= 'a') {
             a -= 'a' - 'A';
-          if (a >= 'A')
+          }
+          if (a >= 'A') {
             a -= ('A' - 10);
-          else
+          } else {
             a -= '0';
+          }
 
-          if (b >= 'a')
+          if (b >= 'a') {
             b -= 'a' - 'A';
-          if (b >= 'A')
+          }
+          if (b >= 'A') {
             b -= ('A' - 10);
-          else
+          } else {
             b -= '0';
+          }
 
           arguments[j] = char(16 * a + b);
           i += 2;   // Skip ahead
@@ -1223,7 +1120,6 @@ class aREST {
     }
 
     bool send_command(bool headers, bool decodeArgs) {
-
       if (DEBUG_MODE) {
 
 #if defined(ESP8266) || defined(ESP32)
@@ -1248,7 +1144,6 @@ class aREST {
 
       // Mode selected
       if (command == 'm') {
-
         // Send feedback to client
         if (!LIGHTWEIGHT) {
           addToBufferF(F("{\"message\": \"Pin D"));
@@ -1257,7 +1152,6 @@ class aREST {
 
         // Input
         if (state == 'i') {
-
           // Set pin to Input
           pinMode(pin, INPUT);
 
@@ -1269,7 +1163,6 @@ class aREST {
 
         // Input with pullup
         if (state == 'I') {
-
           // Set pin to Input with pullup
           pinMode(pin, INPUT_PULLUP);
 
@@ -1281,7 +1174,6 @@ class aREST {
 
         // Output
         if (state == 'o') {
-
           // Set to Output
           pinMode(pin, OUTPUT);
 
@@ -1295,7 +1187,6 @@ class aREST {
       // Digital selected
       if (command == 'd') {
         if (state == 'r') {
-
           // Read from pin
           value = digitalRead(pin);
 
@@ -1316,7 +1207,6 @@ class aREST {
           }
 
           for (uint8_t i = 0; i < NUMBER_DIGITAL_PINS; i++) {
-
             // Read analog value
             value = digitalRead(i);
 
@@ -1336,7 +1226,6 @@ class aREST {
 #endif
 
         if (state == 'w') {
-
           // Disable analogWrite if ESP8266
 #if defined(ESP8266)
           analogWrite(pin, 0);
@@ -1359,7 +1248,6 @@ class aREST {
       // Analog selected
       if (command == 'a') {
         if (state == 'r') {
-
           // Read analog value
           value = analogRead(pin);
 
@@ -1380,7 +1268,6 @@ class aREST {
           }
 
           for (uint8_t i = 0; i < NUMBER_ANALOG_PINS; i++) {
-
             // Read analog value
             value = analogRead(i);
 
@@ -1400,7 +1287,6 @@ class aREST {
 #endif
 
         if (state == 'w') {
-
           // Write output value
 #if !defined(ESP32)
           analogWrite(pin, value);
@@ -1429,10 +1315,10 @@ class aREST {
 
       // Function selected
       if (command == 'f') {
-
         // Execute function
-        if (decodeArgs)
+        if (decodeArgs) {
           urldecode(arguments); // Modifies arguments
+        }
 
         int result = functions[value](arguments);
 
@@ -1462,9 +1348,7 @@ class aREST {
       // End of message
       if (LIGHTWEIGHT) {
         addToBufferF(F("\r\n"));
-      }
-
-      else {
+      } else {
         if (command != 'r' && command != 'u') {
           addHardwareToBuffer();
           addToBufferF(F("\r\n"));
@@ -1520,21 +1404,18 @@ class aREST {
     }
 
     void function(char * function_name, int (*f)(String)) {
-
       functions_names[functions_index] = function_name;
       functions[functions_index] = f;
       functions_index++;
     }
 
-// Set device ID
+    // Set device ID
     void set_id(const String& device_id) {
-
       id = device_id.substring(0, ID_SIZE);
 
 #if defined(PubSubClient_h)
 
       if (proKey.length() == 0) {
-
         // Generate MQTT random ID
         String randomId = gen_random(6);
 
@@ -1547,10 +1428,7 @@ class aREST {
 
         // Build client ID
         client_id = randomId + id;
-
-      }
-      else {
-
+      } else {
         // Build topics IDs
         String inTopic = id + String(proKey) + String("_in");
         String outTopic = id + String(proKey) + String("_out");
@@ -1560,7 +1438,6 @@ class aREST {
 
         // Build client ID
         client_id = id + String(proKey);
-
       }
 
 #endif
@@ -1589,19 +1466,14 @@ class aREST {
 
 #if defined(PubSubClient_h)
     String gen_random(int length) {
-
       String randomString;
 
 #if defined(ESP8266)
-
       randomString = String(ESP.getChipId());
       randomString = randomString.substring(0, 6);
-
 #elif defined(__arm__)
-
       randomString = getChipId();
       randomString = randomString.substring(0, 6);
-
 #else
 
       String charset = "abcdefghijklmnopqrstuvwxyz0123456789";
@@ -1622,21 +1494,17 @@ class aREST {
 
 // Set device name
     void set_name(char *device_name) {
-
       strcpy(name, device_name);
     }
 
 // Set device name
     void set_name(const String& device_name) {
-
       device_name.toCharArray(name, NAME_SIZE);
     }
 
 // Remove last char from buffer
     void removeLastBufferChar() {
-
       index = index - 1;
-
     }
 
     void addQuote() {
@@ -1647,7 +1515,6 @@ class aREST {
     }
 
     void addStringToBuffer(const char * toAdd, bool quotable) {
-
       if (DEBUG_MODE) {
 #if defined(ESP8266)|| defined (ESP32)
         Serial.print("Memory loss:");
@@ -1662,8 +1529,7 @@ class aREST {
         addQuote();
       }
 
-      for (int i = 0; i < strlen(toAdd) && index < OUTPUT_BUFFER_SIZE;
-          i++, index++) {
+      for (int i = 0; i < strlen(toAdd) && index < OUTPUT_BUFFER_SIZE; i++, index++) {
         // Handle quoting quotes and backslashes
         if (quotable && (toAdd[i] == '"' || toAdd[i] == '\\')) {
           if (index == OUTPUT_BUFFER_SIZE - 1)   // No room!
@@ -1680,14 +1546,13 @@ class aREST {
       }
     }
 
-// Add to output buffer
-
+    // Add to output buffer
     template<typename T>
     void addToBuffer(T toAdd, bool quotable = false) {
       addStringToBuffer(String(toAdd).c_str(), false); // Except for our overrides, this will be adding numbers, which don't get quoted
     }
 
-// Register a function instead of a plain old variable!
+    // Register a function instead of a plain old variable!
     template<typename T>
     void addToBuffer(T (*toAdd)(), bool quotable = true) {
       addToBuffer(toAdd(), quotable);
@@ -1741,10 +1606,8 @@ class aREST {
       // Send all of it
       if (chunkSize == 0) {
         client.print(buffer);
-      }
-
-      // Send chunk by chunk
-      else {
+      } else {
+        // Send chunk by chunk
 
         // Max iteration
         uint8_t max_iteration = (int) (index / chunkSize) + 1;
@@ -1808,52 +1671,60 @@ class aREST {
     }
 
     uint8_t esp_12_pin_map(uint8_t pin) {
-
       // Right pin
       uint8_t mapped_pin;
 
       // Map
       switch (pin) {
-
         case 0:
           mapped_pin = 16;
           break;
+
         case 1:
           mapped_pin = 5;
           break;
+
         case 2:
           mapped_pin = 4;
           break;
+
         case 3:
           mapped_pin = 0;
           break;
+
         case 4:
           mapped_pin = 2;
           break;
+
         case 5:
           mapped_pin = 14;
           break;
+
         case 6:
           mapped_pin = 12;
           break;
+
         case 7:
           mapped_pin = 13;
           break;
+
         case 8:
           mapped_pin = 15;
           break;
+
         case 9:
           mapped_pin = 3;
           break;
+
         case 10:
           mapped_pin = 1;
           break;
+
         default:
           mapped_pin = 0;
       }
 
       return mapped_pin;
-
     }
 
     void addVariableToBuffer(uint8_t index) {

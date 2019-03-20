@@ -142,7 +142,6 @@ void WiFiManager::setupConfigPortal() {
   DEBUG_WM(F("HTTP server started"));
 
 #define DISPLAY_ACCESSPOINT 6
-
 #define DISPLAY_TRYING_AP 8
 #define DISPLAY_FAILING_AP 9
 #define DISPLAY_FAILED_RECONNECT 19
@@ -614,9 +613,9 @@ void WiFiManager::handleWifiSave() {
   if (_altitude.length() != 0) {
     float altitudeF;
     altitudeF = _altitude.toFloat();
-    if (altitudeF != 0.0)
+    if (altitudeF != 0.0) {
       altitude_meters = altitudeF;
-
+    }
   }
 
   DEBUG_WM(_ssid);
@@ -666,8 +665,10 @@ void WiFiManager::handleWifiSave() {
     RtcDateTime compiled = RtcDateTime(_date.c_str(), _time.c_str());
     DEBUG_WM("Updating DateTime in RTC");
     Rtc.SetDateTime(compiled);
-  } else
+  } else {
     DEBUG_WM("Not updating DateTime in RTC");
+  }
+
   String page = FPSTR(HTTP_HEAD);
   page.replace("{v}", "Credentials Saved");
   page += FPSTR(HTTP_SCRIPT);

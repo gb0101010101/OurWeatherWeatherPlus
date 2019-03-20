@@ -115,8 +115,8 @@ void SDL_Arduino_INA3221::begin() {
 int16_t SDL_Arduino_INA3221::getBusVoltage_raw(int channel) {
   uint16_t value;
   wireReadRegister(INA3221_REG_BUSVOLTAGE_1 + (channel - 1) * 2, &value);
-//    Serial.print("BusVoltage_raw=");
-//    Serial.println(value,HEX);
+//  Serial.print("BusVoltage_raw=");
+//  Serial.println(value,HEX);
 
   // Shift to the right 3 to drop CNVR and OVF and multiply by LSB
   return (int16_t) (value);
@@ -130,8 +130,8 @@ int16_t SDL_Arduino_INA3221::getBusVoltage_raw(int channel) {
 int16_t SDL_Arduino_INA3221::getShuntVoltage_raw(int channel) {
   uint16_t value;
   wireReadRegister(INA3221_REG_SHUNTVOLTAGE_1 + (channel - 1) * 2, &value);
-  // Serial.print("ShuntVoltage_raw=");
-  // Serial.println(value,HEX);
+// Serial.print("ShuntVoltage_raw=");
+// Serial.println(value,HEX);
   return (int16_t) value;
 }
 
@@ -164,7 +164,6 @@ float SDL_Arduino_INA3221::getBusVoltage_V(int channel) {
 /**************************************************************************/
 float SDL_Arduino_INA3221::getCurrent_mA(int channel) {
   float valueDec = getShuntVoltage_mV(channel) / INA3221_shuntresistor;
-
   return valueDec;
 }
 

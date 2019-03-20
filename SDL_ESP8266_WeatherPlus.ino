@@ -35,7 +35,7 @@ __asm volatile ("nop");
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
 extern "C" {
-#include "user_interface.h"
+  #include "user_interface.h"
 }
 
 //#include "Time/TimeLib.h"
@@ -179,13 +179,10 @@ aREST rest = aREST();
 #include "elapsedMillis.h"
 
 elapsedMillis timeElapsed; //declare global if you don't want it reset every time loop
-
 elapsedMillis timeElapsed300Seconds; //declare global if you don't want it reset every time loop
 
 // BMP180 / BMP280 Sensor
 // Both are stored in BMP180 variables
-//
-
 #include "MAdafruit_BMP280.h"
 #include "MAdafruit_BMP085.h"
 Adafruit_BMP280 bme;
@@ -205,13 +202,10 @@ int EnglishOrMetric;   // 0 = English units, 1 = Metric
 int WeatherDisplayMode;
 
 // DS3231 Library functions
-
 #include "RtcDS3231.h"
-
 RtcDS3231 Rtc;
 
 // AM2315
-
 float AM2315_Temperature;
 float AM2315_Humidity;
 float dewpoint;
@@ -223,16 +217,16 @@ float dataAM2315[2]; //Array to hold data returned by sensor.  [0,1] => [Humidit
 
 boolean AOK;  // 1=successful read
 
-const char *monthName[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
-    "Aug", "Sep", "Oct", "Nov", "Dec" };
-
-#include "AS3935.h"
+const char *monthName[12] = {
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+};
 
 // ThunderBoard AS3935 from SwitchDoc Labs
+#include "AS3935.h"
 AS3935 as3935(0x02, 3);
 
 // lightning state variables as3935
-
 String as3935_LastLightning = "";
 int as3935_LastLightningDistance = 0;
 String as3935_LastEvent = "";
@@ -269,34 +263,41 @@ void printAS3935Registers() {
 
 int parseOutAS3935Parameters() {
   // check for bad string
-  if (as3935_Params.indexOf(",") == -1)
+  if (as3935_Params.indexOf(",") == -1) {
     as3935_Params = "2,1,7,0,3,3";
+  }
 
   String Value;
 
   Value = getValue(as3935_Params, ',', 0);
-  if ((Value.toInt() < 0) || (Value.toInt() > 7))
+  if ((Value.toInt() < 0) || (Value.toInt() > 7)) {
     return 2;
+  }
 
   Value = getValue(as3935_Params, ',', 1);
-  if ((Value.toInt() < 0) || (Value.toInt() > 1))
+  if ((Value.toInt() < 0) || (Value.toInt() > 1)) {
     return 2;
+  }
 
   Value = getValue(as3935_Params, ',', 2);
-  if ((Value.toInt() < 0) || (Value.toInt() > 15))
+  if ((Value.toInt() < 0) || (Value.toInt() > 15)) {
     return 2;
+  }
 
   Value = getValue(as3935_Params, ',', 3);
-  if ((Value.toInt() < 0) || (Value.toInt() > 1))
+  if ((Value.toInt() < 0) || (Value.toInt() > 1)) {
     return 2;
+  }
 
   Value = getValue(as3935_Params, ',', 4);
-  if ((Value.toInt() < 0) || (Value.toInt() > 15))
+  if ((Value.toInt() < 0) || (Value.toInt() > 15)) {
     return 2;
+  }
 
   Value = getValue(as3935_Params, ',', 5);
-  if ((Value.toInt() < 0) || (Value.toInt() > 15))
+  if ((Value.toInt() < 0) || (Value.toInt() > 15)) {
     return 2;
+  }
 
   // OK, if we are here then all data is good
   Value = getValue(as3935_Params, ',', 0);
@@ -316,11 +317,9 @@ int parseOutAS3935Parameters() {
 }
 
 void setAS3935Parameters() {
-
-  as3935.setTuningCapacitor(as3935_TuneCap); // set to 1/2 - middle - you can calibrate on an Arduino UNO and use the value from there (pf/8)
-
+  // set to 1/2 - middle - you can calibrate on an Arduino UNO and use the value from there (pf/8)
+  as3935.setTuningCapacitor(as3935_TuneCap);
   // lightning state variables as3935
-
   // first let's turn on disturber indication and print some register values from AS3935
   // tell AS3935 we are indoors, for outdoors use setOutdoors() function
   if (as3935_Indoor == true) {
@@ -336,7 +335,8 @@ void setAS3935Parameters() {
   Serial.println(as3935_NoiseFloor);
 #endif
 
-  //AS3935.calibrate(); // can't calibrate because IRQ is polled and not through an Interrupt line on ESP8266
+  // can't calibrate because IRQ is polled and not through an Interrupt line on ESP8266
+  // AS3935.calibrate();
 
   // turn on indication of distrubers, once you have AS3935 all tuned, you can turn those off with disableDisturbers()
 
@@ -531,8 +531,8 @@ ESP_SSD1306 display(OLED_RESET);
 bool invalidTemperatureFound;
 
 float validateTemperature(float incomingTemperature) {
-  if (incomingTemperature > AM2315_Temperature + 15.0) // check for large jump in temperature
-      {
+  // check for large jump in temperature.
+  if (incomingTemperature > AM2315_Temperature + 15.0) {
     // OK, we may have an invalid temperature.  Make sure this is not a startup (current humidity will be 0.0 if startup)
     if (AM2315_Humidity < 0.1) {
       // we are in startup phase, so accept temperature
@@ -545,9 +545,10 @@ float validateTemperature(float incomingTemperature) {
       return AM2315_Temperature;
     }
   }
-  if (incomingTemperature < AM2315_Temperature - 15.0) // check for large decrease in temperature
-      {
-    // OK, we may have an invalid temperature.  Make sure this is not a startup (current humidity will be 0.0 if startup)
+  // check for large decrease in temperature
+  if (incomingTemperature < AM2315_Temperature - 15.0) {
+    // OK, we may have an invalid temperature.
+    // Make sure this is not a startup (current humidity will be 0.0 if startup)
     if (AM2315_Humidity < 0.1) {
       // we are in startup phase, so accept temperature
       invalidTemperatureFound = false;
@@ -561,7 +562,6 @@ float validateTemperature(float incomingTemperature) {
   }
   invalidTemperatureFound = false;
   return incomingTemperature; // good temperature
-
 }
 
 //scan for I2C Addresses
@@ -679,7 +679,6 @@ void setup() {
   if (digitalRead(0) == 0) {
     Serial.println("GPIO0 button down - Invalidating EEPROM");
     invalidateEEPROMState();
-
   }
 
   readEEPROMState();
@@ -739,9 +738,9 @@ void setup() {
     //delay(1000);
   }
 
-  if (WiFi.status() == WL_CONNECTED)
-
+  if (WiFi.status() == WL_CONNECTED) {
     WiFiPresent = true;
+  }
 
   writeEEPROMState();
 
@@ -784,14 +783,12 @@ void setup() {
   rest.variable("AirQualitySensor", &INTcurrentAirQualitySensor);
 
   // as3935 rest variables
-
   rest.variable("ThunderBoardLast", &as3935_FullString);
   rest.variable("ThunderBoardParams", &as3935_Params);
 
   // Handle REST calls
   WiFiClient client = server.available();
   if (client) {
-
     while (!client.available()) {
       delay(1);
     }
@@ -1000,15 +997,10 @@ void setup() {
     Blynk.connect();
 
 #ifdef DEBUGBLYNK
-    if (Blynk.connected())
-    {
+    if (Blynk.connected()) {
       Serial.println("Blynk Connected");
-
-    }
-    else
-    {
+    } else {
       Serial.println("Blynk NOT Connected");
-
     }
 #endif
 
@@ -1066,7 +1058,6 @@ void setup() {
     Blynk.virtualWrite(V8, "Metric");
     writeToBlynkStatusTerminal("Units set to Metric ");
   }
-
 } // end setup
 
 //
@@ -1155,12 +1146,13 @@ void loop() {
     RestDataString += String(AM2315_Humidity, 2) + ",";
 
     Serial.println("---------------");
-    if (BMP180Found)
+    if (BMP180Found) {
       Serial.println("BMP180");
-    else if (BMP280Found)
+    } else if (BMP280Found) {
       Serial.println("BMP280");
-    else
+    } else {
       Serial.println("No BMP180/BMP280 Found");
+    }
     Serial.println("---------------");
 
     if (BMP180Found) {
@@ -1300,10 +1292,11 @@ void loop() {
     }
 
     Serial.println("---------------");
-    if (SunAirPlus_Present)
+    if (SunAirPlus_Present) {
       Serial.println("SunAirPlus");
-    else
+    } else {
       Serial.println("SunAirPlus Not Present");
+    }
     Serial.println("---------------");
 
     // if SunAirPlus present, read charge data
@@ -1345,10 +1338,11 @@ void loop() {
     }
 
     Serial.println("---------------");
-    if (WXLink_Present)
+    if (WXLink_Present) {
       Serial.println("WXLink");
-    else
+    } else {
       Serial.println("WXLink Not Present");
+    }
     Serial.println("---------------");
 
     // read variables from WXLink
@@ -1694,7 +1688,6 @@ void loop() {
 
       if (now.Day() == lastDay) {
         rainCalendarDay = rainTotal - startOfDayRain;
-
       } else {
         lastDay = now.Day();
         rainCalendarDay = 0.0;
@@ -1727,17 +1720,16 @@ void loop() {
         Serial.println("-----------");
       } else {
         Serial.println("Attempting to send data to WeatherUnderground");
-        if (dataStale == false)
+        if (dataStale == false) {
           Serial.println("WeatherUnderground Data New - sent");
-        else
+        } else {
           Serial.println("WeatherUnderground Data Stale - Not sent");
-
+        }
         if (dataStale == false) {
           if (sendWeatherUndergroundData() == 0) {
             // Failed - try again
             sendWeatherUndergroundData();
           }
-
         }
       }
 
@@ -1784,7 +1776,6 @@ void loop() {
         resetWXLink();
       }
     }
-
     Serial.println("OutOfDisplay");
   }
 
@@ -1794,6 +1785,5 @@ void loop() {
   }
 
   yield();
-
 }
 

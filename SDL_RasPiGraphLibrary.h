@@ -4,7 +4,7 @@
  Released into the public domain.
 
  */
-#ifndef  SDL_RasPiGraphLibrary_h
+#ifndef SDL_RasPiGraphLibrary_h
 #define SDL_RasPiGraphLibrary_h
 
 #define SDL_MODE_NO_LABELS 0
@@ -29,7 +29,6 @@ class SDL_RasPiGraphLibrary {
     int _currentItemCount;
     int _Mode;
     int _maxItemCount;
-
 };
 
 #endif
