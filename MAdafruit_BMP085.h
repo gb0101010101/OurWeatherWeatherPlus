@@ -23,7 +23,7 @@
 #else
   #include "WProgram.h"
 #endif
-#include "Wire.h"
+#include <Wire.h>
 
 #define BMP085_DEBUG 0
 
