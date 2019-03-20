@@ -1,4 +1,3 @@
-
 OurWeather Software for the SwitchDoc Labs Board WeatherPlus
 
 Arduino IDE software designed for the ESP8266 on the WeatherPlus Board and the OurWeather Weather Kit
@@ -52,14 +51,12 @@ Current Version 023 - August 1, 2017
 
 Current Version 022 - July 20, 2017
 
--Improved accuracy for Wind Speed and Wind Gust<BR>
-
+- Improved accuracy for Wind Speed and Wind Gust<BR>
 
 Current Version 021 - February 8, 2017
 
 - Added support for WXLink and SolarWXLink - SwitchDoc Labs Wireless Links<BR>
 - Added dewpoint to WeatherUnderground<BR>
-
 
 Current Version 019 - October 20, 2016
 
@@ -91,6 +88,3 @@ Current Version 015 - April 17, 2016
 Version 014 - April 3, 2016
 
 - Initial Release for OurWeather
-
-
-

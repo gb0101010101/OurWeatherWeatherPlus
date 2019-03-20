@@ -1,13 +1,13 @@
 /*
-  SDL_Weather_80422.h - Library for Weather Sensor
-  Designed for:  SwitchDoc Labs WeatherRack www.switchdoc.com
-  Argent Data Systems
-  SparkFun Weather Station Meters
-  Created by SwitchDoc Labs July 27, 2014.
-  Released into the public domain.
-    Version 1.1 - updated constants to suppport 3.3V
-    Version 1.6 - Support for ADS1015 in WeatherPiArduino Board February 7, 2015
-*/
+ SDL_Weather_80422.h - Library for Weather Sensor
+ Designed for:  SwitchDoc Labs WeatherRack www.switchdoc.com
+ Argent Data Systems
+ SparkFun Weather Station Meters
+ Created by SwitchDoc Labs July 27, 2014.
+ Released into the public domain.
+ Version 1.1 - updated constants to suppport 3.3V
+ Version 1.6 - Support for ADS1015 in WeatherPiArduino Board February 7, 2015
+ */
 #ifndef SDL_Weather_80422_h
 #define SDL_Weather_80422_h
 
@@ -21,16 +21,15 @@
 
 // Note:  If you are using the SDL_MODE_I2C_ADS105, then A0 port is not used.  Hardwired to ADC-1 on ADS1015
 
-
 #include "Arduino.h"
 
+extern "C" void serviceInterruptAnem(void) __attribute__ ((signal));
+extern "C" void serviceInterruptRain(void) __attribute__ ((signal));
 
-extern "C" void serviceInterruptAnem(void)  __attribute__ ((signal));
-extern "C" void serviceInterruptRain(void)  __attribute__ ((signal));
-class SDL_Weather_80422
-{
+class SDL_Weather_80422 {
   public:
-    SDL_Weather_80422(int pinAnem, int pinRain, int intAnem, int intRain, int ADChannel, int ADMode);
+    SDL_Weather_80422(int pinAnem, int pinRain, int intAnem, int intRain,
+        int ADChannel, int ADMode);
 
     float get_current_rain_total();
     float current_wind_speed();
@@ -42,7 +41,6 @@ class SDL_Weather_80422
 
     void setWindMode(int selectedMode, float sampleTime);  // time in seconds
 
-
     static long _shortestWindTime;
     static long _shortestWindTime2;
     static long _shortestWindTime3;
@@ -52,7 +50,6 @@ class SDL_Weather_80422
     static long _currentRainCount;
     static long _currentWindCount;
 
-
     static long _totalWindTime;
 
     float accessInternalCurrentWindDirection();
@@ -61,8 +58,6 @@ class SDL_Weather_80422
     friend void serviceInterruptRain();
 
   private:
-
-
     int _pinAnem;
     int _pinRain;
     int _intAnem;
@@ -71,17 +66,8 @@ class SDL_Weather_80422
     int _ADMode;
     float _sampleTime;
     int _selectedMode;
-
-
-
-
     unsigned long _startSampleTime;
-
-
     float _currentWindSpeed;
-
-
-
     float _currentWindDirection;
 
     void startWindSample(float sampleTime);
@@ -89,4 +75,3 @@ class SDL_Weather_80422
 };
 
 #endif
-

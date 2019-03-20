@@ -4,9 +4,7 @@
 
 // March 2018 - chnaged to http client
 
-
-String urlencode(String str)
-{
+String urlencode(String str) {
   String encodedString = "";
   char c;
   char code0;
@@ -37,27 +35,22 @@ String urlencode(String str)
     yield();
   }
   return encodedString;
-
 }
-String myURLEncode(String urlChars)
-{
+
+String myURLEncode(String urlChars) {
   urlChars.replace("%", "%25");
   urlChars.replace(" ", "%20");
   urlChars.replace(String(char('\"')), "%22");
 
-
   urlChars.replace("&", "%26");
   urlChars.replace(String(char(39)), "%27");
 
-  urlChars.replace( "+", "%2B");
+  urlChars.replace("+", "%2B");
 
   return urlChars;
-
-
 }
 
-void GETpublishPubNubMessage(String message)
-{
+void GETpublishPubNubMessage(String message) {
   // test a send to PubNub
   Serial.println("Before WL_CONNECTED");
   if (WiFi.status() == WL_CONNECTED) { //Check WiFi connection status
@@ -86,44 +79,28 @@ void GETpublishPubNubMessage(String message)
 
     Serial.println(sendString);
 
-
     http.begin(sendString);  //Specify request destination
 
-
-    int httpCode = http.GET();                                                                  //Send the request
+    int httpCode = http.GET();                                //Send the request
     Serial.print("httpCode = ");
     Serial.println(httpCode);
     if (httpCode > 0) { //Check the returning code
-
       String payload = http.getString();   //Get the request response payload
       Serial.println(payload);                     //Print the response payload
-
     }
 
     http.end();   //Close connection
-
   }
 }
 
 // send our JSON message to PubNub
-
-void publishPubNubMessage(String message)
-{
-
-
+void publishPubNubMessage(String message) {
   WiFiClient *client;
 
-
-
-
   //Publish
-
   Serial.println("publishing a message");
 
-
   // Message 2
-
-
 #ifdef DEBUG
   Serial.println(message);
   Serial.print("Size=");
@@ -135,13 +112,9 @@ void publishPubNubMessage(String message)
   Serial.println(SDL2PubNubCode);
   Serial.print("Sub Key=");
   Serial.println(SDL2PubNubCode_Sub);
-
 #endif
 
   message = myURLEncode(message);
-
-
-
   client = PubNub.publish(channel1, message.c_str());
 
   delay(5000);
@@ -153,173 +126,120 @@ void publishPubNubMessage(String message)
     return;
   }
 
-
   if (PubNub.get_last_http_status_code_class() != PubNub::http_scc_success) {
     Serial.print("Got HTTP status code error from PubNub, class: ");
     Serial.print(PubNub.get_last_http_status_code_class(), DEC);
   }
+
   while (client->available()) {
     Serial.write(client->read());
   }
+
   client->stop();
   Serial.println("---");
   //client->flush();
   //client->stop();
-
 
   //Subscribe
   //returnMessage = myBridge.connect(channel);
 
   //Serial.print("returnMessage=");
   //Serial.println(returnMessage);
-
-
 }
 
-
-
-int sendStateSDL2PubNub(String command)
-{
+int sendStateSDL2PubNub(String command) {
   String sentPassword;
 
-  if (pubNubEnabled == 1)
-  {
+  if (pubNubEnabled == 1) {
     sentPassword = getValue(command, ',', 0);
 
-
-
-    if (sentPassword == adminPassword)
-    {
-
+    if (sentPassword == adminPassword) {
       String SendString = "{\"FullDataString\": \"" + RestDataString + "\"}"; //Send the request
-
       // publish it
-
-      //GETpublishPubNubMessage(SendString);
+      // GETpublishPubNubMessage(SendString);
       publishPubNubMessage(SendString);
-    }
-    else
-    {
-
+    } else {
       return 0;
     }
+
     return 1;
-
-
-
-
   }
-
   return 0;
-
 }
 
 // Enable PubNub
-
-
-int enableDisableSDL2PubNub(String command)
-{
-
+int enableDisableSDL2PubNub(String command) {
   Serial.print("Command =");
   Serial.println(command);
 
   String sentPassword;
   String setValue;
 
-
   sentPassword = getValue(command, ',', 0);
   setValue = getValue(command, ',', 1);
   SDL2PubNubCode = getValue(command, ',', 2);
   SDL2PubNubCode_Sub = getValue(command, ',', 3);
 
-
-  if (sentPassword == adminPassword)
-  {
+  if (sentPassword == adminPassword) {
     pubNubEnabled = setValue.toInt();
     Serial.print("pubNubEnabled=");
     Serial.print(pubNubEnabled);
-    if (pubNubEnabled == 1)
-    {
-
-
+    if (pubNubEnabled == 1) {
       writeEEPROMState();
-
-
-
     }
     return 1;
-  }
-  else
+  } else
     return 0;
 
   // Get state from command
-
-
   return 1;
 }
 
-
-
 // ThunderBoard AS3935 Functions
 
-
-
-
 /*
-  // set up as3935 REST variable
-  as3935_Params = as3935_NoiseFloor + ",";
-  as3935_Params = + as3935_Indoor + ",";
-  as3935_Params = + as3935_TuneCap + ",";
-  as3935_Params = + as3935_DisturberDetection + ",";
-  as3935_Params = + as3935_WatchdogThreshold + ",";
-  as3935_Params = + as3935_SpikeDetection ;
+ // set up as3935 REST variable
+ as3935_Params = as3935_NoiseFloor + ",";
+ as3935_Params = + as3935_Indoor + ",";
+ as3935_Params = + as3935_TuneCap + ",";
+ as3935_Params = + as3935_DisturberDetection + ",";
+ as3935_Params = + as3935_WatchdogThreshold + ",";
+ as3935_Params = + as3935_SpikeDetection ;
 
-*/
-int setThunderBoardParams(String command)
-{
+ */
 
-
+int setThunderBoardParams(String command) {
   String sentPassword;
   String setValue;
 
-
   sentPassword = getValue(command, ',', 0);
 
-  if (sentPassword == adminPassword)
-  {
-    if (AS3935Present == true)
-    {
+  if (sentPassword == adminPassword) {
+    if (AS3935Present == true) {
       int index;
       index = command.indexOf(',');
       command = command.substring(index + 1);
 
-      Serial.print ("as3935_Params=");
+      Serial.print("as3935_Params=");
       Serial.println(command);
 
-      if ((command.length() < 11) || (command.length() > 14))
-      {
+      if ((command.length() < 11) || (command.length() > 14)) {
         return 2;
-      }
-      else
-      {
+      } else {
         as3935_Params = command;
         int error;
         // execute and set them!
-         error = parseOutAS3935Parameters();
-         if (error == 2)
+        error = parseOutAS3935Parameters();
+        if (error == 2)
           return 2;
-          
+
         setAS3935Parameters();
 
         writeEEPROMState();
       }
-
-
       return 1;
     }
-
   }
   return 0;
 }
-
 

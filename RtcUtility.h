@@ -1,4 +1,3 @@
-
 #ifndef __RTCUTILITY_H__
 #define __RTCUTILITY_H__
 

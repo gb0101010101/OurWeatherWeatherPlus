@@ -5,11 +5,7 @@
 //
 //
 
-
-
-
 int ledControl(String command) {
-
   // Get state from command
   int state = command.toInt();
 
@@ -23,45 +19,31 @@ int ledControl(String command) {
 }
 
 int setWeatherPlusIDControl(String command) {
-
-
-
   rest.set_id(command);
   return 1;
 }
 
-int resetWiFiAccessPoint(String command)
-{
+int resetWiFiAccessPoint(String command) {
   Serial.print("Command =");
   Serial.println(command);
 
-
-
-
-  if (command == adminPassword)
-  {
+  if (command == adminPassword) {
     WPassword = "XXX";
     Wssid = "XXX";
     writeEEPROMState();
     return 1;
-  }
-  else
+  } else
     return 0;
-
 
   //http://192.168.1.134/resetWiFiAccessPoint?params=adminpassword
   return 1;
-
-
 }
 
 int resetOurWeather(String command) {
-
   Serial.println("resetOurWeather - settings invalidated");
   Serial.print("Command =");
   Serial.println(command);
-  if (command == adminPassword)
-  {
+  if (command == adminPassword) {
 
     invalidateEEPROMState();
 
@@ -74,11 +56,9 @@ int resetOurWeather(String command) {
   return 0;
 }
 
-int setAdminPassword(String command)
-{
+int setAdminPassword(String command) {
   Serial.print("Command =");
   Serial.println(command);
-
 
   String oldPassword;
   String newPassword;
@@ -86,26 +66,21 @@ int setAdminPassword(String command)
   oldPassword = getValue(command, ',', 0);
   newPassword = getValue(command, ',', 1);
 
-  if (oldPassword == adminPassword)
-  {
+  if (oldPassword == adminPassword) {
     adminPassword = newPassword;
     writeEEPROMState();
     return 1;
-  }
-  else
+  } else
     return 0;
-
 
   //http://192.168.1.134/setAdminPassword?params=oldpassword,newpassword
   return 1;
 
 }
 
-int setWUSID(String command)
-{
+int setWUSID(String command) {
   Serial.print("Command =");
   Serial.println(command);
-
 
   String sentPassword;
   String WUSID;
@@ -118,25 +93,19 @@ int setWUSID(String command)
   Serial.print("sentPassword=");
   Serial.println(sentPassword);
 
-  if (sentPassword == adminPassword)
-  {
+  if (sentPassword == adminPassword) {
     WeatherUnderground_StationID = WUSID;
     writeEEPROMState();
     return 1;
-  }
-  else
+  } else
     return 0;
 
-
   return 1;
-
 }
 
-int setWUKEY(String command)
-{
+int setWUKEY(String command) {
   Serial.print("Command =");
   Serial.println(command);
-
 
   String sentPassword;
   String WUKEY;
@@ -144,27 +113,21 @@ int setWUKEY(String command)
   sentPassword = getValue(command, ',', 0);
   WUKEY = getValue(command, ',', 1);
 
-  if (sentPassword == adminPassword)
-  {
+  if (sentPassword == adminPassword) {
     WeatherUnderground_StationKey = WUKEY;
     writeEEPROMState();
 
     return 1;
-  }
-  else
+  } else
     return 0;
 
-
   return 1;
-
 }
 
 void startBlynk();
-int setBAKEY(String command)
-{
+int setBAKEY(String command) {
   Serial.print("Command =");
   Serial.println(command);
-
 
   String sentPassword;
   String BAKEY;
@@ -172,25 +135,18 @@ int setBAKEY(String command)
   sentPassword = getValue(command, ',', 0);
   BAKEY = getValue(command, ',', 1);
 
-  if (sentPassword == adminPassword)
-  {
+  if (sentPassword == adminPassword) {
     BlynkAuthCode = BAKEY;
     writeEEPROMState();
     startBlynk();
     return 1;
-  }
-  else
+  } else
     return 0;
 
-
   return 1;
-
 }
 
 int rebootOurWeather(String command) {
-
-
-
   system_restart();
   // ESP.reset();
   delay(10000);
@@ -198,9 +154,7 @@ int rebootOurWeather(String command) {
   return 1;
 }
 
-int setDateTime(String command)
-{
-
+int setDateTime(String command) {
   String _time;
   String _date;
   String _password;
@@ -219,48 +173,38 @@ int setDateTime(String command)
   Serial.println(_date);
   Serial.println(_time);
 
-  if (_password == adminPassword)
-  {
-    if ((_time.length() > 0) && (_date.length() > 0))
-    {
+  if (_password == adminPassword) {
+    if ((_time.length() > 0) && (_date.length() > 0)) {
       RtcDateTime compiled = RtcDateTime(_date.c_str(), _time.c_str());
       Serial.println("Updating DateTime in RTC");
       Serial.println(compiled);
       Rtc.SetDateTime(compiled);
-    }
-    else
-    {
+    } else {
       Serial.println("Not updating DateTime in RTC");
       return 2;
     }
     return 1;
-  }
-  else
+  } else
     return 0;
 }
 
-
-
 // FOTA update commands
 
-
-int updateOurWeather(String command)
-{
-
+int updateOurWeather(String command) {
   Serial.println("updateOurWeather");
   Serial.print("Command =");
   Serial.println(command);
-  if (command == adminPassword)
-  {
-    updateDisplay(DISPLAY_UPDATING);
+  if (command == adminPassword) {
+    updateDisplay (DISPLAY_UPDATING);
     delay(5000);
 
-    updateDisplay(DISPLAY_UPDATE_FINISHED);
-    t_httpUpdate_return ret = ESPhttpUpdate.update("www.switchdoc.com", 80, "/OurWeatherUpdater.php", WEATHERPLUSESP8266VERSION);
+    updateDisplay (DISPLAY_UPDATE_FINISHED);
+    t_httpUpdate_return ret = ESPhttpUpdate.update("www.switchdoc.com", 80,
+        "/OurWeatherUpdater.php", WEATHERPLUSESP8266VERSION);
     switch (ret) {
       case HTTP_UPDATE_FAILED:
         Serial.println("[update] Update failed.");
-        updateDisplay(DISPLAY_NO_UPDATE_FAILED);
+        updateDisplay (DISPLAY_NO_UPDATE_FAILED);
         delay(5000);
 
         return 1;
@@ -268,7 +212,7 @@ int updateOurWeather(String command)
         break;
       case HTTP_UPDATE_NO_UPDATES:
         Serial.println("[update] Update no Updates.");
-        updateDisplay(DISPLAY_NO_UPDATE_AVAILABLE);
+        updateDisplay (DISPLAY_NO_UPDATE_AVAILABLE);
         delay(5000);
         return 2;
         break;
@@ -280,75 +224,51 @@ int updateOurWeather(String command)
         break;
     }
 
-
-
   }
   return 0;
-
-
 }
-
-
 
 // connection commands
 
-int resetToDefaults(String command)
-{
-
-
+int resetToDefaults(String command) {
   return 1;
-
 }
 
 int enableCWOPControl(String command) {
-
   // Get state from command
   int state = command.toInt();
-
 
   return 1;
 }
 
 int enableTwitterControl(String command) {
-
   // Get state from command
   int state = command.toInt();
 
   return 1;
 }
 
-
 // Weather Controls
-
 int weatherSmallControl(String command) {
-
   WeatherDisplayMode = DISPLAY_WEATHER_SMALL;
   writeEEPROMState();
 
   return 1;
 }
 
-
 int weatherMediumControl(String command) {
-
   WeatherDisplayMode = DISPLAY_WEATHER_MEDIUM;
   writeEEPROMState();
   return 1;
 }
 
-
-
 int weatherLargeControl(String command) {
-
   WeatherDisplayMode = DISPLAY_WEATHER_LARGE;
   writeEEPROMState();
   return 1;
 }
 
-
-
 int weatherDemoControl(String command) {
-
   WeatherDisplayMode = DISPLAY_WEATHER_DEMO;
   writeEEPROMState();
   return 1;
@@ -357,97 +277,90 @@ int weatherDemoControl(String command) {
 void writeToBlynkStatusTerminal(String statement);
 
 int englishUnitControl(String command) {
-
   EnglishOrMetric = 0;
   writeToBlynkStatusTerminal("Units set to English");
-  Blynk.virtualWrite(V8,  "English");
+  Blynk.virtualWrite(V8, "English");
   writeEEPROMState();
   return 1;
 }
-
 
 int metricUnitControl(String command) {
-
   EnglishOrMetric = 1;
   writeToBlynkStatusTerminal("Units set to Metric");
-  Blynk.virtualWrite(V8,  "English");
+  Blynk.virtualWrite(V8, "English");
   writeEEPROMState();
   return 1;
 }
 
-
-
 // RasPiConnect
-
-int jsonCmd(String command)
-{
-
+int jsonCmd(String command) {
   Serial.println("in jsonCmd");
   return 1;
 }
+
 /*
-  void jsonCmd(WebServer &server, WebServer::ConnectionType type, char *url_tail, bool tail_complete)
-  {
+ void jsonCmd(WebServer &server, WebServer::ConnectionType type, char *url_tail, bool tail_complete)
+ {
 
-  currentObjectStructure parsedObject;
-  initParsedObject(&parsedObject);
+ currentObjectStructure parsedObject;
+ initParsedObject(&parsedObject);
 
-  #ifdef DEBUG
-  Serial.println("------------------");
-  #endif
-
-
-  char myBuffer[1024];
+ #ifdef DEBUG
+ Serial.println("------------------");
+ #endif
 
 
-
-
-  server.httpSuccess("application/json");
-
-  if (type == WebServer::HEAD)
-    return;
-
-  int myChar;
-  int count;
-  myChar = server.read();
-  count = 0;
-
-
-  while (myChar > 0)
-  {
-    myBuffer[count] = (char) myChar;
-
-    myChar = server.read();
-
-    count++;
-
-  }
-  myBuffer[count] = '\0';
-
-  delay(25);
-
-  messageCount++;
-
-  char returnJSON[500] = "";
-
-
-  ExecuteCommandAndReturnJSONString(myBuffer, messageCount, md5str, &parsedObject, returnJSON, returnJSON);
-
-
-  #ifdef DEBUG
-  Serial.print("returnJSON =");
-  Serial.println(returnJSON);
-  #endif
+ char myBuffer[1024];
 
 
 
-  server << returnJSON;
 
-  #ifdef DEBUG
-  Serial.print("Mem1=");
-  Serial.println(freeMemory());
-  Serial.println("------------------");
-  #endif
-  }
+ server.httpSuccess("application/json");
 
-*/
+ if (type == WebServer::HEAD)
+ return;
+
+ int myChar;
+ int count;
+ myChar = server.read();
+ count = 0;
+
+
+ while (myChar > 0)
+ {
+ myBuffer[count] = (char) myChar;
+
+ myChar = server.read();
+
+ count++;
+
+ }
+ myBuffer[count] = '\0';
+
+ delay(25);
+
+ messageCount++;
+
+ char returnJSON[500] = "";
+
+
+ ExecuteCommandAndReturnJSONString(myBuffer, messageCount, md5str, &parsedObject, returnJSON, returnJSON);
+
+
+ #ifdef DEBUG
+ Serial.print("returnJSON =");
+ Serial.println(returnJSON);
+ #endif
+
+
+
+ server << returnJSON;
+
+ #ifdef DEBUG
+ Serial.print("Mem1=");
+ Serial.println(freeMemory());
+ Serial.println("------------------");
+ #endif
+ }
+
+ */

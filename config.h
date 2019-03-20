@@ -30,7 +30,6 @@
 // LOCALMAC must be a unique value on your network.  Don't have two Arduinos as the same MAC on a network
 #define LOCALMAC { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED }
 
-
 //USERNAME is the username that you have entered in the RasPiConnect App.  It must match and is case sensitive
 #define USERNAME "RasPiConnect"
 

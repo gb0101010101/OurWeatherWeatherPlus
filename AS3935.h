@@ -5,8 +5,8 @@
 static const uint8_t AS3935_INT_STRIKE = 0x08;
 static const uint8_t AS3935_INT_DISTURBER = 0x04;
 static const uint8_t AS3935_INT_NOISE = 0x01;
-static const int8_t  AS3935_DISTANCE_OUT_OF_RANGE = -2;
-static const uint8_t AS3935_AFE_INDOOR =  0b10010;
+static const int8_t AS3935_DISTANCE_OUT_OF_RANGE = -2;
+static const uint8_t AS3935_AFE_INDOOR = 0b10010;
 static const uint8_t AS3935_AFE_OUTDOOR = 0b01110;
 
 // register access macros - register address, bitmask
@@ -26,10 +26,7 @@ static const uint8_t AS3935_AFE_OUTDOOR = 0b01110;
 #define AS3935_DISP_TRCO  0x08, 0x20
 #define AS3935_TUN_CAP    0x08, 0x0F
 
-
-
-class AS3935
-{
+class AS3935 {
   public:
     AS3935(uint8_t address, uint8_t interruptPin);
     ~AS3935(void);
@@ -69,8 +66,6 @@ class AS3935
 
     void disableDisturbers();
     void enableDisturbers();
-
-
 
   private:
     uint8_t _address;

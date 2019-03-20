@@ -3,34 +3,34 @@
  **  Modified Adafruit Library to work with OLED SSD1306_128_64 with SPI communication only **
  *  By: Jordi Segura 
  *
-This is a library for Monochrome OLEDs based on SSD1306 drivers
+ This is a library for Monochrome OLEDs based on SSD1306 drivers
 
-  Pick one up today in the adafruit shop!
-  ------> http://www.adafruit.com/category/63_98
+ Pick one up today in the adafruit shop!
+ ------> http://www.adafruit.com/category/63_98
 
-These displays use SPI to communicate, 4 or 5 pins are required to  
-interface
+ These displays use SPI to communicate, 4 or 5 pins are required to
+ interface
 
-Adafruit invests time and resources providing this open source code, 
-please support Adafruit and open-source hardware by purchasing 
-products from Adafruit!
+ Adafruit invests time and resources providing this open source code,
+ please support Adafruit and open-source hardware by purchasing
+ products from Adafruit!
 
-Written by Limor Fried/Ladyada  for Adafruit Industries.  
-BSD license, check license.txt for more information
-All text above, and the splash screen must be included in any redistribution
-*********************************************************************/
+ Written by Limor Fried/Ladyada  for Adafruit Industries.
+ BSD license, check license.txt for more information
+ All text above, and the splash screen must be included in any redistribution
+ *********************************************************************/
 
 #if ARDUINO >= 100
- #include "Arduino.h"
- #define WIRE_WRITE Wire.write
+  #include "Arduino.h"
+  #define WIRE_WRITE Wire.write
 #else
- #include "WProgram.h"
+  #include "WProgram.h"
   #define WIRE_WRITE Wire.send
 #endif
 
 #ifdef __SAM3X8E__
- typedef volatile RwReg PortReg;
- typedef uint32_t PortMask;
+  typedef volatile RwReg PortReg;
+  typedef uint32_t PortMask;
 #else
   typedef volatile uint8_t PortReg;
   typedef uint8_t PortMask;
@@ -40,16 +40,15 @@ All text above, and the splash screen must be included in any redistribution
 #include "OWMAdafruit_GFX.h"
 
 /* For the Adafruit_GFX library to work with the ESP8266, please be sure to include the "#elif defined ESP8266" line in Adafruit_GFX.cpp
-Otherwise comment the line   #define pgm_read_byte(addr)...
+ Otherwise comment the line   #define pgm_read_byte(addr)...
 
-#ifdef __AVR__
+ #ifdef __AVR__
  #include <avr/pgmspace.h>
-#elif defined ESP8266    //Added for compatibility with ESP8266 BOARD
-#else
+ #elif defined ESP8266    //Added for compatibility with ESP8266 BOARD
+ #else
  #define pgm_read_byte(addr) (*(const unsigned char *)(addr))
-#endif
-*/
-
+ #endif
+ */
 
 #define BLACK 0
 #define WHITE 1
@@ -60,20 +59,20 @@ Otherwise comment the line   #define pgm_read_byte(addr)...
 // Address for 128x64 is 0x3D (default) or 0x3C (if SA0 is grounded)
 
 /*=========================================================================
-    SSD1306 Displays
-    -----------------------------------------------------------------------
-    The driver is used in multiple displays (128x64, 128x32, etc.).
-    Select the appropriate display below to create an appropriately
-    sized framebuffer, etc.
+ SSD1306 Displays
+ -----------------------------------------------------------------------
+ The driver is used in multiple displays (128x64, 128x32, etc.).
+ Select the appropriate display below to create an appropriately
+ sized framebuffer, etc.
 
-    SSD1306_128_64  128x64 pixel display
+ SSD1306_128_64  128x64 pixel display
 
-    SSD1306_128_32  128x32 pixel display
+ SSD1306_128_32  128x32 pixel display
 
-    SSD1306_96_16
+ SSD1306_96_16
 
-    -----------------------------------------------------------------------*/
-   #define SSD1306_128_64
+ -----------------------------------------------------------------------*/
+#define SSD1306_128_64
 //   #define SSD1306_128_32
 //   #define SSD1306_96_16
 /*=========================================================================*/
@@ -144,56 +143,47 @@ Otherwise comment the line   #define pgm_read_byte(addr)...
 #define SSD1306_VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL 0x29
 #define SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL 0x2A
 
-class ESP_SSD1306 : public Adafruit_GFX  {
- public:
-  ESP_SSD1306(int8_t SID, int8_t SCLK, int8_t DC, int8_t RST, int8_t CS);
-  ESP_SSD1306(int8_t DC, int8_t RST, int8_t CS);	//Constructor for hardware SPI
-  ESP_SSD1306(int8_t RST);
+class ESP_SSD1306: public Adafruit_GFX {
+  public:
+    ESP_SSD1306(int8_t SID, int8_t SCLK, int8_t DC, int8_t RST, int8_t CS);
+    ESP_SSD1306(int8_t DC, int8_t RST, int8_t CS);//Constructor for hardware SPI
+    ESP_SSD1306(int8_t RST);
 
-  void begin(uint8_t switchvcc = SSD1306_SWITCHCAPVCC, uint8_t i2caddr = SSD1306_I2C_ADDRESS, bool reset=true);
-  void ssd1306_command(uint8_t c);
-  void ssd1306_data(uint8_t c);
+    void begin(uint8_t switchvcc = SSD1306_SWITCHCAPVCC, uint8_t i2caddr =
+        SSD1306_I2C_ADDRESS, bool reset = true);
+    void ssd1306_command(uint8_t c);
+    void ssd1306_data(uint8_t c);
 
-  void clearDisplay(void);
-  void invertDisplay(uint8_t i);
-  void display();
- 
-  void startscrollright(uint8_t start, uint8_t stop);
-  void startscrollleft(uint8_t start, uint8_t stop);
+    void clearDisplay(void);
+    void invertDisplay(uint8_t i);
+    void display();
 
-  void startscrolldiagright(uint8_t start, uint8_t stop);
-  void startscrolldiagleft(uint8_t start, uint8_t stop);
-  void stopscroll(void);
+    void startscrollright(uint8_t start, uint8_t stop);
+    void startscrollleft(uint8_t start, uint8_t stop);
 
-  void dim(boolean dim);
+    void startscrolldiagright(uint8_t start, uint8_t stop);
+    void startscrolldiagleft(uint8_t start, uint8_t stop);
+    void stopscroll(void);
 
-  void drawPixel(int16_t x, int16_t y, uint16_t color);
+    void dim(boolean dim);
 
-  virtual void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
-  virtual void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
+    void drawPixel(int16_t x, int16_t y, uint16_t color);
 
- private:
-  int8_t _i2caddr, _vccstate, sid, sclk, dc, rst, cs;
-  void fastSPIwrite(uint8_t c);
+    virtual void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
+    virtual void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
 
-  boolean hwSPI;
-  PortReg *mosiport, *clkport, *csport, *dcport;
-  PortMask mosipinmask, clkpinmask, cspinmask, dcpinmask;
+  private:
+    int8_t _i2caddr, _vccstate, sid, sclk, dc, rst, cs;
+    void fastSPIwrite(uint8_t c);
 
-  inline void drawFastVLineInternal(int16_t x, int16_t y, int16_t h, uint16_t color) __attribute__((always_inline));
-  inline void drawFastHLineInternal(int16_t x, int16_t y, int16_t w, uint16_t color) __attribute__((always_inline));
+    boolean hwSPI;
+    PortReg *mosiport, *clkport, *csport, *dcport;
+    PortMask mosipinmask, clkpinmask, cspinmask, dcpinmask;
+
+    inline void drawFastVLineInternal(int16_t x, int16_t y, int16_t h,
+        uint16_t color) __attribute__((always_inline));
+    inline void drawFastHLineInternal(int16_t x, int16_t y, int16_t w,
+        uint16_t color) __attribute__((always_inline));
 
 };
-
-
-
-
-
-
-
-
-
-
-
-
 

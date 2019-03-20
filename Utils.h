@@ -1,40 +1,27 @@
-
-
-
 // EEPROM Preferences
-
-
 void readEEPROMState();
 
 #define READ_CODE 165
 
-void invalidateEEPROMState()
-{
-
-  for (int i = 0; i < 512; i++)
-  {
+void invalidateEEPROMState() {
+  for (int i = 0; i < 512; i++) {
     EEPROM.write(i, 0);
   }
   EEPROM.commit();
-
 }
 
-void writeEEPROMState()
-{
+void writeEEPROMState() {
   EEPROM.write(0, READ_CODE);
   int i;
 
-  for (i = 1; i < Wssid.length() + 1; i++)
-  {
+  for (i = 1; i < Wssid.length() + 1; i++) {
     EEPROM.write(i, Wssid[i - 1]);
 
   }
   EEPROM.write(i, '\0');
 
-  for (i = 33; i < WPassword.length() + 33; i++)
-  {
+  for (i = 33; i < WPassword.length() + 33; i++) {
     EEPROM.write(i, WPassword[i - 33]);
-
 
   }
   EEPROM.write(i, '\0');
@@ -43,16 +30,12 @@ void writeEEPROMState()
 
   EEPROM.write(98, WeatherDisplayMode);
 
-  for (i = 99; i < stationName.length() + 99; i++)
-  {
+  for (i = 99; i < stationName.length() + 99; i++) {
     EEPROM.write(i, stationName[i - 99]);
-
-
   }
   EEPROM.write(i, '\0');
 
   // now put alititude in
-
   int tempAltitude;
   tempAltitude = altitude_meters * 10.0;
   Serial.print("tempAltitude>>8=");
@@ -64,77 +47,45 @@ void writeEEPROMState()
 
   EEPROM.write(99 + 34 + 2, tempAltitude & 0xFF);
 
-
-  for (i = 136; i < adminPassword.length() + 136; i++)
-  {
+  for (i = 136; i < adminPassword.length() + 136; i++) {
     EEPROM.write(i, adminPassword[i - 136]);
-
-
   }
   EEPROM.write(i, '\0');
 
-
-  for (i = 200; i < WeatherUnderground_StationID.length() + 200; i++)
-  {
+  for (i = 200; i < WeatherUnderground_StationID.length() + 200; i++) {
     EEPROM.write(i, WeatherUnderground_StationID[i - 200]);
-
-
   }
   EEPROM.write(i, '\0');
 
-
-
-
-  for (i = 215; i < WeatherUnderground_StationKey.length() + 215; i++)
-  {
+  for (i = 215; i < WeatherUnderground_StationKey.length() + 215; i++) {
     EEPROM.write(i, WeatherUnderground_StationKey[i - 215]);
-
-
   }
   EEPROM.write(i, '\0');
 
   // Now PubNub
-
   EEPROM.write(231, pubNubEnabled);
 
-
-
-  for (i = 232; i < SDL2PubNubCode.length() + 232; i++)
-  {
+  for (i = 232; i < SDL2PubNubCode.length() + 232; i++) {
     EEPROM.write(i, SDL2PubNubCode[i - 232]);
-
-
   }
   EEPROM.write(i, '\0');
 
-  for (i = 275; i < SDL2PubNubCode_Sub.length() + 275; i++)
-  {
+  for (i = 275; i < SDL2PubNubCode_Sub.length() + 275; i++) {
     EEPROM.write(i, SDL2PubNubCode_Sub[i - 275]);
-
-
   }
   EEPROM.write(i, '\0');
 
   // setup AS3935 parameter string  -31 characters assumed
-
-  for (i = 318; i < as3935_Params.length() + 318; i++)
-  {
+  for (i = 318; i < as3935_Params.length() + 318; i++) {
     EEPROM.write(i, as3935_Params[i - 318]);
-
-
   }
   EEPROM.write(i, '\0');
 
   // write out BlynkAuthCode
-
-  for (i = 349; i < BlynkAuthCode.length() + 349; i++)
-  {
+  for (i = 349; i < BlynkAuthCode.length() + 349; i++) {
     EEPROM.write(i, BlynkAuthCode[i - 349]);
-
-
   }
   EEPROM.write(i, '\0');
-
 
   EEPROM.commit();
 
@@ -177,36 +128,25 @@ void writeEEPROMState()
   Serial.println(as3935_Params);
   Serial.print("BlynkAuthCode=");
   Serial.println(BlynkAuthCode);
-
 }
 
-
-
-void readEEPROMState()
-{
+void readEEPROMState() {
   int readCode;
   char myChar;
   readCode = EEPROM.read(0);
 
-
-  if (readCode == READ_CODE)
-  {
-
+  if (readCode == READ_CODE) {
     Wssid = "";
     WPassword = "";
 
-    for (int i = 1; i < 33; ++i)
-    {
+    for (int i = 1; i < 33; ++i) {
       myChar = EEPROM.read(i);
       if (myChar == 0)
         break;
       Wssid += myChar;
     }
 
-
-    for (int i = 33; i < 97; ++i)
-    {
-
+    for (int i = 33; i < 97; ++i) {
       myChar = EEPROM.read(i);
       if (myChar == 0)
         break;
@@ -225,20 +165,17 @@ void readEEPROMState()
     EnglishOrMetric = EEPROM.read(97);
 
     WeatherDisplayMode = EEPROM.read(98);
-    for (int i = 99; i < 99 + 34; i++)
-    {
+    for (int i = 99; i < 99 + 34; i++) {
       myChar = EEPROM.read(i);
       if (myChar == 0)
         break;
 
       stationName += char(myChar);
-
     }
 
     stationName = "";
     int i;
-    for (i = 99; i < 99 + 34; ++i)
-    {
+    for (i = 99; i < 99 + 34; ++i) {
       myChar = EEPROM.read(i);
       if (myChar == 0)
         break;
@@ -255,8 +192,7 @@ void readEEPROMState()
     //EEPROM.write(i + 2, tempAltitude && 0xFF);
 
     adminPassword = "";
-    for (i = 136; i < 136 + 34; ++i)
-    {
+    for (i = 136; i < 136 + 34; ++i) {
       myChar = EEPROM.read(i);
       if (myChar == 0)
         break;
@@ -264,8 +200,7 @@ void readEEPROMState()
     }
 
     WeatherUnderground_StationID = "";
-    for (i = 200; i < 200 + 15; ++i)
-    {
+    for (i = 200; i < 200 + 15; ++i) {
       myChar = EEPROM.read(i);
       if (myChar == 0)
         break;
@@ -273,8 +208,7 @@ void readEEPROMState()
     }
 
     WeatherUnderground_StationKey = "";
-    for (i = 215; i < 215 + 15; ++i)
-    {
+    for (i = 215; i < 215 + 15; ++i) {
       myChar = EEPROM.read(i);
       if (myChar == 0)
         break;
@@ -283,44 +217,36 @@ void readEEPROMState()
 
     pubNubEnabled = EEPROM.read(231);
 
-    if (pubNubEnabled != 1)
-    {
+    if (pubNubEnabled != 1) {
       pubNubEnabled = 0;
     }
 
     SDL2PubNubCode = "";
-    if (pubNubEnabled == 1)
-    {
-      for (i = 232; i < 232 + 43; ++i)
-      {
+    if (pubNubEnabled == 1) {
+      for (i = 232; i < 232 + 43; ++i) {
         myChar = EEPROM.read(i);
         if (myChar == 0)
           break;
         SDL2PubNubCode += myChar;
       }
-    }
-    else
+    } else
       SDL2PubNubCode = "XX";
 
     SDL2PubNubCode_Sub = "";
-    if (pubNubEnabled == 1)
-    {
-      for (i = 275; i < 275 + 43; ++i)
-      {
+    if (pubNubEnabled == 1) {
+      for (i = 275; i < 275 + 43; ++i) {
         myChar = EEPROM.read(i);
         if (myChar == 0)
           break;
         SDL2PubNubCode_Sub += myChar;
       }
-    }
-    else
+    } else
       SDL2PubNubCode_Sub = "XX";
 
     // now read params list for AS3935
     String tempString;
     tempString = "";
-    for (i = 318; i < 318 + 31; i++)
-    {
+    for (i = 318; i < 318 + 31; i++) {
       myChar = EEPROM.read(i);
 
       if (myChar == 0)
@@ -328,15 +254,13 @@ void readEEPROMState()
       tempString += myChar;
     }
 
-
     if (tempString.length() > 0)
       as3935_Params = tempString;
 
     // now read Blynk Authorization Code
     BlynkAuthCode = "";
 
-    for (i = 349; i < 349 + 43; i++)
-    {
+    for (i = 349; i < 349 + 43; i++) {
       myChar = EEPROM.read(i);
 
       if (myChar == 0)
@@ -349,14 +273,7 @@ void readEEPROMState()
     else
       UseBlynk = true;
 
-
-
-
-
-
-  }
-  else
-  {
+  } else {
     Serial.println("EEPROM not Initialized");
     Wssid = "XXX";
     WPassword = "XXX";
@@ -373,10 +290,8 @@ void readEEPROMState()
     SDL2PubNubCode_Sub = "XX";
     BlynkAuthCode = "";
     writeEEPROMState();
-
-
-
   }
+
   Serial.println("Reading EEPROM");
   Serial.println("EEPROM");
   Serial.print("readCode:");
@@ -413,10 +328,7 @@ void readEEPROMState()
   Serial.println(UseBlynk);
 }
 
-
-String returnDirectionFromDegrees(int degrees)
-{
-
+String returnDirectionFromDegrees(int degrees) {
   if (degrees == 0)
     return "N";
   if (degrees == 22)
@@ -450,28 +362,17 @@ String returnDirectionFromDegrees(int degrees)
   if (degrees == 337)
     return "NNW";
 
-
   return "XX";  // return previous value if not found
-
 }
 
-
-
-void updateAllWeatherVariables()
-{
-
-
-
+void updateAllWeatherVariables() {
   heapSize = ESP.getFreeHeap();
 
   AOK = am2315.readData(dataAM2315);
   AM2315_Temperature = dataAM2315[1];
   AM2315_Humidity = dataAM2315[0];
 
-  if (BMP180Found)
-  {
-
-
+  if (BMP180Found) {
     /* Display the results (barometric pressure is measure in hPa) */
     //BMP180_Pressure = bmp.readPressure();
     // Put Alitude in Meters
@@ -481,22 +382,20 @@ void updateAllWeatherVariables()
     Serial.print(BMP180_Pressure / 100.0);
     Serial.println(" kPa");
 
-
-
     /* Calculating altitude with reasonable accuracy requires pressure    *
-       sea level pressure for your position at the moment the data is
-       converted, as well as the ambient temperature in degress
-       celcius.  If you don't have these values, a 'generic' value of
-       1013.25 hPa can be used (defined as SENSORS_PRESSURE_SEALEVELHPA
-       in sensors.h), but this isn't ideal and will give variable
-       results from one day to the next.
+     sea level pressure for your position at the moment the data is
+     converted, as well as the ambient temperature in degress
+     celcius.  If you don't have these values, a 'generic' value of
+     1013.25 hPa can be used (defined as SENSORS_PRESSURE_SEALEVELHPA
+     in sensors.h), but this isn't ideal and will give variable
+     results from one day to the next.
      *                                                                    *
-       You can usually find the current SLP value by looking at weather
-       websites or from environmental information centers near any major
-       airport.
+     You can usually find the current SLP value by looking at weather
+     websites or from environmental information centers near any major
+     airport.
      *                                                                    *
-       For example, for Paris, France you can check the current mean
-       pressure and sea level at: http://bit.ly/16Au8ol                   */
+     For example, for Paris, France you can check the current mean
+     pressure and sea level at: http://bit.ly/16Au8ol                   */
 
     /* First we get the current temperature from the BMP085 */
     float temperature;
@@ -505,11 +404,7 @@ void updateAllWeatherVariables()
     Serial.print(temperature);
     Serial.println(" C");
 
-
     BMP180_Temperature = temperature;
-
-
-
 
     /* Then convert the atmospheric pressure, and SLP to altitude         */
     /* Update this next line with the current SLP for better results      */
@@ -521,16 +416,12 @@ void updateAllWeatherVariables()
 
     BMP180_Altitude = altitude;
     Serial.println(" m");
-
   }
 
-  if (BMP280Found)
-  {
-
+  if (BMP280Found) {
     /* Display the results (barometric pressure is measure in hPa) */
     //BMP180_Pressure = bmp.readPressure();
     // Put Alitude in Meters
-
     BMP180_Pressure = bme.readSealevelPressure(altitude_meters);
 
     /* Display atmospheric pressue in hPa */
@@ -538,22 +429,20 @@ void updateAllWeatherVariables()
     Serial.print(BMP180_Pressure / 100.0);
     Serial.println(" hPa");
 
-
-
     /* Calculating altitude with reasonable accuracy requires pressure    *
-       sea level pressure for your position at the moment the data is
-       converted, as well as the ambient temperature in degress
-       celcius.  If you don't have these values, a 'generic' value of
-       1013.25 hPa can be used (defined as SENSORS_PRESSURE_SEALEVELHPA
-       in sensors.h), but this isn't ideal and will give variable
-       results from one day to the next.
+     sea level pressure for your position at the moment the data is
+     converted, as well as the ambient temperature in degress
+     celcius.  If you don't have these values, a 'generic' value of
+     1013.25 hPa can be used (defined as SENSORS_PRESSURE_SEALEVELHPA
+     in sensors.h), but this isn't ideal and will give variable
+     results from one day to the next.
      *                                                                    *
-       You can usually find the current SLP value by looking at weather
-       websites or from environmental information centers near any major
-       airport.
+     You can usually find the current SLP value by looking at weather
+     websites or from environmental information centers near any major
+     airport.
      *                                                                    *
-       For example, for Paris, France you can check the current mean
-       pressure and sea level at: http://bit.ly/16Au8ol                   */
+     For example, for Paris, France you can check the current mean
+     pressure and sea level at: http://bit.ly/16Au8ol                   */
 
     /* First we get the current temperature from the BMP085 */
     float temperature;
@@ -562,11 +451,7 @@ void updateAllWeatherVariables()
     Serial.print(temperature);
     Serial.println(" C");
 
-
     BMP180_Temperature = temperature;
-
-
-
 
     /* Then convert the atmospheric pressure, and SLP to altitude         */
     /* Update this next line with the current SLP for better results      */
@@ -578,10 +463,7 @@ void updateAllWeatherVariables()
 
     BMP180_Altitude = altitude;
     Serial.println(" m");
-
   }
-
-
 
   currentWindSpeed = weatherStation.current_wind_speed();
   currentWindGust = weatherStation.get_wind_gust();
@@ -590,8 +472,6 @@ void updateAllWeatherVariables()
 
   float oldRain = rainTotal;
   rainTotal = rainTotal + weatherStation.get_current_rain_total();
-
-
 
   windSpeedGraph.add_value(currentWindSpeed);
   windGustGraph.add_value(currentWindGust);
@@ -608,56 +488,32 @@ void updateAllWeatherVariables()
   windDirectionMin = windDirectionGraph.returnMinValue();
   windDirectionMax = windDirectionGraph.returnMaxValue();
 
-
-
   // Handle REST calls
   WiFiClient client = server.available();
-  if (client)
-  {
-
+  if (client) {
     while (!client.available()) {
       delay(1);
     }
-    if (client.available())
-    {
-
-
-
-
+    if (client.available()) {
       rest.handle(client);
-
     }
   }
-
-
-
-
-
-
 }
 
-
-void blinkLED(int timesToBlink, int delayBetweenBlinks)
-{
-
+void blinkLED(int timesToBlink, int delayBetweenBlinks) {
   int i;
-  for (i = 0; i < timesToBlink; i++)
-  {
+  for (i = 0; i < timesToBlink; i++) {
     digitalWrite(blinkPin, 0);
     delay(delayBetweenBlinks / 2);
     digitalWrite(blinkPin, 1);
     delay(delayBetweenBlinks / 2);
   }
-
 }
 
-
-void blinkIPAddress()
-{
-
+void blinkIPAddress() {
   Serial.print("Blinking local Address =");
-
   Serial.println(WiFi.localIP());
+
   IPAddress LIP;
   LIP = WiFi.localIP();
 
@@ -665,7 +521,6 @@ void blinkIPAddress()
   lowOct = LIP[3];
 
   // now do the blink
-
   int check100;
   int check10;
   int check1;
@@ -674,43 +529,31 @@ void blinkIPAddress()
   check100 = lowOct / 100;
 
   Serial.println(check100);
-  if (check100 != 0)
-  {
+  if (check100 != 0) {
     blinkLED(check100, 250);
   }
-
   delay(1000);
 
   check10 = (lowOct - check100 * 100) / 10;
   Serial.println(check10);
-  if (check10 != 0)
-  {
+  if (check10 != 0) {
     blinkLED(check10, 500);
-  }
-  else
-  {
+  } else {
     blinkLED(10, 100); // blink fast is 0
-
   }
   delay(1000);
 
-  check1 = ( lowOct - check100 * 100 - check10 * 10);
+  check1 = (lowOct - check100 * 100 - check10 * 10);
   Serial.println(check1);
-  if (check1 != 0)
-  {
+  if (check1 != 0) {
     blinkLED(check1, 500);
-  }
-  else
-  {
+  } else {
     blinkLED(10, 100); // blink fast is 0
-
   }
-
 }
 
 void printDigits(int digits) {
   // utility function for digital clock display: prints an leading 0
-
   if (digits < 10)
     Serial.print('0');
   Serial.print(digits);
@@ -719,9 +562,9 @@ void printDigits(int digits) {
 void digitalClockDisplay() {
   // digital clock display of the time
   Serial.print(hour());
-  printDigits(minute());
-  printDigits(second());
-  Serial.print(" ");
+  printDigits (minute());printDigits
+  (second());Serial
+  .print(" ");
   Serial.print(day());
   Serial.print(" ");
   Serial.print(month());
@@ -730,24 +573,17 @@ void digitalClockDisplay() {
   Serial.println();
 }
 
-
-void return2Digits(char returnString[], char *buffer2, int digits)
-{
+void return2Digits(char returnString[], char *buffer2, int digits) {
   if (digits < 10)
     sprintf(returnString, "0%i", digits);
   else
     sprintf(returnString, "%i", digits);
 
   strcpy(returnString, buffer2);
-
-
 }
 
-void buildTimeString(char returnString[], char *buffer2, tmElements_t convertTime)
-{
-
-
-
+void buildTimeString(char returnString[], char *buffer2,
+    tmElements_t convertTime) {
   char myBuffer[5];
   sprintf(myBuffer, "%i-", tmYearToCalendar(convertTime.Year));
   strcat(returnString, myBuffer);
@@ -770,104 +606,68 @@ void buildTimeString(char returnString[], char *buffer2, tmElements_t convertTim
 
   return2Digits(myBuffer, myBuffer, convertTime.Second);
   strcat(returnString, myBuffer);
-
-
-
 }
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
-void printDateTime(const RtcDateTime& dt)
-{
+void printDateTime(const RtcDateTime& dt) {
   char datestring[20];
 
-  snprintf_P(datestring,
-             countof(datestring),
-             "%02u/%02u/%04u %02u:%02u:%02u",
-             dt.Month(),
-             dt.Day(),
-             dt.Year(),
-             dt.Hour(),
-             dt.Minute(),
-             dt.Second() );
+  snprintf_P(datestring, countof(datestring), "%02u/%02u/%04u %02u:%02u:%02u",
+      dt.Month(), dt.Day(), dt.Year(), dt.Hour(), dt.Minute(), dt.Second());
   Serial.print(datestring);
 }
 
-String returnDateTime(const RtcDateTime& dt)
-{
+String returnDateTime(const RtcDateTime& dt) {
   char datestring[20];
 
-  snprintf_P(datestring,
-             countof(datestring),
-             "%04u-%02u-%02u %02u:%02u:%02u",
-             dt.Year(),
-             dt.Month(),
-             dt.Day(),
-             dt.Hour(),
-             dt.Minute(),
-             dt.Second() );
+  snprintf_P(datestring, countof(datestring), "%04u-%02u-%02u %02u:%02u:%02u",
+      dt.Year(), dt.Month(), dt.Day(), dt.Hour(), dt.Minute(), dt.Second());
   return String(datestring);
 }
 
-
-float returnPercentLeftInBattery(float currentVoltage, float maxVolt)
-{
-
+float returnPercentLeftInBattery(float currentVoltage, float maxVolt) {
   float returnPercent;
-
   float scaledVolts = currentVoltage / maxVolt;
 
   if (scaledVolts > 1.0)
     scaledVolts = 1.0;
 
-
-  if (scaledVolts > .9686)
-  {
+  if (scaledVolts > .9686) {
     returnPercent = 10 * (1 - (1.0 - scaledVolts) / (1.0 - .9686)) + 90;
     return returnPercent;
   }
 
-  if (scaledVolts > 0.9374)
-  {
+  if (scaledVolts > 0.9374) {
     returnPercent = 10 * (1 - (0.9686 - scaledVolts) / (0.9686 - 0.9374)) + 80;
     return returnPercent;
   }
 
-
-  if (scaledVolts > 0.9063)
-  {
+  if (scaledVolts > 0.9063) {
     returnPercent = 30 * (1 - (0.9374 - scaledVolts) / (0.9374 - 0.9063)) + 50;
     return returnPercent;
-
   }
 
-  if (scaledVolts > 0.8749)
-  {
+  if (scaledVolts > 0.8749) {
     returnPercent = 20 * (1 - (0.8749 - scaledVolts) / (0.9063 - 0.8749)) + 11;
-
     return returnPercent;
   }
 
-
-  if (scaledVolts > 0.8437)
-  {
+  if (scaledVolts > 0.8437) {
     returnPercent = 15 * (1 - (0.8437 - scaledVolts) / (0.8749 - 0.8437)) + 1;
     return returnPercent;
-
   }
 
-  if (scaledVolts > 0.8126)
-  {
+  if (scaledVolts > 0.8126) {
     returnPercent = 7 * (1 - (0.8126 - scaledVolts) / (0.8437 - 0.8126)) + 2;
     return returnPercent;
   }
 
-
-  if (scaledVolts > 0.7812)
-  {
+  if (scaledVolts > 0.7812) {
     returnPercent = 4 * (1 - (0.7812 - scaledVolts) / (0.8126 - 0.7812)) + 1;
     return returnPercent;
   }
 
   return 0;
 }
+
