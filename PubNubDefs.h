@@ -57,13 +57,13 @@ inline int strncasecmp(const char *s1, const char *s2, size_t n) {
  reading subscribe call response.
 
  The user application sees only the JSON body, not the timetoken.
- As soon as the body ends, PubSubclient reads the rest of HTTP reply
+ As soon as the body ends, PubNubclient reads the rest of HTTP reply
  itself and disconnects. The stored timetoken is used in the next call
  to the PubNub::subscribe() method.
  */
-class PubSubClient: public PubNub_BASE_CLIENT {
+class PubNubClient: public PubNub_BASE_CLIENT {
   public:
-    PubSubClient() :
+    PubNubClient() :
         PubNub_BASE_CLIENT(), json_enabled(false) {
       strcpy(timetoken, "0");
     }
@@ -278,7 +278,7 @@ class PubNub {
      @param string timeout optional timeout in seconds.
      @return string Stream-ish object with reply message or 0 on error.
      */
-    inline PubSubClient *subscribe(const char *channel, int timeout = 310);
+    inline PubNubClient *subscribe(const char *channel, int timeout = 310);
 
     /**
      History
@@ -318,7 +318,7 @@ class PubNub {
     http_status_code_class d_last_http_status_code_class;
 
     PubNub_BASE_CLIENT publish_client, history_client;
-    PubSubClient subscribe_client;
+    PubNubClient subscribe_client;
 };
 
 #if defined(__AVR)
@@ -341,7 +341,7 @@ class PubNub {
  connected() before.
  */
 
-inline void PubSubClient::_state_input(uint8_t ch, uint8_t *nextbuf, size_t nextsize) {
+inline void PubNubClient::_state_input(uint8_t ch, uint8_t *nextbuf, size_t nextsize) {
   /* Process a single character on input, updating the JSON
    state machine. If we reached the last character of input
    (just before expected ","), we will eat the rest of the body,
@@ -397,7 +397,7 @@ inline void PubSubClient::_state_input(uint8_t ch, uint8_t *nextbuf, size_t next
   this->_grab_timetoken(nextbuf, nextsize);
 }
 
-inline void PubSubClient::_grab_timetoken(uint8_t *nextbuf, size_t nextsize) {
+inline void PubNubClient::_grab_timetoken(uint8_t *nextbuf, size_t nextsize) {
   char new_timetoken[22] = { '\0' };
   size_t new_timetoken_len = 0;
   unsigned long t_start = millis();
@@ -566,8 +566,8 @@ inline PubNub_BASE_CLIENT *PubNub::publish(const char *channel,
   }
 }
 
-inline PubSubClient *PubNub::subscribe(const char *channel, int timeout) {
-  PubSubClient &client = subscribe_client;
+inline PubNubClient *PubNub::subscribe(const char *channel, int timeout) {
+  PubNubClient &client = subscribe_client;
   unsigned long t_start;
   int have_param = 0;
 
@@ -615,7 +615,7 @@ inline PubSubClient *PubNub::subscribe(const char *channel, int timeout) {
         return 0;
       }
       /* Now return handle to the client for further perusal.
-       PubSubClient class will make sure that the client does
+       PubNubClient class will make sure that the client does
        not see the time token but we stop right after the
        message body. */
       client.start_body();
