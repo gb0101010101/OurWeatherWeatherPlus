@@ -187,7 +187,7 @@ bool readWXLink() {
 
   Wire.setClockStretchLimit(1500);    // in µs
 
-  int blockcount = Wire.requestFrom(0x08, 32, true);
+  int blockcount = Wire.requestFrom(8, 32, 1);
   Serial.print("Block Count Recieved=");
   Serial.println(blockcount);
 
@@ -206,7 +206,7 @@ bool readWXLink() {
   Wire.endTransmission();
   Wire.setClockStretchLimit(1500);    // in µs
 
-  blockcount = Wire.requestFrom(0x08, 32, true);
+  blockcount = Wire.requestFrom(8, 32, 1);
   Serial.print("Block Count Recieved=");
   Serial.println(blockcount);
 
