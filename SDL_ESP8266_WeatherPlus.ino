@@ -42,6 +42,7 @@ extern "C" {
 #include "TimeLib.h"
 
 bool WiFiPresent = false;
+bool AM2315_Present = false;
 
 #include <ESP8266WiFi.h>
 
@@ -527,6 +528,9 @@ ESP_SSD1306 display(OLED_RESET);
 
 #include "OLEDDisplay.h"
 
+// MQTT
+#include "Mqtt.h"
+
 // validate temperature from AM2315 - Fixes the rare +16 degrees C issue
 bool invalidTemperatureFound;
 
@@ -966,7 +970,7 @@ void setup() {
 
   // AM2315
   // setup AM2315
-  bool AM2315_Present = false;
+
   AOK = am2315.readData(dataAM2315);
   if (AOK) {
     Serial.println("AM2315 Detected...");
@@ -1058,6 +1062,10 @@ void setup() {
     Blynk.virtualWrite(V8, "Metric");
     writeToBlynkStatusTerminal("Units set to Metric ");
   }
+
+  if (WiFiPresent) {
+    mqttSetup();
+  }
 } // end setup
 
 //
@@ -1089,6 +1097,11 @@ void loop() {
     }
   }
   client.stop();
+
+  // Add MQTT loop so that it can send & receive.
+  if (mqtt_valid) {
+    mqtt_client.loop();
+  }
 
   if (timeElapsed > 5000) {
     Serial.println("5 second Loop executed");
@@ -1205,11 +1218,11 @@ void loop() {
       /* Display the results (barometric pressure is measure in hPa) */
       //BMP180_Pressure = bmp.readPressure();
       // Put Alitude in Meters
-      BMP180_Pressure = bme.readSealevelPressure(altitude_meters);
+      BMP180_Pressure = bme.readSealevelPressure(altitude_meters) / 100.00;
 
       /* Display atmospheric pressue in hPa */
       Serial.print("Pressure:    ");
-      Serial.print(BMP180_Pressure / 100.0);
+      Serial.print(BMP180_Pressure);
       Serial.println(" hPa");
 
       /* Calculating altitude with reasonable accuracy requires pressure    *
@@ -1670,6 +1683,11 @@ void loop() {
     RestDataString += as3935_LastEventTimeStamp + ",";
     RestDataString += String(as3835_LightningCountSinceBootup);
 
+    // MQTT send data.
+    if (WiFiPresent) {
+      mqttSend(RestDataString);
+    }
+
     // 5 minutes
     if (timeElapsed300Seconds > 300000) {
       String lastBootTimeString;
@@ -1786,4 +1804,3 @@ void loop() {
 
   yield();
 }
-
