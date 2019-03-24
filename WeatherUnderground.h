@@ -9,6 +9,7 @@ int sendWeatherUndergroundData() {
   WiFiClient client;
   const char* host = "weatherstation.wunderground.com";
   const int httpPort = 80;
+  unitSystem usa_units = USA;
 
   if (!client.connect(host, httpPort)) {
     Serial.println("connection failed");
@@ -24,15 +25,15 @@ int sendWeatherUndergroundData() {
 
   // now weather station variables
   myURL += "&winddir=" + String(currentWindDirection);
-  myURL += "&windspeedmph=" + String(currentWindSpeed / 1.6);
-  myURL += "&windgustmph=" + String(currentWindGust / 1.6);
-  myURL += "&humidity=" + String(AM2315_Humidity);
-  myURL += "&tempf=" + String((AM2315_Temperature * 9.0 / 5.0) + 32.0);
-  myURL += "&dewptf=" + String((dewpoint * 9.0 / 5.0) + 32.0);
-  myURL += "&rainin=" + String((rain60Minutes) / 25.4);
-  myURL += "&dailyrainin=" + String((rainCalendarDay) / 25.4);
-  myURL += "&baromin=" + String((BMP180_Pressure / 1000.0) * 0.2953, 4);
-  myURL += "&indoortempf=" + String((BMP180_Temperature * 9.0 / 5.0) + 32.0);
+  myURL += "&windspeedmph=" + formatWindspeedString(currentWindSpeed, usa_units, 2);
+  myURL += "&windgustmph=" + formatWindspeedString(currentWindGust, usa_units, 2);
+  myURL += "&humidity=" + formatHumidityString(AM2315_Humidity, 2);
+  myURL += "&tempf=" + formatTemperatureString(AM2315_Temperature, usa_units, 2);
+  myURL += "&dewptf=" + formatTemperatureString(AM2315_Dewpoint, usa_units, 2);
+  myURL += "&rainin=" + formatRainfallString(rain60Minutes, usa_units, 2);
+  myURL += "&dailyrainin=" + formatRainfallString(rainCalendarDay, usa_units, 2);
+  myURL += "&baromin=" + formatPressureString(BMP180_Pressure, usa_units, 2);
+  myURL += "&indoortempf=" + formatTemperatureString(BMP180_Temperature, usa_units, 2);
   //myURL += "&indoorhumidity%0.2f=" % HTUhumidity
   myURL += "&software=OurWeather";
 

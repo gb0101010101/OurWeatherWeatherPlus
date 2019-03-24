@@ -679,3 +679,276 @@ float returnPercentLeftInBattery(float currentVoltage, float maxVolt) {
   return 0;
 }
 
+// Unit measurement system
+typedef enum {
+  SI,
+  UK,
+  USA
+} unitSystem;
+
+typedef enum {
+  STRING,
+  JSON
+} outputFormat;
+
+unitSystem user_units = USA;
+
+/**
+ * Convert temperature from Celcius to Farenheit.
+ */
+float convertCtoF(float celcius) {
+  return ((celcius * 9.0) / 5.0) + 32;
+}
+
+/**
+ * Convert pressure from Millibar to inHg.
+ */
+float convertMbtoInHg(float millibar) {
+  return millibar * 0.029529988;
+}
+
+float convertPatoInHg(float pa) {
+  return pa * 0.00029529980;
+}
+
+/*
+ * Convert length Millimeters to Inches.
+ */
+float convertMmtoIn(float mm) {
+  return mm / 25.4;
+}
+
+float convertKphtoMph(float kph) {
+  return kph / 1.609344;
+}
+
+float convertMtoFt(float meters) {
+  return meters * 3.28084;
+}
+
+float convertTemperature(float celcius, unitSystem units) {
+  switch (units) {
+    case SI:
+    case UK:
+      return celcius;
+
+    case USA:
+      return convertCtoF(celcius);
+  }
+  return NULL;
+}
+
+float convertTemperature(float celcius) {
+  return convertTemperature(celcius, user_units);
+}
+
+float convertPressure(float pa, unitSystem units) {
+  switch (units) {
+    case SI:
+    case UK:
+      return pa;
+
+    case USA:
+      return convertPatoInHg(pa);
+  }
+  return NULL;
+}
+
+float convertPressure(float pa) {
+  return convertPressure(pa, user_units);
+}
+
+float convertRainfall(float millimeters, unitSystem units) {
+  switch (units) {
+    case SI:
+    case UK:
+      return millimeters;
+
+    case USA:
+      return convertMmtoIn(millimeters);
+  }
+  return NULL;
+}
+
+float convertRainfall(float millimeters) {
+  return convertRainfall(millimeters, user_units);
+}
+
+float convertWindSpeed(float kph, unitSystem units) {
+  switch (units) {
+    case SI:
+      return kph;
+
+    case UK:
+    case USA:
+      return convertKphtoMph(kph);
+  }
+  return NULL;
+}
+
+float convertWindSpeed(float kph) {
+  return convertWindSpeed(kph, user_units);
+}
+
+float convertAltitude(float meters, unitSystem units) {
+  switch (units) {
+    case SI:
+      return meters;
+
+    case UK:
+    case USA:
+      return convertMtoFt(meters);
+  }
+  return NULL;
+}
+
+float convertAltitude(float meters) {
+  return convertAltitude(meters, user_units);
+}
+
+String formatFloatString(float value, int decimals = 1) {
+  if (decimals > 0) {
+    value *= pow(10, decimals);
+    value = round(value);
+    value /= pow(10, decimals);
+  }
+  return String(value, decimals);
+}
+
+String formatTemperatureString(float celcius, unitSystem unit, int decimals = 1, bool show_unit = false) {
+  String output;
+  switch (unit) {
+    case SI:
+    case UK:
+      output = formatFloatString(celcius, decimals);
+      if(show_unit) {
+        output += " C";
+      }
+      return output;
+
+    case USA:
+      output = formatFloatString(convertTemperature(celcius, unit), decimals);
+      if(show_unit) {
+        output += " F";
+      }
+      return output;
+  }
+
+  return output;
+}
+
+String formatTemperatureString(float celcius, int decimals = 1, bool show_unit = false) {
+  return formatTemperatureString(celcius, user_units, decimals, show_unit);
+}
+
+String formatPressureString(float pa, unitSystem unit, int decimals = 1, bool show_unit = false) {
+  String output;
+  switch (unit) {
+    case SI:
+    case UK:
+      output = formatFloatString(pa/100, decimals);
+      if(show_unit) {
+        output += " hpa";
+      }
+      return output;
+
+    case USA:
+      output = formatFloatString(convertPressure(pa, unit), decimals);
+      if(show_unit) {
+        output += " inHg";
+      }
+      return output;
+  }
+
+  return output;
+}
+
+String formatPressureString(float pa, int decimals = 1, bool show_unit = false) {
+  return formatPressureString(pa, user_units, decimals, show_unit);
+}
+
+String formatHumidityString(float humidity, int decimals = 1, bool show_unit = false) {
+  String output = formatFloatString(humidity, decimals);
+  if (show_unit) {
+    output += " %";
+  }
+  return output;
+}
+
+String formatAltitudeString(float meters, unitSystem unit, int decimals = 1, bool show_unit = false) {
+  String output;
+  switch (unit) {
+    case SI:
+      output = formatFloatString(meters, decimals);
+      if(show_unit) {
+        output += " m";
+      }
+      return output;
+
+    case UK:
+    case USA:
+      output = formatFloatString(convertAltitude(meters, unit), decimals);
+      if(show_unit) {
+        output += " ft";
+      }
+      return output;
+  }
+
+  return output;
+}
+
+String formatAltitudeString(float meters, int decimals = 1, bool show_unit = false) {
+  return formatAltitudeString(meters, user_units, decimals, show_unit);
+}
+
+String formatWindspeedString(float kph, unitSystem unit, int decimals = 1, bool show_unit = false) {
+  String output;
+  switch (unit) {
+    case SI:
+      output = formatFloatString(kph, decimals);
+      if(show_unit) {
+        output += " kph";
+      }
+      return output;
+
+    case UK:
+    case USA:
+      output = formatFloatString(convertWindSpeed(kph, unit), decimals);
+      if(show_unit) {
+        output += " mph";
+      }
+      return output;
+  }
+
+  return output;
+}
+
+String formatWindspeedString(float kph, int decimals = 1, bool show_unit = false) {
+  return formatWindspeedString(kph, user_units, decimals, show_unit);
+}
+
+String formatRainfallString(float mm, unitSystem unit, int decimals = 1, bool show_unit = false) {
+  String output;
+  switch (unit) {
+    case SI:
+    case UK:
+      output = formatFloatString(mm, decimals);
+      if(show_unit) {
+        output += " mm";
+      }
+      return output;
+
+    case USA:
+      output = formatFloatString(convertRainfall(mm, unit), decimals);
+      if(show_unit) {
+        output += " in";
+      }
+      return output;
+  }
+
+  return output;
+}
+
+String formatRainfallString(float mm, int decimals = 1, bool show_unit = false) {
+  return formatRainfallString(mm, user_units, decimals, show_unit);
+}

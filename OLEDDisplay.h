@@ -23,6 +23,7 @@ void updateDisplay(int displayMode) {
 
   char buffer[40];
   char returnString[200];
+  String temp_string;
 
   Serial.print("displayMode=");
   Serial.println(displayMode);
@@ -233,277 +234,105 @@ void updateDisplay(int displayMode) {
     break;
 
     case DISPLAY_WEATHER_SMALL: {
-      String airQual;
-      airQual = "Air Qual:" + reportAirQuality(currentAirQuality);
-      setDisplayLine(6, const_cast<char*>(airQual.c_str()) );
+      // AM2315 Temperature and Humidity.
+      buffer[0] = '\0';
+      temp_string = "OT:" + formatTemperatureString(AM2315_Temperature, 1, true);
+      temp_string += " OH:" + formatHumidityString(AM2315_Humidity, 1, true);
+      temp_string.toCharArray(buffer, 20);
+      setDisplayLine(0, buffer);
 
-      if (EnglishOrMetric == 0) {
-        // English Units
-        char floatString[15];
+      // BMP180 Temperature and Pressure.
+      buffer[0] = '\0';
+      temp_string = "IT:" + formatTemperatureString(BMP180_Temperature, 1, true);
+      temp_string += " BP:" + formatPressureString(BMP180_Pressure, 1, true);
+      temp_string.toCharArray(buffer, 20);
+      setDisplayLine(1, buffer);
 
+      // Rain Total.
+      buffer[0] = '\0';
+      temp_string = "Rain Total:" + formatRainfallString(rainTotal, 1, true);
+      temp_string.toCharArray(buffer, 20);
+      setDisplayLine(2, buffer);
+
+      // Current Wind Speed.
+      buffer[0] = '\0';
+      temp_string = "Wind Speed:" + formatWindspeedString(currentWindSpeed, 1, true);
+      temp_string.toCharArray(buffer, 20);
+      setDisplayLine(3, buffer);
+
+      // Current Wind Gust.
+      buffer[0] = '\0';
+      temp_string = "Wind Gust:" + formatWindspeedString(currentWindGust, 1, true);
+      temp_string.toCharArray(buffer, 20);
+      setDisplayLine(4, buffer);
+
+      // Current Wind Direction.
+      buffer[0] = '\0';
+      temp_string = "Wind Dir:" + returnDirectionFromDegrees(int(currentWindDirection));
+      temp_string += "-" + String(currentWindDirection) + "d";
+      temp_string.toCharArray(buffer, 20);
+      setDisplayLine(5, buffer);
+
+      if (AirQualityPresent) {
         buffer[0] = '\0';
-        strcat(buffer, "OT:");
-        dtostrf(AM2315_Temperature * 1.8 + 32.0, 4, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "F");
-        strcat(buffer, "  OH:");
-        dtostrf(AM2315_Humidity, 3, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "%");
-        setDisplayLine(0, buffer);
-
-        buffer[0] = '\0';
-        strcat(buffer, "IT:");
-        dtostrf(BMP180_Temperature * 1.8 + 32.0, 5, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "F");
-        strcat(buffer, " BP:");
-        dtostrf((BMP180_Pressure / 1000.0) * 0.29529980165, 5, 2, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "in");
-        setDisplayLine(1, buffer);
-
-        buffer[0] = '\0';
-        strcat(buffer, "Rain Total: ");
-        dtostrf(rainTotal * 0.039370, 6, 2, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "in");
-        setDisplayLine(2, buffer);
-
-        buffer[0] = '\0';
-        strcat(buffer, "WindSpeed:");
-        dtostrf(currentWindSpeed * 0.621371, 5, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "mph");
-        setDisplayLine(3, buffer);
-
-        buffer[0] = '\0';
-        strcat(buffer, "Wind Gust:");
-        dtostrf(currentWindGust * 0.621371, 5, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "mph");
-        setDisplayLine(4, buffer);
-
-        buffer[0] = '\0';
-        strcat(buffer, "Wind Dir:");
-        windDirection = returnDirectionFromDegrees(int(currentWindDirection));
-        windDirection = windDirection + "-";
-        strcat(buffer, windDirection.c_str());
-        dtostrf(currentWindDirection, 3, 0, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "deg");
-        setDisplayLine(5, buffer);
-
-        /*           OutTemp:  OutHum:
-         InTemp:  BP:
-         Alt:
-         WindSpeed:
-         WindGust:
-         Wind Direction:
-         */
-      } else {
-        // Metric Units
-        char floatString[15];
-
-        buffer[0] = '\0';
-        strcat(buffer, "OT: ");
-        dtostrf(AM2315_Temperature, 4, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "C");
-        strcat(buffer, " OH: ");
-        dtostrf(AM2315_Humidity, 3, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "%");
-        setDisplayLine(0, buffer);
-
-        buffer[0] = '\0';
-        strcat(buffer, "IT: ");
-        dtostrf(BMP180_Temperature, 4, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "C");
-        strcat(buffer, " BP: ");
-        dtostrf(BMP180_Pressure / 100.0, 6, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "kPa");
-        setDisplayLine(1, buffer);
-
-        buffer[0] = '\0';
-        strcat(buffer, "Rain Total: ");
-        dtostrf(rainTotal, 6, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "mm");
-        setDisplayLine(2, buffer);
-
-        buffer[0] = '\0';
-        strcat(buffer, "WindSpeed: ");
-        dtostrf(currentWindSpeed, 6, 2, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "kph");
-        setDisplayLine(3, buffer);
-
-        buffer[0] = '\0';
-        strcat(buffer, "Wind Gust: ");
-        dtostrf(currentWindGust, 6, 2, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "kph");
-        setDisplayLine(4, buffer);
-
-        buffer[0] = '\0';
-        strcat(buffer, "Wind Dir: ");
-        windDirection = returnDirectionFromDegrees(int(currentWindDirection));
-        windDirection = windDirection + "-";
-        strcat(buffer, windDirection.c_str());
-        dtostrf(currentWindDirection, 3, 0, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "deg");
-        setDisplayLine(5, buffer);
+        temp_string = "Air Qual:" + reportAirQuality(currentAirQuality);
+        temp_string.toCharArray(buffer, 20);
+        setDisplayLine(6, buffer);
       }
     }
     break;
 
     case DISPLAY_WEATHER_MEDIUM: {
-      if (EnglishOrMetric == 0) {
-        // English Units
-        char floatString[15];
+      // AM2315 Temperature.
+      buffer[0] = '\0';
+      temp_string = "OT:" + formatTemperatureString(AM2315_Temperature, 1, true);
+      temp_string.toCharArray(buffer, 10);
+      setDisplayLine(0, buffer);
 
-        buffer[0] = '\0';
-        strcat(buffer, "OT:");
-        dtostrf(AM2315_Temperature * 1.8 + 32.0, 5, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "F");
-        setDisplayLine(0, buffer);
-        buffer[0] = '\0';
+      // AM2315 Humidity.
+      buffer[0] = '\0';
+      temp_string = "OH:" + formatHumidityString(AM2315_Humidity, 1, true);
+      temp_string.toCharArray(buffer, 10);
+      setDisplayLine(1, buffer);
 
-        strcat(buffer, "OH:");
-        dtostrf(AM2315_Humidity, 5, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "%");
-        setDisplayLine(1, buffer);
+      // BMP180 Temperature.
+      buffer[0] = '\0';
+      temp_string = "IT:" + formatTemperatureString(BMP180_Temperature, 1, true);
+      temp_string.toCharArray(buffer, 10);
+      setDisplayLine(2, buffer);
 
-        //updateAllWeatherVariables();
-        buffer[0] = '\0';
-        strcat(buffer, "IT: ");
-        dtostrf(BMP180_Temperature * 1.8 + 32.0, 4, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "F");
-        setDisplayLine(2, buffer);
-        buffer[0] = '\0';
+      // BMP180 Pressure.
+      buffer[0] = '\0';
+      temp_string = "BP:" + formatPressureString(BMP180_Pressure, 1, true);
+      temp_string.toCharArray(buffer, 10);
+      setDisplayLine(3, buffer);
 
-        strcat(buffer, "BP:");
-        dtostrf((BMP180_Pressure / 1000.0) * 0.29529980165, 5, 2, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "in");
-        setDisplayLine(3, buffer);
+      // Rain Total.
+      buffer[0] = '\0';
+      temp_string = "RT:" + formatRainfallString(rainTotal, 1, true);
+      temp_string.toCharArray(buffer, 10);
+      setDisplayLine(4, buffer);
 
-        //updateAllWeatherVariables();
-        buffer[0] = '\0';
-        strcat(buffer, "RT: ");
-        dtostrf(rainTotal * 0.039370, 5, 2, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "in");
-        setDisplayLine(4, buffer);
+      // Current Wind Speed.
+      buffer[0] = '\0';
+      temp_string = "WS:" + formatWindspeedString(currentWindSpeed, 1, true);
+      temp_string.toCharArray(buffer, 10);
+      setDisplayLine(5, buffer);
 
-        buffer[0] = '\0';
-        strcat(buffer, "WS:");
-        dtostrf(currentWindSpeed * 0.621371, 4, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "mph");
-        setDisplayLine(5, buffer);
+      // Current Wind Gust.
+      buffer[0] = '\0';
+      temp_string = "WG:" + formatWindspeedString(currentWindGust, 1, true);
+      temp_string.toCharArray(buffer, 10);
+      setDisplayLine(6, buffer);
 
-        buffer[0] = '\0';
-        strcat(buffer, "WG:");
-        dtostrf(currentWindGust * 0.621371, 4, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "mph");
-        setDisplayLine(6, buffer);
+      // Current Wind Direction.
+      buffer[0] = '\0';
+      temp_string = "WD:" + returnDirectionFromDegrees(int(currentWindDirection));
+      temp_string += "-" + String(currentWindDirection) + "d";
+      temp_string.toCharArray(buffer, 10);
+      setDisplayLine(7, buffer);
 
-        //updateAllWeatherVariables();
-        buffer[0] = '\0';
-        strcat(buffer, "WD:");
-        windDirection = returnDirectionFromDegrees(int(currentWindDirection));
-        windDirection = windDirection + "-";
-        strcat(buffer, windDirection.c_str());
-        dtostrf(currentWindDirection, 3, 0, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "d");
-        setDisplayLine(7, buffer);
-
-        /*
-         OutTemp:  OutHum:
-         InTemp:  BP:
-         Alt:
-         WindSpeed:
-         WindGust:
-         Wind Direction:
-         */
-      } else {
-        // Metric Units
-        char floatString[15];
-
-        buffer[0] = '\0';
-        strcat(buffer, "OT: ");
-        dtostrf(AM2315_Temperature, 5, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "C");
-        setDisplayLine(0, buffer);
-        buffer[0] = '\0';
-
-        strcat(buffer, "OH: ");
-        dtostrf(AM2315_Humidity, 5, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "%");
-        setDisplayLine(1, buffer);
-
-        //updateAllWeatherVariables();
-        buffer[0] = '\0';
-        strcat(buffer, "IT: ");
-        dtostrf(BMP180_Temperature, 5, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "C");
-        setDisplayLine(2, buffer);
-        buffer[0] = '\0';
-
-        strcat(buffer, "BP:");
-        dtostrf(BMP180_Pressure / 100.0, 6, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "kPa");
-        setDisplayLine(3, buffer);
-
-        //updateAllWeatherVariables();
-        buffer[0] = '\0';
-        strcat(buffer, "RT:");
-        dtostrf(rainTotal, 5, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "mm");
-        setDisplayLine(4, buffer);
-
-        buffer[0] = '\0';
-        strcat(buffer, "WS:");
-        dtostrf(currentWindSpeed, 4, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "kph");
-        setDisplayLine(5, buffer);
-
-        buffer[0] = '\0';
-        strcat(buffer, "WG:");
-        dtostrf(currentWindGust, 4, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "kph");
-        setDisplayLine(6, buffer);
-
-        //updateAllWeatherVariables();
-        buffer[0] = '\0';
-        strcat(buffer, "WD:");
-        windDirection = returnDirectionFromDegrees(int(currentWindDirection));
-        windDirection = windDirection + "-";
-        strcat(buffer, windDirection.c_str());
-        dtostrf(currentWindDirection, 3, 0, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "d");
-        setDisplayLine(7, buffer);
-      }
-
-      // display date and time
+      // Display date and time.
       buffer[0] = '\0';
       strcat(buffer, currentTimeString.c_str());
       setDisplayLine(8, buffer);
@@ -516,153 +345,67 @@ void updateDisplay(int displayMode) {
     break;
 
     case DISPLAY_WEATHER_LARGE: {
-      if (EnglishOrMetric == 0) {
-        // English Units
-        char floatString[15];
-
-        buffer[0] = '\0';
-        setDisplayLine(0, "OutTm");
-        dtostrf(AM2315_Temperature * 1.8 + 32.0, 5, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "F");
-        setDisplayLine(1, buffer);
-        buffer[0] = '\0';
-
-        setDisplayLine(2, "OutHm");
-        dtostrf(AM2315_Humidity, 5, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "%");
-        setDisplayLine(3, buffer);
-
-        //updateAllWeatherVariables();
-        buffer[0] = '\0';
-        setDisplayLine(4, "InTmp");
-        dtostrf(BMP180_Temperature * 1.8 + 32.0, 5, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "F");
-        setDisplayLine(5, buffer);
-        buffer[0] = '\0';
-
-        setDisplayLine(6, "BPres");
-        dtostrf((BMP180_Pressure / 1000.0) * 0.29529980165, 5, 2, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "in");
-        setDisplayLine(7, buffer);
-
-        //updateAllWeatherVariables();
-        buffer[0] = '\0';
-        setDisplayLine(8, "RnTot");
-        dtostrf(rainTotal * 0.039370, 5, 2, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "in");
-        setDisplayLine(9, buffer);
-
-        buffer[0] = '\0';
-        setDisplayLine(10, "WndSp");
-        dtostrf(currentWindSpeed * 0.621371, 4, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "mph");
-        setDisplayLine(11, buffer);
-
-        buffer[0] = '\0';
-        setDisplayLine(12, "WndGs");
-        dtostrf(currentWindGust * 0.621371, 4, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "mph");
-        setDisplayLine(13, buffer);
-
-        //updateAllWeatherVariables();
-        buffer[0] = '\0';
-        setDisplayLine(14, "WndDr");
-        windDirection = returnDirectionFromDegrees(int(currentWindDirection));
-        windDirection = windDirection + "-";
-        strcat(buffer, windDirection.c_str());
-        dtostrf(currentWindDirection, 3, 0, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "d");
-        setDisplayLine(15, buffer);
-
-        /*
-         OutTemp:  OutHum:
-         InTemp:  BP:
-         Alt:
-         WindSpeed:
-         WindGust:
-         Wind Direction:
-         */
-      } else {
-        // Metric Units
-        char floatString[15];
-
-        buffer[0] = '\0';
-        setDisplayLine(0, "OutTm");
-        dtostrf(AM2315_Temperature, 5, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "C");
-        setDisplayLine(1, buffer);
-        buffer[0] = '\0';
-
-        setDisplayLine(2, "OutHm");
-        dtostrf(AM2315_Humidity, 5, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "%");
-        setDisplayLine(3, buffer);
-
-        //updateAllWeatherVariables();
-        buffer[0] = '\0';
-        setDisplayLine(4, "InTmp");
-        dtostrf(BMP180_Temperature, 5, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "C");
-        setDisplayLine(5, buffer);
-        buffer[0] = '\0';
-
-        setDisplayLine(6, "BPres");
-        dtostrf(BMP180_Pressure / 100.0, 4, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "k");
-        setDisplayLine(7, buffer);
-
-        //updateAllWeatherVariables();
-        buffer[0] = '\0';
-        setDisplayLine(8, "RnTot");
-        dtostrf(rainTotal, 5, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "mm");
-        setDisplayLine(9, buffer);
-
-        buffer[0] = '\0';
-        setDisplayLine(10, "WndSp");
-        dtostrf(currentWindSpeed, 4, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "kph");
-        setDisplayLine(11, buffer);
-
-        buffer[0] = '\0';
-        setDisplayLine(12, "WndGs");
-        dtostrf(currentWindGust, 4, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "kph");
-        setDisplayLine(13, buffer);
-
-        //updateAllWeatherVariables();
-        buffer[0] = '\0';
-        setDisplayLine(14, "WndDr");
-        windDirection = returnDirectionFromDegrees(int(currentWindDirection));
-        windDirection = windDirection + "-";
-        strcat(buffer, windDirection.c_str());
-        dtostrf(currentWindDirection, 3, 0, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "d");
-        setDisplayLine(15, buffer);
-      }
-      // display date and time
+      // AM2315 Temperature.
       buffer[0] = '\0';
-      strcat(buffer, currentTimeString.c_str());
+      setDisplayLine(0, "OutTm");
+      formatTemperatureString(AM2315_Temperature, 1, true).toCharArray(buffer, 10);
+      setDisplayLine(1, buffer);
+
+      // AM2315 Humidity.
+      buffer[0] = '\0';
+      setDisplayLine(2, "OutHm");
+      formatHumidityString(AM2315_Humidity, 1, true).toCharArray(buffer, 10);
+      setDisplayLine(3, buffer);
+
+      // BMP180 Temperature.
+      buffer[0] = '\0';
+      setDisplayLine(4, "InTmp");
+      formatTemperatureString(BMP180_Temperature, 1, true).toCharArray(buffer, 10);
+      setDisplayLine(5, buffer);
+
+      // BMP180 Pressure.
+      buffer[0] = '\0';
+      setDisplayLine(6, "BPres");
+      formatPressureString(BMP180_Pressure, 2, true).toCharArray(buffer, 10);
+      setDisplayLine(7, buffer);
+
+      // Rain Total.
+      buffer[0] = '\0';
+      setDisplayLine(8, "RnTot");
+      formatRainfallString(rainTotal, 2, true).toCharArray(buffer, 10);
+      setDisplayLine(9, buffer);
+
+      // Current Wind Speed.
+      buffer[0] = '\0';
+      setDisplayLine(10, "WndSp");
+      formatWindspeedString(currentWindSpeed, 1, true).toCharArray(buffer, 10);
+      setDisplayLine(11, buffer);
+
+      // Current Wind Gust.
+      buffer[0] = '\0';
+      setDisplayLine(12, "WndGs");
+      formatWindspeedString(currentWindGust, 1, true).toCharArray(buffer, 10);
+      setDisplayLine(13, buffer);
+
+      // Current Wind direction.
+      buffer[0] = '\0';
+      setDisplayLine(14, "WndDr");
+      windDirection = returnDirectionFromDegrees(int(currentWindDirection));
+      windDirection += "-" + String(currentWindDirection) + 'd';
+      windDirection.toCharArray(buffer, 10);
+      setDisplayLine(15, buffer);
+
+      // Date/Time
+      buffer[0] = '\0';
+      currentTimeString.toCharArray(buffer, 10);
       setDisplayLine(16, buffer);
-      String airQual;
-      airQual = " Air Qual " + reportAirQuality(currentAirQuality);
-      setDisplayLine(17, const_cast<char*>(airQual.c_str()) );
+
+      // Air quality.
+      if (AirQualityPresent) {
+        String airQual;
+        airQual = " Air Qual " + reportAirQuality(currentAirQuality);
+        setDisplayLine(17, const_cast<char*>(airQual.c_str()) );
+      }
     }
     break;
 
@@ -1328,4 +1071,3 @@ void OLEDDisplaySetup() {
    testdrawbitmap(logo16_glcd_bmp, LOGO16_GLCD_HEIGHT, LOGO16_GLCD_WIDTH);
    */
 }
-

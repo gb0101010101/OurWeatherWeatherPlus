@@ -99,7 +99,7 @@ void myBTimerEvent() {
     // English Units
     char floatString[15];
     float FTemp;
-    FTemp = dewpoint * 1.8 + 32.0;
+    FTemp = AM2315_Dewpoint * 1.8 + 32.0;
 
     buffer[0] = '\0';
     dtostrf(FTemp, 5, 1, floatString);
@@ -110,7 +110,7 @@ void myBTimerEvent() {
     // English Units
     char floatString[15];
     float FTemp;
-    FTemp = dewpoint;
+    FTemp = AM2315_Dewpoint;
 
     buffer[0] = '\0';
     dtostrf(FTemp, 5, 1, floatString);

@@ -281,14 +281,25 @@ int englishUnitControl(String command) {
   writeToBlynkStatusTerminal("Units set to English");
   Blynk.virtualWrite(V8, "English");
   writeEEPROMState();
+  user_units = UK;
   return 1;
 }
 
 int metricUnitControl(String command) {
   EnglishOrMetric = 1;
   writeToBlynkStatusTerminal("Units set to Metric");
-  Blynk.virtualWrite(V8, "English");
+  Blynk.virtualWrite(V8, "Metric");
   writeEEPROMState();
+  user_units = SI;
+  return 1;
+}
+
+int usaUnitControl(String command) {
+  EnglishOrMetric = 2;
+  writeToBlynkStatusTerminal("Units set to USA");
+  Blynk.virtualWrite(V8, "USA");
+  writeEEPROMState();
+  user_units = USA;
   return 1;
 }
 

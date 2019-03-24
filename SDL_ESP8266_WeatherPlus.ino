@@ -198,7 +198,7 @@ float BMP180_Altitude;
 bool BMP180Found;
 bool BMP280Found;
 
-int EnglishOrMetric;   // 0 = English units, 1 = Metric
+int EnglishOrMetric;   // 0 = UK , 1 = SI, 2 = USA
 
 int WeatherDisplayMode;
 
@@ -209,7 +209,7 @@ RtcDS3231 Rtc;
 // AM2315
 float AM2315_Temperature;
 float AM2315_Humidity;
-float dewpoint;
+float AM2315_Dewpoint;
 
 #include "SDL_ESP8266_HR_AM2315.h"
 
@@ -431,8 +431,7 @@ bool AirQualityPresent = false;
 #include "SDL_Weather_80422.h"
 
 //SDL_Weather_80422 weatherStation(pinAnem, pinRain, 0, 0, A0, SDL_MODE_INTERNAL_AD );
-SDL_Weather_80422 weatherStation(pinAnem, pinRain, 0, 0, A0,
-SDL_MODE_I2C_ADS1015);
+SDL_Weather_80422 weatherStation(pinAnem, pinRain, 0, 0, A0, SDL_MODE_I2C_ADS1015);
 
 // SDL_MODE_I2C_ADS1015
 
@@ -464,9 +463,9 @@ char bubbleStatus[40];   // What to send to the Bubble status
 #include "RainFunctions.h"
 
 float lastRain;
-#include "WeatherUnderground.h"
-
 #include "Utils.h"
+
+#include "WeatherUnderground.h"
 
 // OLED Constants
 #define NUMFLAKES 10
@@ -591,6 +590,19 @@ RtcDateTime lastBoot;
 #include "BlynkRoutines.h"
 
 void setup() {
+  // Setup units:
+  switch (EnglishOrMetric) {
+    case 0:
+      user_units = UK;
+      break;
+
+    case 1:
+      user_units = SI;
+      break;
+
+    default:
+      user_units = USA;
+  }
 
   invalidTemperatureFound = false;
 
@@ -835,6 +847,7 @@ void setup() {
   rest.function("WeatherDemo", weatherDemoControl);
   rest.function("EnglishUnits", englishUnitControl);
   rest.function("MetricUnits", metricUnitControl);
+  rest.function("UsaUnits", usaUnitControl);
 
   // PubNub
   rest.function("EnablePubNub", enableDisableSDL2PubNub);
@@ -970,6 +983,9 @@ void setup() {
 
   // AM2315
   // setup AM2315
+  AM2315_Temperature = 0.0;
+  AM2315_Humidity = 0.0;
+  AM2315_Dewpoint = 0.0;
 
   AOK = am2315.readData(dataAM2315);
   if (AOK) {
@@ -978,15 +994,11 @@ void setup() {
     //Serial.print("TempF: "); Serial.println(dataAM2315[0]);
     AM2315_Temperature = dataAM2315[1];
     AM2315_Humidity = dataAM2315[0];
-    dewpoint = AM2315_Temperature - ((100.0 - AM2315_Humidity) / 5.0);
+    AM2315_Dewpoint = AM2315_Temperature - ((100.0 - AM2315_Humidity) / 5.0);
     AM2315_Present = true;
   } else {
     Serial.println("AM2315 Sensor not found, check wiring & pullups!");
   }
-
-  AM2315_Temperature = 0.0;
-  AM2315_Humidity = 0.0;
-  dewpoint = 0.0;
 
   if (WiFiPresent == true) {
     PubNub.begin(SDL2PubNubCode.c_str(), SDL2PubNubCode_Sub.c_str());
@@ -1053,15 +1065,22 @@ void setup() {
     } else {
       writeToBlynkStatusTerminal("AS3935 ThunderBoard Not Present");
     }
-  }
 
-  if (EnglishOrMetric == 0) {
-    Blynk.virtualWrite(V8, "English");
-    writeToBlynkStatusTerminal("Units set to English");
-  } else {
-    Blynk.virtualWrite(V8, "Metric");
-    writeToBlynkStatusTerminal("Units set to Metric ");
-  }
+    switch (EnglishOrMetric) {
+      case 0:
+        Blynk.virtualWrite(V8, "UK");
+        writeToBlynkStatusTerminal("Units set to UK");
+        break;
+      case 1:
+        Blynk.virtualWrite(V8, "Metric");
+        writeToBlynkStatusTerminal("Units set to Metric");
+        break;
+      case 3:
+        Blynk.virtualWrite(V8, "USA");
+        writeToBlynkStatusTerminal("Units set to USA");
+        break;
+    }
+  } // end UseBlynk
 
   if (WiFiPresent) {
     mqttSetup();
@@ -1138,16 +1157,15 @@ void loop() {
       Serial.print("AOK=");
       Serial.println(AOK);
 #endif
+      // Temperature in Celcius.
       AM2315_Temperature = dataAM2315[1];
       AM2315_Humidity = dataAM2315[0];
-      dewpoint = AM2315_Temperature - ((100.0 - AM2315_Humidity) / 5.0);
+      AM2315_Dewpoint = AM2315_Temperature - ((100.0 - AM2315_Humidity) / 5.0);
 
-      Serial.print("Temp: ");
-      Serial.println(AM2315_Temperature);
-      Serial.print("Hum: ");
-      Serial.println(AM2315_Humidity);
-      Serial.print("DwPt: ");
-      Serial.println(dewpoint);
+      Serial.println("Temperature: " + formatTemperatureString(AM2315_Temperature, 1, true));
+      Serial.println("Humidity: " + formatHumidityString(AM2315_Humidity, 0, true));
+      Serial.println("Dewpoint: " + formatTemperatureString(AM2315_Dewpoint, 1, true));
+
 #ifdef DEBUGPRINT
       am2315.printStatistics();
 #endif
@@ -1155,8 +1173,8 @@ void loop() {
       Serial.println("WXLink Present - AM2315 local read overruled");
     }
 
-    RestDataString += String(AM2315_Temperature, 2) + ",";
-    RestDataString += String(AM2315_Humidity, 2) + ",";
+    RestDataString += formatTemperatureString(AM2315_Temperature, 2) + ",";
+    RestDataString += formatHumidityString(AM2315_Humidity, 2) + ",";
 
     Serial.println("---------------");
     if (BMP180Found) {
@@ -1171,16 +1189,14 @@ void loop() {
     if (BMP180Found) {
       /* Display the results (barometric pressure is measure in hPa) */
       //BMP180_Pressure = bmp.readPressure();
-      // Put Alitude in Meters
+      // Put Altitude in Meters
       BMP180_Pressure = bmp.readSealevelPressure(altitude_meters);
-      /* Display atmospheric pressue in hPa */
-      Serial.print("Pressure:    ");
-      Serial.print(BMP180_Pressure / 100.0);
-      Serial.println(" kPa");
+      /* Display atmospheric pressure in hPa */
+      Serial.println("Pressure: " + formatPressureString(BMP180_Pressure, 1, true));
 
       /* Calculating altitude with reasonable accuracy requires pressure    *
        sea level pressure for your position at the moment the data is
-       converted, as well as the ambient temperature in degress
+       converted, as well as the ambient temperature in degrees
        celcius.  If you don't have these values, a 'generic' value of
        1013.25 hPa can be used (defined as SENSORS_PRESSURE_SEALEVELHPA
        in sensors.h), but this isn't ideal and will give variable
@@ -1194,16 +1210,12 @@ void loop() {
        pressure and sea level at: http://bit.ly/16Au8ol                   */
 
       /* First we get the current temperature from the BMP085 */
-      float temperature;
-      temperature = bmp.readTemperature();
-      Serial.print("Temperature: ");
-      Serial.print(temperature);
-      Serial.println(" C");
-
-      BMP180_Temperature = temperature;
+      BMP180_Temperature = bmp.readTemperature();
+      Serial.println("Temp: " + formatTemperatureString(BMP180_Temperature, 1, true));
 
       /* Then convert the atmospheric pressure, and SLP to altitude         */
       /* Update this next line with the current SLP for better results      */
+      // TODO: Fix altitude and sea level pressure.
       float seaLevelPressure = SENSORS_PRESSURE_SEALEVELHPA;
       float altitude;
       altitude = bmp.readAltitude(BMP180_Pressure);
@@ -1216,18 +1228,16 @@ void loop() {
 
     if (BMP280Found) {
       /* Display the results (barometric pressure is measure in hPa) */
-      //BMP180_Pressure = bmp.readPressure();
-      // Put Alitude in Meters
-      BMP180_Pressure = bme.readSealevelPressure(altitude_meters) / 100.00;
+      // BMP180_Pressure = bmp.readPressure();
+      // Put Altitude in Meters
+      BMP180_Pressure = bme.readSealevelPressure(altitude_meters);
 
-      /* Display atmospheric pressue in hPa */
-      Serial.print("Pressure:    ");
-      Serial.print(BMP180_Pressure);
-      Serial.println(" hPa");
+      /* Display atmospheric pressure in hPa */
+      Serial.println("Pressure: " + formatPressureString(BMP180_Pressure, 2, true));
 
       /* Calculating altitude with reasonable accuracy requires pressure    *
        sea level pressure for your position at the moment the data is
-       converted, as well as the ambient temperature in degress
+       converted, as well as the ambient temperature in degrees
        celcius.  If you don't have these values, a 'generic' value of
        1013.25 hPa can be used (defined as SENSORS_PRESSURE_SEALEVELHPA
        in sensors.h), but this isn't ideal and will give variable
@@ -1241,29 +1251,22 @@ void loop() {
        pressure and sea level at: http://bit.ly/16Au8ol                   */
 
       /* First we get the current temperature from the BMP085 */
-      float temperature;
-      temperature = bme.readTemperature();
-      Serial.print("Temperature: ");
-      Serial.print(temperature);
-      Serial.println(" C");
 
-      BMP180_Temperature = temperature;
+      BMP180_Temperature = bme.readTemperature();
+      Serial.println("Temperature: " + formatTemperatureString(BMP180_Temperature, 1, true));
 
       /* Then convert the atmospheric pressure, and SLP to altitude         */
       /* Update this next line with the current SLP for better results      */
       float seaLevelPressure = SENSORS_PRESSURE_SEALEVELHPA;
       float altitude;
       altitude = bme.readAltitude(SENSORS_PRESSURE_SEALEVELHPA);
-      Serial.print("Altitude:    ");
-      Serial.print(altitude);
-
+      Serial.println("Altitude: " + formatAltitudeString(altitude, 1, true));
       BMP180_Altitude = altitude;
-      Serial.println(" m");
     }
 
-    RestDataString += String(BMP180_Temperature, 2) + ",";
-    RestDataString += String(BMP180_Pressure, 2) + ",";
-    RestDataString += String(BMP180_Altitude, 2) + ",";
+    RestDataString += formatTemperatureString(BMP180_Temperature, 2) + ",";
+    RestDataString += formatPressureString(BMP180_Pressure, 2) + ",";
+    RestDataString += formatAltitudeString(BMP180_Altitude, 2) + ",";
 
     if (AirQualityPresent) {
       Serial.println("---------------");
@@ -1437,8 +1440,8 @@ void loop() {
             convert4BytesToFloat(buffer, 25));
         AM2315_Humidity = convert4BytesToFloat(buffer, 29);
 
-        // calculate dewpoint
-        dewpoint = AM2315_Temperature - ((100.0 - AM2315_Humidity) / 5.0);
+        // Calculate dewpoint.
+        AM2315_Dewpoint = AM2315_Temperature - ((100.0 - AM2315_Humidity) / 5.0);
 
         // set up solar status and message ID for screen
 
@@ -1468,29 +1471,26 @@ void loop() {
       }
     }
 
-    Serial.print("windSpeedMin =");
-    Serial.print(windSpeedMin);
-    Serial.print(" windSpeedMax =");
-    Serial.println(windSpeedMax);
+    Serial.print("Wind Speed: Min: " + formatWindspeedString(windSpeedMin, 2, true));
+    Serial.println(" Max: " + formatWindspeedString(windSpeedMax, 2, true));
+
 
 #ifdef DEBUGPRINT
     Serial.print("windSpeedBuffer=");
     Serial.println(windSpeedBuffer);
 #endif
 
-    Serial.print("windGustMin =");
-    Serial.print(windGustMin);
-    Serial.print(" windGustMax =");
-    Serial.println(windGustMax);
+    Serial.print("Wind Gust: Min: " + formatWindspeedString(windGustMin, 2, true));
+    Serial.println(" Max: " + formatWindspeedString(windGustMax, 2, true));
 
 #ifdef DEBUGPRINT
     Serial.print("windGustBuffer=");
     Serial.println(windGustBuffer);
 #endif
 
-    Serial.print("windDirectionMin =");
+    Serial.print("Wind Direction: Min: ");
     Serial.print(windDirectionMin);
-    Serial.print(" windDirectionMax =");
+    Serial.print(" Max: ");
     Serial.println(windDirectionMax);
 
 #ifdef DEBUGPRINT
@@ -1498,28 +1498,22 @@ void loop() {
     Serial.println(windDirectionBuffer);
 #endif
 
-    Serial.print("currentWindSpeed=");
-    Serial.print(currentWindSpeed);
+    Serial.print("Current Wind: Speed: " + formatWindspeedString(currentWindSpeed, 2, true));
+    Serial.print(" Gust: " + formatWindspeedString(currentWindGust, 2, true));
+    Serial.print(" Direction: ");
+    Serial.println(currentWindDirection);
 
-    Serial.print(" \tcurrentWindGust=");
-    Serial.print(currentWindGust);
-
-    Serial.print(" \tWind Direction=");
-    Serial.print(currentWindDirection);
-
-    Serial.print(" \t\tCumulative Rain = ");
-    Serial.println(rainTotal);
-
+    Serial.println("Cumulative Rain: " + formatRainfallString(rainTotal, 2, true));
     Serial.println(" ");
 
-    RestDataString += String(currentWindSpeed, 2) + ",";
-    RestDataString += String(currentWindGust, 2) + ",";
+    RestDataString += formatWindspeedString(currentWindSpeed, 2) + ",";
+    RestDataString += formatWindspeedString(currentWindGust, 2) + ",";
     RestDataString += String(currentWindDirection, 2) + ",";
-    RestDataString += String(rainTotal, 2) + ",";
-    RestDataString += String(windSpeedMin, 2) + ",";
-    RestDataString += String(windSpeedMax, 2) + ",";
-    RestDataString += String(windGustMin, 2) + ",";
-    RestDataString += String(windGustMax, 2) + ",";
+    RestDataString += formatRainfallString(rainTotal, 2) + ",";
+    RestDataString += formatWindspeedString(windSpeedMin, 2) + ",";
+    RestDataString += formatWindspeedString(windSpeedMax, 2) + ",";
+    RestDataString += formatWindspeedString(windGustMin, 2) + ",";
+    RestDataString += formatWindspeedString(windGustMax, 2) + ",";
 
     RestDataString += String(windDirectionMin, 2) + ",";
     RestDataString += String(windDirectionMax, 2) + ",";
