@@ -33,7 +33,13 @@ bool mqtt_valid = false;
 // Controls format of data sent
 // True - All values will be sent as one JSON string to one topic.
 // False - Each piece of data will be sent as separate topic.
+
+// TODO: DO NOT USE 'true' option for now as there are buffer issues.
 bool mqtt_send_single = false;
+
+// When sending a single topic the buffer may be too small.
+// Increase it by un-commenting the following.
+// #define MQTT_MAX_PACKET_SIZE 1024
 
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
   // handle message arrived
@@ -200,6 +206,7 @@ int mqttSend(String data_string) {
     }
 
     std::vector<String> values;
+
     String temp_string;
     char delimeter = ',';
     char last_char;
@@ -250,8 +257,12 @@ int mqttSend(String data_string) {
           }
         }
         json += "}";
-        String topic = "/" + stationName + "/state";
+        String topic = "/" + stationName + "/State/All";
         mqtt_client.publish(topic.c_str(), json.c_str());
+#ifdef DEBUG
+        Serial.println(json);
+        Serial.println(json.length());
+#endif
       } else {
         for (int i = 0; i < topics_size; i++) {
           if (topics_enabled[i]) {
@@ -260,7 +271,7 @@ int mqttSend(String data_string) {
           }
         }
       }
-      // Add a short delay safter sending as sometimes MQTT fails to publish.
+      // Add a short delay after sending as sometimes MQTT fails to publish.
       delay(100);
       return 1;
     }
