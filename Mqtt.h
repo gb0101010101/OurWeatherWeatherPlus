@@ -17,14 +17,18 @@ PubSubClient mqtt_client(wifi_client);
 // Setup default variables.
 
 // Set the IP address of the MQTT Server
-// e.g. 129, 168, 1, 50
-IPAddress mqtt_server(000, 000, 000, 000);
-char* mqtt_user = "";
-char* mqtt_pass = "";
+// e.g. IPAddress mqtt_server(129, 168, 1, 50);
+IPAddress mqtt_server(0, 0, 0, 0);
+
+// Set your MQTT login info here.
+// e.g. char* mqtt_user = "mqttusername";
+char* mqtt_user;
+// e.g. char* mqtt_pass = "mqttpassword";
+char* mqtt_pass;
+// Change the port if you use a custom one.
 uint16_t mqtt_port = 1883;
 
-// For now set this to true when values above
-// have been configured to start MQTT.
+// Set this to true when you have configured settings above.
 bool mqtt_configured = false;
 
 // True when MQTT has connected during setup.
