@@ -39,9 +39,9 @@ SDL_ESP8266_HR_AM2315::SDL_ESP8266_HR_AM2315() {
   lowTemp = 1000.0;
   lastTemp = 0.0;
   highBadReadCount = 0;
-  int i;
-  for (i = 0; i < 10; i++)
+  for (int i = 0; i < 10; i++) {
     lastBadRead[i] = 0;
+  }
 
   firstGoodRead = false;
 
@@ -70,8 +70,8 @@ boolean SDL_ESP8266_HR_AM2315::readData(float *dataArray) {
 
   // OK now, we have a bad read, for any reason - repeat up to REPEATCOUNT times
 
-  if (returnValue != GOODREAD) // this is for all error issues
-  {
+  if (returnValue != GOODREAD) {
+    // this is for all error issues
     int count;
     for (count = 0; count < REPEATCOUNT; count++) {
       returnValue = internalReadData(dataArray);
@@ -227,7 +227,7 @@ int SDL_ESP8266_HR_AM2315::internalReadData(float * dataArray) {
 
     dataArray[0] = humidity;
 
-    temp = reply[4] & 0x7F;
+    int temp = reply[4] & 0x7F;
     temp *= 256;
     temp += reply[5];
     temp /= 10;
