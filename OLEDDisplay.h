@@ -8,744 +8,596 @@
 
  Heavily modified by SDL
  *********************************************************************/
+#include "vector";
 
-// prototypes
-void setDisplayLine(int lineNumber, char *value);
-void writeAllDisplayLines(int DisplayMode);
+// Cannot use ticker for OLED updates as yield()
+// in display.display() causes panic.
+// #include <Ticker.h>;
+// Ticker tickerQueueUpdate;
 
-// https://stackoverflow.com/questions/9072320/split-string-into-string-array
+// Forward declarations.
+void displayQueueDelay(int milliseconds);
 
-char displayLines[20][28];
+/**
+ * Define OLED display 'Pages'. Each 'Page' option must define a switch
+ * option in displayPageRegister() and displayPageRender() for the OLED to be
+ * updated.
+ */
 
-// WeatherPlus Text Buffer Lines
-void updateDisplay(int displayMode) {
-#ifdef OLED_Present
+// Removed following as they are converted to Console output.
+// DISPLAY_POWERUP
+// DISPLAY_ACCESSPOINT
+// DISPLAY_TRYING_AP
+// DISPLAY_FAILING_AP
+// DISPLAY_FAILED_RECONNECT
+// DISPLAY_IPDISPLAY
+// DISPLAY_UPDATING
+// DISPLAY_NO_UPDATE_FAILED
+// DISPLAY_UPDATE_FINISHED
+// DISPLAY_NO_UPDATE_AVAILABLE
 
-  char buffer[40];
-  char returnString[200];
+/**
+ * Define Display screens that are shown using timed intervals.
+ */
+typedef enum {
+  kScreenSmallWeather, // DISPLAY_WEATHER_SMALL
+  kScreenMediumAM2315, // DISPLAY_WEATHER_MEDIUM
+  kScreenMediumBMP180, // Separated from DISPLAY_WEATHER_MEDIUM
+  kScreenMediumRainfall, // Separated from DISPLAY_WEATHER_MEDIUM
+  kScreenMediumWind, // Separated from DISPLAY_WEATHER_MEDIUM
+  kScreenMediumDateTime, // Separated from DISPLAY_WEATHER_MEDIUM
+  kScreenMediumAirQuality, // Separated from DISPLAY_WEATHER_MEDIUM
+  kScreenLargeAM2315Temp, // DISPLAY_WEATHER_LARGE
+  kScreenLargeAM2315Hum, // Separated from DISPLAY_WEATHER_LARGE
+  kScreenLargeBMP180Temp, // Separated from DISPLAY_WEATHER_LARGE
+  kScreenLargeBMP180Pres, // Separated from DISPLAY_WEATHER_LARGE
+  kScreenLargeRainTotal, // Separated from DISPLAY_WEATHER_LARGE
+  kScreenLargeWindSpeed, // Separated from DISPLAY_WEATHER_LARGE
+  kScreenLargeWindGust, // Separated from DISPLAY_WEATHER_LARGE
+  kScreenLargeWindDir, // Separated from DISPLAY_WEATHER_LARGE
+  kScreenLargeDateTime, // Separated from DISPLAY_WEATHER_LARGE
+  kScreenLargeAirQual, // Separated from DISPLAY_WEATHER_LARGE
+  kScreenDemoTemp, // DISPLAY_WEATHER_DEMO
+  kScreenDemoHum,
+  kScreenDemoWindSpeed,
+  kScreenDemoWindDir,
+  kScreenDemoRainTotal,
+  kScreenDemoDateTime,
+  kScreenSunAirPlus, // DISPLAY_SUNAIRPLUS
+  kScreenLightning, // DISPLAY_LIGHTNING_STATUS
+  kScreenWxLink, // DISPLAY_WXLINK
+} displayScreenTimed;
+
+// Store timed display queue pointers in vector.
+std::vector<displayScreenTimed> displayQueue;
+// Next display index that will be rendered. Auto increments.
+int display_queue_index = 0;
+// Default time bto display a screen. Changed later per display mode.
+int display_queue_timeout = 1800;
+// Whether the display queue has started.
+bool display_queue_started = false;
+
+/**
+ * Render max 6 text lines using smallest text size.
+ */
+void displayRenderSmall(std::vector<String> lines) {
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+
+  int vector_size = lines.size();
+  if (vector_size > 6) {
+    vector_size = 6;
+  }
+
+  short int cursor_y = 0;
+  for (int i = 0; i < vector_size; i++) {
+    display.setCursor(0, cursor_y);
+    display.println(String(lines[i]));
+    cursor_y += 10;
+  }
+
+  display.display();
+}
+
+/**
+ * Render max 3 text lines using medium text size.
+ */
+void displayRenderMedium(std::vector<String> lines) {
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+
+  int vector_size = lines.size();
+  if (vector_size > 3) {
+    vector_size = 3;
+  }
+
+  int cursor_y = 0;
+  for (int i = 0; i < vector_size; i++) {
+    display.setCursor(0, cursor_y);
+    display.println(lines[i]);
+    cursor_y += 20;
+  }
+
+  display.display();
+}
+
+/**
+ * Render 2 text lines using medium and large text size.
+ */
+void displayRenderLarge(std::vector<String> lines) {
+  display.clearDisplay();
+  display.setTextColor(WHITE);
+  display.setTextSize(2);
+  display.setCursor(0, 0);
+  display.println(lines[0]);
+  display.setTextSize(3);
+  display.setCursor(0, 20);
+  display.println(lines[1]);
+  display.display();
+}
+
+// Store text lines to be rendered on screen as console.
+std::vector<String> console_buffer;
+// Max number of line the screen will display.
+int console_lines_max = 6;
+
+/**
+ * Render console text from buffer using small text size.
+ */
+void displayRenderConsole() {
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+
+  short int cursor_y = 0;
+  for (int i = 0; i < console_buffer.size(); i++) {
+    display.setCursor(0, cursor_y);
+    display.println(console_buffer[i]);
+    cursor_y += 10;
+  }
+
+  display.display();
+}
+
+/**
+ * Instant output of text to screen like a traditional console.
+ *
+ * New lines will be added up to max line count and then
+ * then the screen will scroll down erasing the top lines.
+ *
+ * Use render FALSE to add multiple lines and set to TRUE on last
+ * line added to update the display.
+ */
+void displayConsolePrint(String text, bool render) {
+  console_buffer.push_back(text);
+  if (console_buffer.size() > console_lines_max) {
+    console_buffer.erase(console_buffer.begin());
+  }
+  if (render) {
+    displayRenderConsole();
+  }
+}
+
+void displayConsolePrint(String text) {
+  displayConsolePrint(text, true);
+}
+
+/**
+ * Add multiple lines to console display and render.
+ */
+void displayConsolePrint(std::vector<String> lines) {
+  for (int i = 0; i < console_buffer.size(); i++) {
+    console_buffer.push_back(lines[i]);
+    if (console_buffer.size() > console_lines_max) {
+      console_buffer.erase(console_buffer.begin());
+    }
+  }
+  displayRenderConsole();
+}
+
+/**
+ * Clear the display console.
+ */
+void displayConsoleClear() {
+  console_buffer.clear();
+}
+
+/**
+ * Generate list of screens for each display format.
+ */
+void displayQueueScreens(int format) {
+  displayQueue.clear();
+  display_queue_index = 0;
+  switch (format) {
+    case DISPLAY_WEATHER_SMALL:
+      displayQueue.push_back(kScreenSmallWeather);
+
+      if (AirQuality_Present) {
+        displayQueue.push_back(kScreenMediumAirQuality);
+      }
+      if (WXLink_Present) {
+        displayQueue.push_back(kScreenWxLink);
+      }
+      if (SunAirPlus_Present) {
+        displayQueue.push_back(kScreenSunAirPlus);
+      }
+      if (AS3935_Present) {
+        displayQueue.push_back(kScreenLightning);
+      }
+
+      display_queue_timeout = 5000;
+      break;
+
+    case DISPLAY_WEATHER_MEDIUM:
+      displayQueue.push_back(kScreenMediumAM2315);
+      displayQueue.push_back(kScreenMediumBMP180);
+      displayQueue.push_back(kScreenMediumRainfall);
+      displayQueue.push_back(kScreenMediumWind);
+      displayQueue.push_back(kScreenMediumDateTime);
+
+      if (AirQuality_Present) {
+        displayQueue.push_back(kScreenMediumAirQuality);
+      }
+      if (WXLink_Present) {
+        displayQueue.push_back(kScreenWxLink);
+      }
+      if (SunAirPlus_Present) {
+        displayQueue.push_back(kScreenSunAirPlus);
+      }
+      if (AS3935_Present) {
+        displayQueue.push_back(kScreenLightning);
+      }
+
+      display_queue_timeout = 1800;
+      break;
+
+    case DISPLAY_WEATHER_LARGE:
+      displayQueue.push_back(kScreenLargeAM2315Temp);
+      displayQueue.push_back(kScreenLargeAM2315Hum);
+      displayQueue.push_back(kScreenLargeBMP180Temp);
+      displayQueue.push_back(kScreenLargeBMP180Pres);
+      displayQueue.push_back(kScreenLargeRainTotal);
+      displayQueue.push_back(kScreenLargeWindSpeed);
+      displayQueue.push_back(kScreenLargeWindGust);
+      displayQueue.push_back(kScreenLargeWindDir);
+      displayQueue.push_back(kScreenLargeDateTime);
+
+      if (AirQuality_Present) {
+        displayQueue.push_back(kScreenLargeAirQual);
+      }
+      if (WXLink_Present) {
+        displayQueue.push_back(kScreenWxLink);
+      }
+      if (SunAirPlus_Present) {
+        displayQueue.push_back(kScreenSunAirPlus);
+      }
+      if (AS3935_Present) {
+        displayQueue.push_back(kScreenLightning);
+      }
+
+      display_queue_timeout = 1800;
+      break;
+
+    case DISPLAY_WEATHER_DEMO:
+      displayQueue.push_back(kScreenDemoTemp);
+      displayQueue.push_back(kScreenDemoHum);
+      displayQueue.push_back(kScreenDemoWindSpeed);
+      displayQueue.push_back(kScreenDemoWindDir);
+      displayQueue.push_back(kScreenDemoRainTotal);
+      displayQueue.push_back(kScreenDemoDateTime);
+
+      display_queue_timeout = 900;
+      break;
+  }
+}
+
+/**
+ * Generate text to be displayed on OLED and store in vector.
+ */
+void displayQueueRenderScreen(displayScreenTimed displayScreen) {
+  std::vector<String> lines;
   String temp_string;
-
-  Serial.print("displayMode=");
-  Serial.println(displayMode);
   String windDirection;
 
-  RtcDateTime now = Rtc.GetDateTime();
-
-  String currentTimeString;
-  currentTimeString = returnDateTime(now);
-
-  switch (displayMode) {
-
-    case DISPLAY_UPDATING:
-      Serial.println("Updating OurWeather Software");
-
-      setDisplayLine(0, "OurWeather Updating");
-      setDisplayLine(1, "");
-      setDisplayLine(2, "");
-      setDisplayLine(3, "");
-      setDisplayLine(4, "");
-      setDisplayLine(5, "");
-      break;
-
-    case DISPLAY_UPDATE_FINISHED:
-      Serial.println("Finish OurWeather Software");
-
-      setDisplayLine(0, "OurWeather Updated");
-      setDisplayLine(1, "Wait 120 Seconds");
-      setDisplayLine(2, "Unplug Power");
-      setDisplayLine(3, "Wait 15 Seconds");
-      setDisplayLine(4, "Plug Power In");
-      setDisplayLine(5, "");
-      break;
-
-    case DISPLAY_NO_UPDATE_AVAILABLE:
-      setDisplayLine(0, "You have the most");
-      setDisplayLine(1, "recent software");
-      setDisplayLine(2, "");
-      setDisplayLine(3, "");
-      setDisplayLine(4, "");
-      setDisplayLine(5, "");
-      break;
-
-    case DISPLAY_NO_UPDATE_FAILED:
-      setDisplayLine(0, "Update Failed.");
-      setDisplayLine(1, "Try again later.");
-      setDisplayLine(2, "");
-      setDisplayLine(3, "");
-      setDisplayLine(4, "");
-      setDisplayLine(5, "");
-      break;
-
-    case DISPLAY_POWERUP:
-      Serial.println("OurWeather Booting Up");
-
-      strcpy(buffer, "Ver: ");
-      strcat(buffer, WEATHERPLUSESP8266VERSION);
-
-      setDisplayLine(0, "OurWeather Booting");
-      setDisplayLine(1, buffer);
-      setDisplayLine(2, "");
-      setDisplayLine(3, "");
-      break;
-
-    case DISPLAY_ACCESSPOINT: {
-      Serial.println("OurWeather Setup");
-
-      setDisplayLine(0, "OurWeather AP");
-      buffer[0] = '\0';
-      strcpy(buffer, APssid.c_str());
-      setDisplayLine(1, buffer);
-      buffer[0] = '\0';
-
-      IPAddress myIp2 = WiFi.softAPIP();
-      sprintf(buffer, "%d.%d.%d.%d", myIp2[0], myIp2[1], myIp2[2], myIp2[3]);
-      setDisplayLine(2, buffer);
+  switch (displayScreen) {
+    case kScreenSunAirPlus: {
+      lines.push_back("Solar Readings");
+      lines.push_back("----------------");
+      lines.push_back("Battery:" + String(BatteryVoltage, 2) + "V/" + String(BatteryCurrent, 1) + "mA");
+      lines.push_back("Solar:" + String(SolarPanelVoltage, 2) + "V/" + String(SolarPanelCurrent, 1) + "mA");
+      lines.push_back("Load:" + String(LoadVoltage, 2) + "V/" + String(LoadCurrent, 1) + "mA");
+      displayRenderSmall(lines);
     }
     break;
 
-    case DISPLAY_TRYING_AP: {
-      Serial.println("OurWeather Setup");
-
-      setDisplayLine(0, "Trying WiFi AP");
-      buffer[0] = '\0';
-      strcpy(buffer, Wssid.c_str());
-      setDisplayLine(1, buffer);
-      buffer[0] = '\0';
-      setDisplayLine(2, "");
-      setDisplayLine(3, "");
+    case kScreenLightning: {
+      lines.push_back("Lightning Status");
+      lines.push_back("----------------");
+      lines.push_back("Last:" + as3935_LastLightning);
+      lines.push_back("Date:" + getValue(as3935_LastLightningTimeStamp, ' ', 0));
+      lines.push_back("Time:" + getValue(as3935_LastLightningTimeStamp, ' ', 1));
+      displayRenderSmall(lines);
     }
     break;
 
-    case DISPLAY_FAILING_AP: {
-      setDisplayLine(0, "Failing to connect WiFi AP");
-      buffer[0] = '\0';
-      strcpy(buffer, Wssid.c_str());
-      setDisplayLine(1, buffer);
-      buffer[0] = '\0';
-      setDisplayLine(2, "Restarting OurWeather");
-      setDisplayLine(3, "Try again....");
+// TODO: This should probably be a Console display rather than timed queue display.
+//    case DISPLAY_LIGHTNING_DISPLAY: {
+//      String stringSolar;
+//      stringSolar = as3935_LastLightning + " away";
+//
+//      setDisplayLine(0, "LIGHTNING!");
+//      setDisplayLine(1, "----------------");
+//      setDisplayLine(2, const_cast<char*>(stringSolar.c_str()) );
+//      setDisplayLine(3, "----------------");
+//      setDisplayLine(4, "LIGHTNING!");
+//    }
+//    break;
+
+    case kScreenWxLink: {
+      lines.push_back("WXLink Readings");
+      lines.push_back("----------------");
+      lines.push_back("Battery:" + String(WXBatteryVoltage, 2) + "V/" + String(WXBatteryCurrent, 1) + "mA");
+      lines.push_back("Solar:" + String(WXSolarPanelVoltage, 2) + "V/" + String(WXSolarPanelCurrent, 1) + "mA");
+      lines.push_back("Load:" + String(WXLoadCurrent, 1) + "mA");
+      lines.push_back("----------------");
+      lines.push_back("MessageID: " + String(WXMessageID));
+      displayRenderSmall(lines);
     }
     break;
 
-    case DISPLAY_FAILED_RECONNECT: {
-      setDisplayLine(0, "Failing to reconnect to WiFI");
-      buffer[0] = '\0';
-      strcpy(buffer, Wssid.c_str());
-      setDisplayLine(1, buffer);
-      buffer[0] = '\0';
-      setDisplayLine(3, "Will try again....");
-
-    }
-    break;
-
-    case DISPLAY_IPDISPLAY: {
-      setDisplayLine(0, "OurWeather Connected");
-      setDisplayLine(1, "IP Address:");
-
-      IPAddress myIp2 = WiFi.localIP();
-      sprintf(buffer, "%d.%d.%d.%d", myIp2[0], myIp2[1], myIp2[2], myIp2[3]);
-      setDisplayLine(2, buffer);
-    }
-    break;
-
-    case DISPLAY_SDL2PUBNUBCODE: {
-      if (pubNubEnabled == 1) {
-        setDisplayLine(0, "Alexa Enabled");
-        setDisplayLine(1, "Pubnub Publish Code:");
-        buffer[0] = '\0';
-        strcpy(buffer, SDL2PubNubCode.c_str() );
-        setDisplayLine(2, buffer);
-        setDisplayLine(3, "");
-
-      } else {
-        setDisplayLine(0, "Alexa Disabled");
-        setDisplayLine(1, "");
-        setDisplayLine(2, "");
-        setDisplayLine(3, "");
-      }
-      delay(2000);
-    }
-    break;
-
-    case DISPLAY_SUNAIRPLUS: {
-      setDisplayLine(0, "Solar Readings");
-      setDisplayLine(1, "----------------");
-
-      String stringSolar;
-      stringSolar = "Battery:" + String(BatteryVoltage, 2) + "V/" + String(BatteryCurrent, 1) + "mA";
-      setDisplayLine(2, const_cast<char*>(stringSolar.c_str()) );
-
-      stringSolar = "Solar:" + String(SolarPanelVoltage, 2) + "V/" + String(SolarPanelCurrent, 1) + "mA";
-      setDisplayLine(3, const_cast<char*>(stringSolar.c_str()) );
-
-      stringSolar = "Load:" + String(LoadVoltage, 2) + "V/" + String(LoadCurrent, 1) + "mA";
-      setDisplayLine(4, const_cast<char*>(stringSolar.c_str()) );
-    }
-    break;
-
-    case DISPLAY_LIGHTNING_STATUS: {
-      setDisplayLine(0, "Lightning Status");
-      setDisplayLine(1, "----------------");
-
-      String stringSolar;
-      stringSolar = "Last:" + as3935_LastLightning;
-
-      setDisplayLine(2, const_cast<char*>(stringSolar.c_str()) );
-
-      stringSolar = "Date:" + getValue(as3935_LastLightningTimeStamp, ' ', 0);
-      setDisplayLine(3, const_cast<char*>(stringSolar.c_str()) );
-
-      stringSolar = "Time:" + getValue(as3935_LastLightningTimeStamp, ' ', 1);
-      setDisplayLine(4, const_cast<char*>(stringSolar.c_str()) );
-    }
-    break;
-
-    case DISPLAY_LIGHTNING_DISPLAY: {
-      String stringSolar;
-      stringSolar = as3935_LastLightning + " away";
-
-      setDisplayLine(0, "LIGHTNING!");
-      setDisplayLine(1, "----------------");
-      setDisplayLine(2, const_cast<char*>(stringSolar.c_str()) );
-      setDisplayLine(3, "----------------");
-      setDisplayLine(4, "LIGHTNING!");
-    }
-    break;
-
-    case DISPLAY_WXLINK: {
-      setDisplayLine(0, "WXLink Readings");
-      setDisplayLine(1, "----------------");
-
-      String stringSolar;
-      stringSolar = "Battery:" + String(WXBatteryVoltage, 2) + "V/" + String(WXBatteryCurrent, 1) + "mA";
-      setDisplayLine(2, const_cast<char*>(stringSolar.c_str()) );
-
-      stringSolar = "Solar:" + String(WXSolarPanelVoltage, 2) + "V/" + String(WXSolarPanelCurrent, 1) + "mA";
-      setDisplayLine(3, const_cast<char*>(stringSolar.c_str()) );
-
-      stringSolar = "Load:" + String(WXLoadCurrent, 1) + "mA";
-      setDisplayLine(4, const_cast<char*>(stringSolar.c_str()) );
-
-      setDisplayLine(5, "----------------");
-
-      stringSolar = "MessageID: " + String(WXMessageID);
-      setDisplayLine(6, const_cast<char*>(stringSolar.c_str()) );
-    }
-    break;
-
-    case DISPLAY_WEATHER_SMALL: {
+    case kScreenSmallWeather: {
       // AM2315 Temperature and Humidity.
-      buffer[0] = '\0';
-      temp_string = "OT:" + formatTemperatureString(AM2315_Temperature, 1, true);
-      temp_string += " OH:" + formatHumidityString(AM2315_Humidity, 1, true);
-      temp_string.toCharArray(buffer, 20);
-      setDisplayLine(0, buffer);
-
+      lines.push_back("OT:" + formatTemperatureString(AM2315_Temperature, 1, true) +
+                     " OH:" + formatHumidityString(AM2315_Humidity, 1, true));
       // BMP180 Temperature and Pressure.
-      buffer[0] = '\0';
-      temp_string = "IT:" + formatTemperatureString(BMP180_Temperature, 1, true);
-      temp_string += " BP:" + formatPressureString(BMP180_Pressure, 1, true);
-      temp_string.toCharArray(buffer, 20);
-      setDisplayLine(1, buffer);
-
+      lines.push_back("IT:" + formatTemperatureString(BMP180_Temperature, 1, true) +
+                     " BP:" + formatPressureString(BMP180_Pressure, 1, true));
       // Rain Total.
-      buffer[0] = '\0';
-      temp_string = "Rain Total:" + formatRainfallString(rainTotal, 1, true);
-      temp_string.toCharArray(buffer, 20);
-      setDisplayLine(2, buffer);
-
+      lines.push_back("Rain Total:" + formatRainfallString(rainTotal, 1, true));
       // Current Wind Speed.
-      buffer[0] = '\0';
-      temp_string = "Wind Speed:" + formatWindspeedString(currentWindSpeed, 1, true);
-      temp_string.toCharArray(buffer, 20);
-      setDisplayLine(3, buffer);
-
+      lines.push_back("Wind Speed:" + formatWindspeedString(currentWindSpeed, 1, true));
       // Current Wind Gust.
-      buffer[0] = '\0';
-      temp_string = "Wind Gust:" + formatWindspeedString(currentWindGust, 1, true);
-      temp_string.toCharArray(buffer, 20);
-      setDisplayLine(4, buffer);
-
+      lines.push_back("Wind Gust:" + formatWindspeedString(currentWindGust, 1, true));
       // Current Wind Direction.
-      buffer[0] = '\0';
-      temp_string = "Wind Dir:" + returnDirectionFromDegrees(int(currentWindDirection));
-      temp_string += "-" + String(currentWindDirection) + "d";
-      temp_string.toCharArray(buffer, 20);
-      setDisplayLine(5, buffer);
-
-      if (AirQualityPresent) {
-        buffer[0] = '\0';
-        temp_string = "Air Qual:" + reportAirQuality(currentAirQuality);
-        temp_string.toCharArray(buffer, 20);
-        setDisplayLine(6, buffer);
+      lines.push_back("Wind Dir:" + returnDirectionFromDegrees(int(currentWindDirection)) +
+                       "-" + String(currentWindDirection, 0) + "d");
+      // Air Quality
+      if (AirQuality_Present) {
+        lines.push_back("Air Qual:" + reportAirQuality(currentAirQuality));
       }
+      displayRenderSmall(lines);
     }
     break;
 
-    case DISPLAY_WEATHER_MEDIUM: {
+    case kScreenMediumAM2315: {
       // AM2315 Temperature.
-      buffer[0] = '\0';
-      temp_string = "OT:" + formatTemperatureString(AM2315_Temperature, 1, true);
-      temp_string.toCharArray(buffer, 10);
-      setDisplayLine(0, buffer);
-
+      lines.push_back("OT:" + formatTemperatureString(AM2315_Temperature, 1, true));
       // AM2315 Humidity.
-      buffer[0] = '\0';
-      temp_string = "OH:" + formatHumidityString(AM2315_Humidity, 1, true);
-      temp_string.toCharArray(buffer, 10);
-      setDisplayLine(1, buffer);
+      lines.push_back("OH:" + formatHumidityString(AM2315_Humidity, 1, true));
+      displayRenderMedium(lines);
+    }
+    break;
 
+    case kScreenMediumBMP180: {
       // BMP180 Temperature.
-      buffer[0] = '\0';
-      temp_string = "IT:" + formatTemperatureString(BMP180_Temperature, 1, true);
-      temp_string.toCharArray(buffer, 10);
-      setDisplayLine(2, buffer);
-
+      lines.push_back("IT:" + formatTemperatureString(BMP180_Temperature, 1, true));
       // BMP180 Pressure.
-      buffer[0] = '\0';
-      temp_string = "BP:" + formatPressureString(BMP180_Pressure, 1, true);
-      temp_string.toCharArray(buffer, 10);
-      setDisplayLine(3, buffer);
+      lines.push_back("BP:" + formatPressureString(BMP180_Pressure, 1, true));
+      displayRenderMedium(lines);
+    }
+    break;
 
-      // Rain Total.
-      buffer[0] = '\0';
-      temp_string = "RT:" + formatRainfallString(rainTotal, 1, true);
-      temp_string.toCharArray(buffer, 10);
-      setDisplayLine(4, buffer);
+    case kScreenMediumRainfall: {
+      // Rain fall.
+      lines.push_back("RH:" + formatRainfallString(rain60Minutes, 1, true));
+      lines.push_back("RD:" + formatRainfallString(rainCalendarDay, 1, true));
+      lines.push_back("RT:" + formatRainfallString(rainTotal, 1, true));
 
+      displayRenderMedium(lines);
+    }
+    break;
+
+    case kScreenMediumWind: {
       // Current Wind Speed.
-      buffer[0] = '\0';
-      temp_string = "WS:" + formatWindspeedString(currentWindSpeed, 1, true);
-      temp_string.toCharArray(buffer, 10);
-      setDisplayLine(5, buffer);
-
+      lines.push_back("WS:" + formatWindspeedString(currentWindSpeed, 1, true));
       // Current Wind Gust.
-      buffer[0] = '\0';
-      temp_string = "WG:" + formatWindspeedString(currentWindGust, 1, true);
-      temp_string.toCharArray(buffer, 10);
-      setDisplayLine(6, buffer);
-
+      lines.push_back("WG:" + formatWindspeedString(currentWindGust, 1, true));
       // Current Wind Direction.
-      buffer[0] = '\0';
-      temp_string = "WD:" + returnDirectionFromDegrees(int(currentWindDirection));
-      temp_string += "-" + String(currentWindDirection) + "d";
-      temp_string.toCharArray(buffer, 10);
-      setDisplayLine(7, buffer);
+      lines.push_back("WD:" + returnDirectionFromDegrees(int(currentWindDirection)) +
+                      "-" + String(currentWindDirection, 0) + "d");
+      displayRenderMedium(lines);
+    }
+    break;
 
+    case kScreenMediumDateTime: {
       // Display date and time.
-      buffer[0] = '\0';
-      strcat(buffer, currentTimeString.c_str());
-      setDisplayLine(8, buffer);
-      setDisplayLine(9, "");
-      String airQual;
-      airQual = reportAirQuality(currentAirQuality);
-      setDisplayLine(11, const_cast<char*>(airQual.c_str()) );
-      setDisplayLine(10, " Air Qual");
+      RtcDateTime now = Rtc.GetDateTime();
+      lines.push_back(formatDate(now));
+      lines.push_back(rtcTime(now));
+      displayRenderMedium(lines);
     }
     break;
 
-    case DISPLAY_WEATHER_LARGE: {
+    case kScreenMediumAirQuality: {
+      lines.push_back("Air Qual");
+      lines.push_back(reportAirQuality(currentAirQuality));
+      displayRenderMedium(lines);
+    }
+    break;
+
+    case kScreenLargeAM2315Temp: {
       // AM2315 Temperature.
-      buffer[0] = '\0';
-      setDisplayLine(0, "OutTm");
-      formatTemperatureString(AM2315_Temperature, 1, true).toCharArray(buffer, 10);
-      setDisplayLine(1, buffer);
+      lines.push_back("Out Temp");
+      lines.push_back(formatTemperatureString(AM2315_Temperature, 1, true));
+      displayRenderLarge(lines);
+    }
+    break;
 
+    case kScreenLargeAM2315Hum: {
       // AM2315 Humidity.
-      buffer[0] = '\0';
-      setDisplayLine(2, "OutHm");
-      formatHumidityString(AM2315_Humidity, 1, true).toCharArray(buffer, 10);
-      setDisplayLine(3, buffer);
+      lines.push_back("Out Humd");
+      lines.push_back(formatHumidityString(AM2315_Humidity, 1, true));
+      displayRenderLarge(lines);
+    }
+    break;
 
+    case kScreenLargeBMP180Temp: {
       // BMP180 Temperature.
-      buffer[0] = '\0';
-      setDisplayLine(4, "InTmp");
-      formatTemperatureString(BMP180_Temperature, 1, true).toCharArray(buffer, 10);
-      setDisplayLine(5, buffer);
+      lines.push_back("BMP Temp");
+      lines.push_back(formatTemperatureString(BMP180_Temperature, 1, true));
+      displayRenderLarge(lines);
+    }
+    break;
 
+    case kScreenLargeBMP180Pres: {
       // BMP180 Pressure.
-      buffer[0] = '\0';
-      setDisplayLine(6, "BPres");
-      formatPressureString(BMP180_Pressure, 2, true).toCharArray(buffer, 10);
-      setDisplayLine(7, buffer);
+      lines.push_back("BMP Pres");
+      lines.push_back(formatPressureString(BMP180_Pressure, 2, true));
+      displayRenderLarge(lines);
+    }
+    break;
 
+    case kScreenLargeRainTotal: {
       // Rain Total.
-      buffer[0] = '\0';
-      setDisplayLine(8, "RnTot");
-      formatRainfallString(rainTotal, 2, true).toCharArray(buffer, 10);
-      setDisplayLine(9, buffer);
+      lines.push_back("Rain Total");
+      lines.push_back(formatRainfallString(rainTotal, 2, true));
+      displayRenderLarge(lines);
+    }
+    break;
 
+    case kScreenLargeWindSpeed: {
       // Current Wind Speed.
-      buffer[0] = '\0';
-      setDisplayLine(10, "WndSp");
-      formatWindspeedString(currentWindSpeed, 1, true).toCharArray(buffer, 10);
-      setDisplayLine(11, buffer);
+      lines.push_back("Wind Speed");
+      lines.push_back(formatWindspeedString(currentWindSpeed, 1, true));
+      displayRenderLarge(lines);
+    }
+    break;
 
+    case kScreenLargeWindGust: {
       // Current Wind Gust.
-      buffer[0] = '\0';
-      setDisplayLine(12, "WndGs");
-      formatWindspeedString(currentWindGust, 1, true).toCharArray(buffer, 10);
-      setDisplayLine(13, buffer);
+      lines.push_back("Wind Gust");
+      lines.push_back(formatWindspeedString(currentWindGust, 1, true));
+      displayRenderLarge(lines);
+    }
+    break;
 
+    case kScreenLargeWindDir: {
       // Current Wind direction.
-      buffer[0] = '\0';
-      setDisplayLine(14, "WndDr");
-      windDirection = returnDirectionFromDegrees(int(currentWindDirection));
-      windDirection += "-" + String(currentWindDirection) + 'd';
-      windDirection.toCharArray(buffer, 10);
-      setDisplayLine(15, buffer);
+      lines.push_back("Wind Dir");
+      lines.push_back(returnDirectionFromDegrees(int(currentWindDirection)) +
+        "-" + String(currentWindDirection, 0) + 'd');
+      displayRenderLarge(lines);
+    }
+    break;
 
+    case kScreenLargeDateTime: {
       // Date/Time
-      buffer[0] = '\0';
-      currentTimeString.toCharArray(buffer, 10);
-      setDisplayLine(16, buffer);
+      RtcDateTime now = Rtc.GetDateTime();
+      lines.push_back(formatDate(now));
+      lines.push_back(rtcTime(now));
+      displayRenderLarge(lines);
+    }
+    break;
 
+    case kScreenLargeAirQual: {
       // Air quality.
-      if (AirQualityPresent) {
-        String airQual;
-        airQual = " Air Qual " + reportAirQuality(currentAirQuality);
-        setDisplayLine(17, const_cast<char*>(airQual.c_str()) );
+      if (AirQuality_Present) {
+        lines.push_back("Air Qual");
+        lines.push_back(reportAirQuality(currentAirQuality));
+        displayRenderLarge(lines);
       }
     }
     break;
 
-    case DISPLAY_WEATHER_DEMO: {
-      if (EnglishOrMetric == 0) {
-        // English Units
-        char floatString[15];
+    case kScreenDemoTemp: {
+      // AM2315 Temperature.
+      lines.push_back("Out Temp");
+      lines.push_back(formatTemperatureString(AM2315_Temperature, 1, true));
+      displayRenderLarge(lines);
+    }
+    break;
 
-        buffer[0] = '\0';
-        setDisplayLine(0, "OutTm");
-        dtostrf(AM2315_Temperature * 1.8 + 32.0, 5, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "F");
-        setDisplayLine(1, buffer);
-        buffer[0] = '\0';
+    case kScreenDemoHum: {
+      // AM2315 Humidity.
+      lines.push_back("Out Humid");
+      lines.push_back(formatHumidityString(AM2315_Humidity, 1, true));
+      displayRenderLarge(lines);
+    }
+    break;
 
-        setDisplayLine(2, "OutHm");
-        dtostrf(AM2315_Humidity, 5, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "%");
-        setDisplayLine(3, buffer);
+    case kScreenDemoWindSpeed: {
+      // Current Wind Speed.
+      lines.push_back("Wind Speed");
+      lines.push_back(formatWindspeedString(currentWindSpeed, 1, true));
+      displayRenderLarge(lines);
+    }
+    break;
 
-        buffer[0] = '\0';
-        setDisplayLine(4, "WndSp");
-        dtostrf(currentWindSpeed * 0.621371, 4, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "mph");
-        setDisplayLine(5, buffer);
+    case kScreenDemoWindDir: {
+      // Current Wind direction.
+      lines.push_back("Wind Dir");
+      lines.push_back(returnDirectionFromDegrees(int(currentWindDirection)) +
+                       "-" + String(currentWindDirection, 0) + 'd');
+      displayRenderLarge(lines);
+    }
+    break;
 
-        buffer[0] = '\0';
-        setDisplayLine(6, "WndDr");
-        windDirection = returnDirectionFromDegrees(int(currentWindDirection));
-        windDirection = windDirection + "-";
-        strcat(buffer, windDirection.c_str());
-        dtostrf(currentWindDirection, 3, 0, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "d");
-        setDisplayLine(7, buffer);
+    case kScreenDemoRainTotal: {
+      // Rain Total.
+      lines.push_back("Rain Total");
+      lines.push_back(formatRainfallString(rainTotal, 2, true));
+      displayRenderLarge(lines);
+    }
+    break;
 
-        buffer[0] = '\0';
-        setDisplayLine(8, "RnTot");
-        dtostrf(rainTotal * 0.039370, 5, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "in");
-        setDisplayLine(9, buffer);
-
-        /*
-         OutTemp:  OutHum:
-         InTemp:  BP:
-         Alt:
-         WindSpeed:
-         WindGust:
-         Wind Direction:
-         */
-      } else {
-        // Metric Units
-        char floatString[15];
-
-        buffer[0] = '\0';
-        setDisplayLine(0, "OutTm");
-        dtostrf(AM2315_Temperature, 6, 2, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "C");
-        setDisplayLine(1, buffer);
-        buffer[0] = '\0';
-
-        setDisplayLine(2, "OutHm");
-        dtostrf(AM2315_Humidity, 6, 2, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "%");
-        setDisplayLine(3, buffer);
-
-        buffer[0] = '\0';
-        setDisplayLine(4, "WndSp");
-        dtostrf(currentWindSpeed, 4, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "kph");
-        setDisplayLine(5, buffer);
-
-        //updateAllWeatherVariables();
-        buffer[0] = '\0';
-        setDisplayLine(6, "WndDr");
-        windDirection = returnDirectionFromDegrees(int(currentWindDirection));
-        windDirection = windDirection + "-";
-        strcat(buffer, windDirection.c_str());
-        dtostrf(currentWindDirection, 3, 0, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "d");
-        setDisplayLine(7, buffer);
-
-        buffer[0] = '\0';
-        setDisplayLine(8, "RnTot");
-        dtostrf(rainTotal, 5, 1, floatString);
-        strcat(buffer, floatString);
-        strcat(buffer, "mm");
-        setDisplayLine(9, buffer);
-      }
-
+    case kScreenDemoDateTime: {
       // display date and time
-      buffer[0] = '\0';
-      strcat(buffer, currentTimeString.c_str());
-      setDisplayLine(10, buffer);
-      setDisplayLine(11, "");
+      RtcDateTime now = Rtc.GetDateTime();
+      lines.push_back(formatDate(now));
+      lines.push_back(rtcTime(now));
+      displayRenderLarge(lines);
     }
     break;
 
-    case DISPLAY_STATUS:
-      setDisplayLine(0, "WeatherPlus Status");
-      setDisplayLine(1, "# hits, etc");
-      setDisplayLine(2, "");
-      setDisplayLine(3, "");
-      break;
-
     default:
+      Serial.println("ERROR: Default Screen reached with value: " + String(displayScreen));
       break;
-
-  }
-  writeAllDisplayLines(displayMode);
-
-#endif
-}
-
-void setDisplayLine(int lineNumber, char *value) {
-  if (lineNumber < 32) {
-    strncpy(displayLines[lineNumber], value, 20);
   }
 }
 
-void writeAllDisplayLines(int DisplayMode) {
-  display.clearDisplay();
+/**
+ * Display the next queue screen on the OLED.
+ */
+void displayQueueNext() {
+  // Render current screen.
+  displayQueueRenderScreen(displayQueue[display_queue_index]);
+  // Increment next screen.
+  display_queue_index++;
+  // Reset screen increment to beginning when at end.
+  if (display_queue_index == displayQueue.size()) {
+    display_queue_index = 0;
+  }
+}
 
-  switch (DisplayMode) {
-    case DISPLAY_POWERUP:
-    case DISPLAY_UPDATE_FINISHED:
-    case DISPLAY_UPDATING:
-    case DISPLAY_NO_UPDATE_AVAILABLE:
-    case DISPLAY_NO_UPDATE_FAILED:
-    case DISPLAY_STATUS: {
-      int textSize = 1;
-      display.setTextSize(textSize);
-      display.setTextColor(WHITE);
-      int i;
-      for (i = 0; i < 6; i++) {
-        display.setCursor(0, (30 - (2 - textSize) * 20) * (i));
+void displayQueueStart() {
+  display_queue_started = true;
+  //tickerQueueUpdate.attach_ms(display_queue_timeout, displayQueueNext);
+}
 
-        display.println(displayLines[i]);
-        display.display();
-      }
-    }
-      break;
+void setupDisplayQueue(int format) {
+  Serial.println('OLED: Queue Setup');
+  displayQueueScreens(format);
+  displayQueueStart();
+  //displayQueueDelay(5500);
+}
 
-    case DISPLAY_IPDISPLAY:
-    case DISPLAY_ACCESSPOINT:
-    case DISPLAY_TRYING_AP:
-    case DISPLAY_FAILING_AP:
-    case DISPLAY_SDL2PUBNUBCODE:
-    case DISPLAY_FAILED_RECONNECT: {
-      int textSize = 1;
-      display.setTextSize(textSize);
-      display.setTextColor(WHITE);
-      int i;
-      for (i = 0; i < 3; i++) {
-
-        if (i == 0)
-          textSize = 1;
-        if (i == 1)
-          textSize = 1;
-        if (i == 2)
-          textSize = 1;
-        display.setTextSize(textSize);
-
-        display.setCursor(0, 20 * (i));
-
-        //display.setCursor(0, (30 - (2 - textSize) * 20) * (i));
-
-        display.println(displayLines[i]);
-        display.display();
-      }
-    }
-      break;
-
-    case DISPLAY_SUNAIRPLUS:
-    case DISPLAY_LIGHTNING_STATUS:
-    case DISPLAY_LIGHTNING_DISPLAY: {
-      int textSize = 1;
-      display.setTextSize(textSize);
-      display.setTextColor(WHITE);
-      int i;
-      for (i = 0; i < 5; i++) {
-        display.setCursor(0, (29 - (2 - textSize) * 20) * (i));
-
-        display.println(displayLines[i]);
-        display.display();
-      }
-    }
-      break;
-
-    case DISPLAY_WXLINK: {
-      int textSize = 1;
-      display.setTextSize(textSize);
-      display.setTextColor(WHITE);
-      int i;
-      for (i = 0; i < 7; i++) {
-        display.setCursor(0, (29 - (2 - textSize) * 20) * (i));
-
-        display.println(displayLines[i]);
-        display.display();
-      }
-    }
-      break;
-
-    case DISPLAY_WEATHER_SMALL: {
-      int textSize = 1;
-      display.setTextSize(textSize);
-      display.setTextColor(WHITE);
-      int i;
-      for (i = 0; i < 7; i++) {
-        display.setCursor(0, (29 - (2 - textSize) * 20) * (i));
-
-        display.println(displayLines[i]);
-        display.display();
-      }
-    }
-      break;
-
-    case DISPLAY_WEATHER_MEDIUM: {
-      int textSize = 2;
-      display.setTextSize(textSize);
-      display.setTextColor(WHITE);
-      int i;
-      for (i = 0; i < 6; i++) {
-        display.clearDisplay();
-
-        int j;
-        for (j = 0; j < 2; j++) {
-          display.setCursor(0, 20 * (j));
-
-          display.println(displayLines[i * 2 + j]);
-        }
-
-        display.display();
-        // Handle REST calls
-        WiFiClient client = server.available();
-        if (client) {
-
-          while (!client.available()) {
-            delay(1);
-          }
-          if (client.available()) {
-
-            rest.handle(client);
-
-          }
-        }
-        delay(1800);
-      }
-
-    }
-      break;
-
-    case DISPLAY_WEATHER_LARGE: {
-      int textSize = 4;
-      display.setTextSize(textSize);
-      display.setTextColor(WHITE);
-
-      int i;
-      for (i = 0; i < 10; i++) {
-        display.clearDisplay();
-        int j;
-        for (j = 0; j < 2; j++) {
-          display.setCursor(0, 33 * (j));
-
-          if (j == 1)
-            display.setTextSize(3);
-          else
-            display.setTextSize(4);
-
-          if (i == 8)
-            display.setTextSize(2);
-
-          display.println(displayLines[i * 2 + j]);
-        }
-
-        display.display();
-        // Handle REST calls
-        WiFiClient client = server.available();
-        if (client) {
-          while (!client.available()) {
-            delay(1);
-          }
-          if (client.available()) {
-            rest.handle(client);
-          }
-        }
-        delay(1800);
-      }
-    }
-      break;
-
-    case DISPLAY_WEATHER_DEMO: {
-      int textSize = 4;
-      display.setTextSize(textSize);
-      display.setTextColor(WHITE);
-      int i;
-
-      for (i = 0; i < 6; i++) {
-        display.clearDisplay();
-        int j;
-        for (j = 0; j < 2; j++) {
-          display.setCursor(0, 33 * (j));
-
-          if (j == 1)
-            display.setTextSize(3);
-          else
-            display.setTextSize(4);
-
-          if (i == 5)
-            display.setTextSize(2);
-
-          display.println(displayLines[i * 2 + j]);
-        }
-        display.display();
-
-        // Handle REST calls
-        WiFiClient client = server.available();
-        if (client) {
-          while (!client.available()) {
-            delay(1);
-          }
-          if (client.available()) {
-            rest.handle(client);
-          }
-        }
-        delay(900);
-      }
-    }
-      break;
-
-    default:
-      break;
+void displayQueueDelay(int milliseconds) {
+  if (display_queue_started) {
+    Serial.println('OLED: Queue Delayed');
+    //tickerQueueUpdate.detach();
+    //tickerQueueDelay.attach_ms(milliseconds, displayQueueStart);
   }
 }
 
@@ -961,8 +813,7 @@ void testscrolltext(void) {
 // #error("Height incorrect, please fix Adafruit_SSD1306.h!");
 #endif
 
-void OLEDDisplaySetup() {
-
+void oledDisplaySetup() {
   // by default, we'll generate the high voltage from the 3.3v line internally! (neat!)
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C, false); // initialize with the I2C addr 0x3C (for the 128x64)
   // init done
@@ -971,7 +822,7 @@ void OLEDDisplaySetup() {
   // Since the buffer is intialized with an Adafruit splashscreen
   // internally, this will display the splashscreen.
   display.display();
-  delay(4000);
+  delay(2000);
 
   // Clear the buffer.
   display.clearDisplay();

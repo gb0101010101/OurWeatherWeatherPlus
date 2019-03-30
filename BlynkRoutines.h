@@ -200,7 +200,7 @@ void myBTimerEvent() {
   }
 
   // Air Quality if Present
-  if (AirQualityPresent) {
+  if (AirQuality_Present) {
     Blynk.virtualWrite(V19, INTcurrentAirQualitySensor);
   }
 

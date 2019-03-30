@@ -6,7 +6,7 @@
 //
 //
 
-#define WEATHERPLUSESP8266VERSION "035"
+#define WEATHERPLUSESP8266VERSION "035G2"
 #define WEATHERPLUSPUBNUBPROTOCOL "OURWEATHER035"
 
 // define DEBUGPRINT to print out lots of debugging information for WeatherPlus.
@@ -19,10 +19,9 @@
 #define BLYNK_PRINT Serial // Defines the object that is used for printing
 #undef BLYNK_DEBUG
 #define BLYNK_USE_128_VPINS
-
 #include <BlynkSimpleEsp8266.h>
 
-// Change this to undef if you don't have the OLED present
+// Change this to undef if you don't have the OLED present.
 #define OLED_Present
 
 // BOF preprocessor bug prevent - insert on top of your arduino-code
@@ -41,15 +40,19 @@ extern "C" {
 //#include "Time/TimeLib.h"
 #include "TimeLib.h"
 
-bool WiFiPresent = false;
+// Sensor presence variables.
+bool WiFi_Present = false;
 bool AM2315_Present = false;
+bool AS3935_Present = false;
+bool AirQuality_Present = false;
+bool WXLink_Present = false;
+bool SunAirPlus_Present = false;
 
+// WiFi
 #include <ESP8266WiFi.h>
-
 //needed for library
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
-
 #include "WiFiManager.h"          //https://github.com/tzapu/WiFiManager
 
 //gets called when WiFiManager enters configuration mode
@@ -62,7 +65,6 @@ void configModeCallback() {
 
 // OTA updated
 #include <ESP8266WiFiMulti.h>
-
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
 
@@ -118,28 +120,31 @@ char uuid[] = WEATHERPLUSPUBNUBPROTOCOL;
 
 #include <string.h>
 
-// display modes
-#define DISPLAY_POWERUP 0
-#define DISPLAY_IPDISPLAY 1
+// Display modes
+// Kept legacy defines for EEPROM.
 #define DISPLAY_WEATHER_SMALL 2
 #define DISPLAY_WEATHER_MEDIUM 3
 #define DISPLAY_WEATHER_LARGE 4
-#define DISPLAY_STATUS 5
-#define DISPLAY_ACCESSPOINT 6
 #define DISPLAY_WEATHER_DEMO 7
-#define DISPLAY_TRYING_AP 8
-#define DISPLAY_FAILING_AP 9
-#define DISPLAY_DATETIME 10
-#define DISPLAY_UPDATING 11
-#define DISPLAY_NO_UPDATE_AVAILABLE 12
-#define DISPLAY_NO_UPDATE_FAILED 13
-#define DISPLAY_UPDATE_FINISHED 14
-#define DISPLAY_SUNAIRPLUS 16
-#define DISPLAY_WXLINK 17
-#define DISPLAY_SDL2PUBNUBCODE 18
-#define DISPLAY_FAILED_RECONNECT 19
-#define DISPLAY_LIGHTNING_STATUS 20
-#define DISPLAY_LIGHTNING_DISPLAY 21
+// The following have been converted to
+// timed screen and should no longer be used.
+// #define DISPLAY_POWERUP 0
+// #define DISPLAY_IPDISPLAY 1
+// #define DISPLAY_STATUS 5
+// #define DISPLAY_ACCESSPOINT 6
+// #define DISPLAY_TRYING_AP 8
+// #define DISPLAY_FAILING_AP 9
+// #define DISPLAY_DATETIME 10
+// #define DISPLAY_UPDATING 11
+// #define DISPLAY_NO_UPDATE_AVAILABLE 12
+// #define DISPLAY_NO_UPDATE_FAILED 13
+// #define DISPLAY_UPDATE_FINISHED 14
+// #define DISPLAY_SUNAIRPLUS 16
+// #define DISPLAY_WXLINK 17
+// #define DISPLAY_SDL2PUBNUBCODE 18
+// #define DISPLAY_FAILED_RECONNECT 19
+// #define DISPLAY_LIGHTNING_STATUS 20
+// #define DISPLAY_LIGHTNING_DISPLAY 21
 
 #define DEBUG
 
@@ -181,6 +186,7 @@ aREST rest = aREST();
 
 elapsedMillis timeElapsed; //declare global if you don't want it reset every time loop
 elapsedMillis timeElapsed300Seconds; //declare global if you don't want it reset every time loop
+elapsedMillis timeScreen;
 
 // BMP180 / BMP280 Sensor
 // Both are stored in BMP180 variables
@@ -248,7 +254,6 @@ bool as3935_DisturberDetection = false;
 int as3935_WatchdogThreshold = 3;
 int as3935_SpikeDetection = 3;
 
-bool AS3935Present = false;
 
 void printAS3935Registers() {
   int noiseFloor = as3935.getNoiseFloor();
@@ -391,8 +396,8 @@ float currentWindGust;
 float currentWindDirection;
 
 float rainTotal;
-
 float rainCalendarDay;
+
 int lastDay;
 
 float startOfDayRain;
@@ -425,7 +430,6 @@ Adafruit_ADS1115 adsAirQuality(0x48);
 long currentAirQuality;
 long currentAirQualitySensor;
 int INTcurrentAirQualitySensor;
-bool AirQualityPresent = false;
 
 #include "AirQualitySensor.h"
 #include "SDL_Weather_80422.h"
@@ -479,7 +483,6 @@ float lastRain;
 #include "SDL2PubNub.h"
 
 // SunAirPlus
-bool SunAirPlus_Present;
 float BatteryVoltage;
 float BatteryCurrent;
 float LoadVoltage;
@@ -492,8 +495,6 @@ float SolarPanelCurrent;
 // Crc 16 library (XModem)
 #include "Crc16.h"
 Crc16 crc;
-
-bool WXLink_Present;
 
 float WXBatteryVoltage;
 float WXBatteryCurrent;
@@ -590,19 +591,6 @@ RtcDateTime lastBoot;
 #include "BlynkRoutines.h"
 
 void setup() {
-  // Setup units:
-  switch (EnglishOrMetric) {
-    case 0:
-      user_units = UK;
-      break;
-
-    case 1:
-      user_units = SI;
-      break;
-
-    default:
-      user_units = USA;
-  }
 
   invalidTemperatureFound = false;
 
@@ -686,8 +674,9 @@ void setup() {
   EEPROM.begin(512);
 
 #ifdef OLED_Present
-  OLEDDisplaySetup();
-  updateDisplay(DISPLAY_POWERUP);
+  oledDisplaySetup();
+  displayConsolePrint(String("OurWeather Booting Up"), false);
+  displayConsolePrint(String("Ver: " + String(WEATHERPLUSESP8266VERSION)), true);
 #endif
 
   delay(2000);
@@ -698,6 +687,21 @@ void setup() {
   }
 
   readEEPROMState();
+
+  // Setup units:
+  switch (EnglishOrMetric) {
+    case 0:
+      user_units = UK;
+      break;
+
+    case 1:
+      user_units = SI;
+      break;
+
+    case 2:
+    default:
+      user_units = USA;
+  }
 
   // now set up thunderboard AS3935
 
@@ -711,13 +715,13 @@ void setup() {
 
   if (noiseFloor == 2) {
     Serial.println("AS3935 Present");
-    AS3935Present = true;
+    AS3935_Present = true;
   } else {
     Serial.println("AS3935 Not Present");
-    AS3935Present = false;
+    AS3935_Present = false;
   }
 
-  if (AS3935Present == true) {
+  if (AS3935_Present == true) {
     parseOutAS3935Parameters();
     setAS3935Parameters();
   }
@@ -755,7 +759,7 @@ void setup() {
   }
 
   if (WiFi.status() == WL_CONNECTED) {
-    WiFiPresent = true;
+    WiFi_Present = true;
   }
 
   writeEEPROMState();
@@ -928,10 +932,10 @@ void setup() {
   INTcurrentAirQualitySensor = 0;
 
   if (ad0 != -1) {
-    AirQualityPresent = true;
+    AirQuality_Present = true;
     Serial.println("AirQuality Extension Present");
   } else {
-    AirQualityPresent = false;
+    AirQuality_Present = false;
     Serial.println("AirQuality Extension Not Present");
   }
 
@@ -953,10 +957,24 @@ void setup() {
 
   //blinkIPAddress();
 
-  updateDisplay(DISPLAY_IPDISPLAY);
+  // Display WiFi info on screen.
+  // Previously: updateDisplay(DISPLAY_IPDISPLAY);
+  displayConsolePrint("OurWeather Connected", false);
+  displayConsolePrint("IP Address:", false);
+  IPAddress myIp2 = WiFi.localIP();
+  displayConsolePrint(
+      String(myIp2[0]) + "." + String(myIp2[1]) + "."
+          + String(myIp2[2]) + "." + String(myIp2[3]));
 
   // Now put PUBNUB Code up there
-  updateDisplay(DISPLAY_SDL2PUBNUBCODE);
+  // Previously: updateDisplay(DISPLAY_SDL2PUBNUBCODE);
+  if (pubNubEnabled == 1) {
+    displayConsolePrint("Alexa enabled", false);
+    displayConsolePrint("PubNub Code:", false);
+    displayConsolePrint(SDL2PubNubCode);
+  } else {
+    displayConsolePrint("Alexa disabled");
+  }
 
   timeElapsed = 0;
 
@@ -1000,7 +1018,7 @@ void setup() {
     Serial.println("AM2315 Sensor not found, check wiring & pullups!");
   }
 
-  if (WiFiPresent == true) {
+  if (WiFi_Present == true) {
     PubNub.begin(SDL2PubNubCode.c_str(), SDL2PubNubCode_Sub.c_str());
     Serial.println("PubNub set up");
   }
@@ -1042,7 +1060,7 @@ void setup() {
       writeToBlynkStatusTerminal("WXLink Not Present");
     }
 
-    if (AirQualityPresent) {
+    if (AirQuality_Present) {
       writeToBlynkStatusTerminal("Air Quality Sensor Present");
     } else {
       writeToBlynkStatusTerminal("Air Quality Sensor Not Present");
@@ -1060,7 +1078,7 @@ void setup() {
       writeToBlynkStatusTerminal("AM2315 Not Present");
     }
 
-    if (AS3935Present) {
+    if (AS3935_Present) {
       writeToBlynkStatusTerminal("AS3935 ThunderBoard Present");
     } else {
       writeToBlynkStatusTerminal("AS3935 ThunderBoard Not Present");
@@ -1082,9 +1100,13 @@ void setup() {
     }
   } // end UseBlynk
 
-  if (WiFiPresent) {
+  if (WiFi_Present) {
     mqttSetup();
   }
+
+#ifdef OLED_Present
+    setupDisplayQueue(WeatherDisplayMode);
+#endif
 } // end setup
 
 //
@@ -1268,7 +1290,7 @@ void loop() {
     RestDataString += formatPressureString(BMP180_Pressure, 2) + ",";
     RestDataString += formatAltitudeString(BMP180_Altitude, 2) + ",";
 
-    if (AirQualityPresent) {
+    if (AirQuality_Present) {
       Serial.println("---------------");
       Serial.println("AirQualitySensor");
       Serial.println("---------------");
@@ -1545,7 +1567,7 @@ void loop() {
     invalidTemperatureFound = false;
 
     // Restart WiFi in case of connected, then lost connection
-    if (WiFiPresent == true) {
+    if (WiFi_Present == true) {
       if (WiFi.status() != WL_CONNECTED) {
         //Restart Access Point with the specified name
         WiFiManager wifiManager;
@@ -1584,7 +1606,7 @@ void loop() {
 
     RestDataString += String(pubNubEnabled) + ",";
 
-    if (AS3935Present == true) {
+    if (AS3935_Present == true) {
       // Now check for Lightning ThunderBoard AS3935
       Serial.println("---------------");
       Serial.println("ThunderBoard AS3935 Lightning Detector");
@@ -1653,9 +1675,6 @@ void loop() {
           if (strokeDistance == 63)
             Serial.println("Out of range lightning detected.");
 
-          delay(3000);
-          updateDisplay(DISPLAY_LIGHTNING_DISPLAY);
-          delay(3000);
         }
       }
     }
@@ -1678,7 +1697,7 @@ void loop() {
     RestDataString += String(as3835_LightningCountSinceBootup);
 
     // MQTT send data.
-    if (WiFiPresent) {
+    if (WiFi_Present) {
       mqttSend(RestDataString);
     }
 
@@ -1754,26 +1773,10 @@ void loop() {
         publishPubNubMessage(SendString);
       }
     }
-
-    updateDisplay(WeatherDisplayMode);
-
-    if (AS3935Present == true) {
-      delay(3000);
-      updateDisplay(DISPLAY_LIGHTNING_STATUS);
-      delay(3000);
-    }
-
-    if (SunAirPlus_Present) {
-      delay(3000);
-      updateDisplay(DISPLAY_SUNAIRPLUS);
-      delay(3000);
-    }
+    // Update of displays no longer needed. See OLEDDisplay.h for new method.
 
     if (WXLink_Present) {
-      delay(3000);
-      updateDisplay(DISPLAY_WXLINK);
-      delay(3000);
-
+      Serial.println("Checking WXLInk Pin.");
       // check to see if pin 5 is stuck high (SCL is at 0) - then we are hung.
       int SCL, SDA;
 
@@ -1788,12 +1791,16 @@ void loop() {
         resetWXLink();
       }
     }
-    Serial.println("OutOfDisplay");
   }
 
   if (UseBlynk) {
     Blynk.run();
     Btimer.run(); // Initiates BlynkTimer
+  }
+
+  if (timeScreen > display_queue_timeout) {
+    displayQueueNext();
+    timeScreen = 0;
   }
 
   yield();

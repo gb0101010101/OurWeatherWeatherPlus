@@ -35,15 +35,15 @@ void writeEEPROMState() {
   }
   EEPROM.write(i, '\0');
 
-  // now put alititude in
+  // now put altitude in
   int tempAltitude;
   tempAltitude = altitude_meters * 10.0;
-  Serial.print("tempAltitude>>8=");
-  Serial.println(tempAltitude >> 8);
+  // Serial.print("tempAltitude>>8=");
+  // Serial.println(tempAltitude >> 8);
 
   EEPROM.write(99 + 34 + 1, tempAltitude >> 8);
-  Serial.print("tempAltitud& 0xFFe=");
-  Serial.println(tempAltitude & 0xFF);
+  // Serial.print("tempAltitud& 0xFFe=");
+  // Serial.println(tempAltitude & 0xFF);
 
   EEPROM.write(99 + 34 + 2, tempAltitude & 0xFF);
 
@@ -86,6 +86,7 @@ void writeEEPROMState() {
     EEPROM.write(i, BlynkAuthCode[i - 349]);
   }
   EEPROM.write(i, '\0');
+
 
   EEPROM.commit();
 
@@ -633,6 +634,21 @@ String returnDateTime(const RtcDateTime& dt) {
   return String(datestring);
 }
 
+String rtcDateUsa(const RtcDateTime& dt) {
+  String date =  dt.Month() + String("/") + dt.Day() + String("/") + dt.Year();
+  return date;
+}
+
+String rtcDateSi(const RtcDateTime& dt) {
+  String date = dt.Day() + String("/") + dt.Month() + String("/") + dt.Year();
+  return date;
+}
+
+String rtcTime(const RtcDateTime& dt) {
+  String time =  dt.Hour() + String(":") + dt.Minute() + String(":") + dt.Second();
+  return time;
+}
+
 float returnPercentLeftInBattery(float currentVoltage, float maxVolt) {
   float returnPercent;
   float scaledVolts = currentVoltage / maxVolt;
@@ -951,4 +967,20 @@ String formatRainfallString(float mm, unitSystem unit, int decimals = 1, bool sh
 
 String formatRainfallString(float mm, int decimals = 1, bool show_unit = false) {
   return formatRainfallString(mm, user_units, decimals, show_unit);
+}
+
+String formatDate(const RtcDateTime& dt, unitSystem unit) {
+  switch (unit) {
+    case SI:
+    case UK:
+      return rtcDateSi(dt);
+
+    case USA:
+      return rtcDateUsa(dt);
+  }
+  return NULL;
+}
+
+String formatDate(const RtcDateTime& dt) {
+  return formatDate(dt, user_units);
 }

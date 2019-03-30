@@ -36,7 +36,10 @@ extern String adminPassword;
 
 void writeEEPROMState();
 
-void updateDisplay(int displayType);
+// Forward declaration so console display works.
+// TODO: Figure out if there is a better way to avoid this.
+void displayConsolePrint(String text);
+void displayConsolePrint(String text, bool render);
 
 /*
  const char HTTP_200[] PROGMEM = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";

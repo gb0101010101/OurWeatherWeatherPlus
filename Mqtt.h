@@ -128,28 +128,28 @@ void mqttSetup() {
     topics_enabled.push_back(true);
     // currentAirQualitySensor
     topics.push_back("AirQuality/Sensor");
-    topics_enabled.push_back(AirQualityPresent);
+    topics_enabled.push_back(AirQuality_Present);
     // currentAirQuality
     topics.push_back("AirQuality/Reading");
-    topics_enabled.push_back(AirQualityPresent);
+    topics_enabled.push_back(AirQuality_Present);
     // BatteryVoltage
     topics.push_back("Battery/Voltage");
-    topics_enabled.push_back(AirQualityPresent);
+    topics_enabled.push_back(AirQuality_Present);
     // BatteryCurrent
     topics.push_back("Battery/Current");
-    topics_enabled.push_back(AirQualityPresent);
+    topics_enabled.push_back(AirQuality_Present);
     // SolarPanelVoltage
     topics.push_back("Solar/Voltage");
-    topics_enabled.push_back(AirQualityPresent);
+    topics_enabled.push_back(AirQuality_Present);
     // SolarPanelCurrent
     topics.push_back("Solar/Current");
-    topics_enabled.push_back(AirQualityPresent);
+    topics_enabled.push_back(AirQuality_Present);
     // LoadVoltage
     topics.push_back("Load/Voltage");
-    topics_enabled.push_back(AirQualityPresent);
+    topics_enabled.push_back(AirQuality_Present);
     // LoadCurrent
     topics.push_back("Load/Current");
-    topics_enabled.push_back(AirQualityPresent);
+    topics_enabled.push_back(AirQuality_Present);
     // WXBatteryVoltage
     topics.push_back("WX/Battery/Voltage");
     topics_enabled.push_back(WXLink_Present);
@@ -179,22 +179,22 @@ void mqttSetup() {
     topics_enabled.push_back(pubNubEnabled);
     // as3935_LastLightning
     topics.push_back("Lightning/Last/Full");
-    topics_enabled.push_back(AS3935Present);
+    topics_enabled.push_back(AS3935_Present);
     // as3935_LastLightningTimeStamp
     topics.push_back("Lightning/Last/Time");
-    topics_enabled.push_back(AS3935Present);
+    topics_enabled.push_back(AS3935_Present);
     // as3935_LastLightningDistance
     topics.push_back("Lightning/Last/Distance");
-    topics_enabled.push_back(AS3935Present);
+    topics_enabled.push_back(AS3935_Present);
     // as3935_LastEvent
     topics.push_back("Lightning/Event/Last");
-    topics_enabled.push_back(AS3935Present);
+    topics_enabled.push_back(AS3935_Present);
     // as3935_LastEventTimeStamp
     topics.push_back("Lightning/Event/Time");
-    topics_enabled.push_back(AS3935Present);
+    topics_enabled.push_back(AS3935_Present);
     // as3835_LightningCountSinceBootup
     topics.push_back("Lightning/Strikes");
-    topics_enabled.push_back(AS3935Present);
+    topics_enabled.push_back(AS3935_Present);
   }
 }
 

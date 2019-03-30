@@ -5,6 +5,10 @@
 //
 //
 
+// #include "OLEDDisplay.h";
+void displayQueueScreens(int format);
+void displayConsoleClear();
+
 int ledControl(String command) {
   // Get state from command
   int state = command.toInt();
@@ -200,29 +204,43 @@ int updateOurWeather(String command) {
   Serial.print("Command =");
   Serial.println(command);
   if (command == adminPassword) {
-    updateDisplay (DISPLAY_UPDATING);
-    delay(5000);
+    // Previously: updateDisplay (DISPLAY_UPDATING);
+    displayConsoleClear();
+    displayConsolePrint("OurWeather Updating");
 
-    updateDisplay (DISPLAY_UPDATE_FINISHED);
+    // TODO: What was this supposed to display. Does not make sense.
+    // updateDisplay(DISPLAY_UPDATE_FINISHED);
     t_httpUpdate_return ret = ESPhttpUpdate.update("www.switchdoc.com", 80,
         "/OurWeatherUpdater.php", WEATHERPLUSESP8266VERSION);
+
     switch (ret) {
       case HTTP_UPDATE_FAILED:
         Serial.println("[update] Update failed.");
-        updateDisplay (DISPLAY_NO_UPDATE_FAILED);
-        delay(5000);
+        // Previously: updateDisplay (DISPLAY_NO_UPDATE_FAILED);
+        displayConsolePrint("Update failed.", false);
+        displayConsolePrint("Try again later.");
+        delay(1000);
         return 1;
         break;
 
       case HTTP_UPDATE_NO_UPDATES:
         Serial.println("[update] Update no Updates.");
-        updateDisplay (DISPLAY_NO_UPDATE_AVAILABLE);
-        delay(5000);
+        // Previously:  updateDisplay (DISPLAY_NO_UPDATE_AVAILABLE);
+        displayConsolePrint("You have the most", false);
+        displayConsolePrint("recent software.");
+        delay(1000);
         return 2;
         break;
 
       case HTTP_UPDATE_OK:
         Serial.println("[update] Update ok."); // may not called we reboot the ESP
+        // Previously: NO OUTPUT
+        // Showing output of updateDisplay(DISPLAY_UPDATE_FINISHED);
+        displayConsolePrint("OurWeather Updated", false);
+        displayConsolePrint("Wait 120 Seconds", false);
+        displayConsolePrint("Unplug Power", false);
+        displayConsolePrint("Wait 15 Seconds", false);
+        displayConsolePrint("Plug Power In");
         return 3;
         break;
     }
@@ -240,7 +258,7 @@ int resetToDefaults(String command) {
 int enableCWOPControl(String command) {
   // Get state from command
   int state = command.toInt();
-    return 1;
+  return 1;
 }
 
 int enableTwitterControl(String command) {
@@ -253,24 +271,28 @@ int enableTwitterControl(String command) {
 int weatherSmallControl(String command) {
   WeatherDisplayMode = DISPLAY_WEATHER_SMALL;
   writeEEPROMState();
+  displayQueueScreens(WeatherDisplayMode);
   return 1;
 }
 
 int weatherMediumControl(String command) {
   WeatherDisplayMode = DISPLAY_WEATHER_MEDIUM;
   writeEEPROMState();
+  displayQueueScreens(WeatherDisplayMode);
   return 1;
 }
 
 int weatherLargeControl(String command) {
   WeatherDisplayMode = DISPLAY_WEATHER_LARGE;
   writeEEPROMState();
+  displayQueueScreens(WeatherDisplayMode);
   return 1;
 }
 
 int weatherDemoControl(String command) {
   WeatherDisplayMode = DISPLAY_WEATHER_DEMO;
   writeEEPROMState();
+  displayQueueScreens(WeatherDisplayMode);
   return 1;
 }
 
@@ -361,4 +383,3 @@ void jsonCmd(WebServer &server, WebServer::ConnectionType type, char *url_tail, 
 
 }
 */
-

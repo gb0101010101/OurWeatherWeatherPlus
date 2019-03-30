@@ -141,12 +141,13 @@ void WiFiManager::setupConfigPortal() {
   server->begin(); // Web server start
   DEBUG_WM(F("HTTP server started"));
 
-#define DISPLAY_ACCESSPOINT 6
-#define DISPLAY_TRYING_AP 8
-#define DISPLAY_FAILING_AP 9
-#define DISPLAY_FAILED_RECONNECT 19
-
-  updateDisplay(DISPLAY_ACCESSPOINT);
+  // Previously: updateDisplay(DISPLAY_ACCESSPOINT);
+  delay(2000);
+  Serial.println("OurWeather Setup");
+  displayConsolePrint("OurWeather AP", false);
+  displayConsolePrint(_apName, false);
+  IPAddress ap_ip = WiFi.softAPIP();
+  displayConsolePrint(WiFiManager::toStringIp(ap_ip));
 
 }
 
@@ -165,7 +166,11 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(Wssid);
   DEBUG_WM(apName);
   DEBUG_WM(apPassword);
-  updateDisplay(DISPLAY_TRYING_AP);
+
+  // Previously: updateDisplay(DISPLAY_TRYING_AP);
+  displayConsolePrint("Trying WiFi AP", false);
+  displayConsolePrint(Wssid);
+
   // attempt to connect; should it fail, fall back to AP configuration
 
   if ((Wssid.length() == 0) || (Wssid == "XXX")) {
@@ -186,9 +191,21 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     return true;
   }
 
-  updateDisplay(DISPLAY_FAILING_AP);
+  // updateDisplay(DISPLAY_FAILING_AP);
+  displayConsolePrint("WiFi AP Failed", false);
+  displayConsolePrint(Wssid, false);
+  displayConsolePrint("Restarting OurWeather", false);
+  displayConsolePrint("Try again....");
+delay(3000);
+
   blinkLED(5, 200);  // blink 5, Did not connect setting up AP mode
-  updateDisplay(DISPLAY_ACCESSPOINT);
+
+  // Previously: updateDisplay(DISPLAY_ACCESSPOINT);
+  Serial.println("OurWeather Setup");
+  displayConsolePrint("OurWeather AP", false);
+  displayConsolePrint(apName, false);
+  IPAddress ap_ip = WiFi.softAPIP();
+  displayConsolePrint(WiFiManager::toStringIp(ap_ip));
 
   return startConfigPortal(apName, apPassword);
 }
@@ -214,9 +231,15 @@ boolean WiFiManager::justConnect(char const *apName, char const *apPassword) {
     //connected
     return true;
   } else {
-    updateDisplay(DISPLAY_FAILED_RECONNECT);
+    // Previously: updateDisplay(DISPLAY_FAILED_RECONNECT);
+    displayConsolePrint("Failing to reconnect to WiFI", false);
+    displayConsolePrint(Wssid, false);
+    displayConsolePrint("Will try again....");
+
     blinkLED(6, 200);  // blink 5, Did not connect setting up AP mode
-    updateDisplay(DISPLAY_FAILED_RECONNECT);
+
+    // Previously: updateDisplay(DISPLAY_FAILED_RECONNECT);
+    displayConsolePrint("Failed to reconnect to WiFI");
   }
 
   DEBUG_WM(F("Past the disconnect"));
@@ -844,4 +867,3 @@ String WiFiManager::toStringIp(IPAddress ip) {
   res += String(((ip >> 8 * 3)) & 0xFF);
   return res;
 }
-

@@ -215,7 +215,7 @@ int setThunderBoardParams(String command) {
   sentPassword = getValue(command, ',', 0);
 
   if (sentPassword == adminPassword) {
-    if (AS3935Present == true) {
+    if (AS3935_Present == true) {
       int index;
       index = command.indexOf(',');
       command = command.substring(index + 1);
