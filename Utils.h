@@ -645,8 +645,9 @@ String rtcDateSi(const RtcDateTime& dt) {
 }
 
 String rtcTime(const RtcDateTime& dt) {
-  String time =  dt.Hour() + String(":") + dt.Minute() + String(":") + dt.Second();
-  return time;
+  char time[8];
+  sprintf(time, "%d:%02d:%02d", dt.Hour(), dt.Minute(), dt.Second());
+  return String(time);
 }
 
 float returnPercentLeftInBattery(float currentVoltage, float maxVolt) {
