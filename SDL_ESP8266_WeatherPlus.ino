@@ -47,6 +47,8 @@ bool AS3935_Present = false;
 bool AirQuality_Present = false;
 bool WXLink_Present = false;
 bool SunAirPlus_Present = false;
+// Whether readings from sensor are available
+bool sensor_readings_present = false;
 
 // WiFi
 #include <ESP8266WiFi.h>
@@ -1695,6 +1697,8 @@ void loop() {
     RestDataString += as3935_LastEvent + ",";
     RestDataString += as3935_LastEventTimeStamp + ",";
     RestDataString += String(as3835_LightningCountSinceBootup);
+
+    sensor_readings_present = true;
 
     // MQTT send data.
     if (WiFi_Present) {

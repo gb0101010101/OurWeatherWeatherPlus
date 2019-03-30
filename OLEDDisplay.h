@@ -571,13 +571,15 @@ void displayQueueRenderScreen(displayScreenTimed displayScreen) {
  * Display the next queue screen on the OLED.
  */
 void displayQueueNext() {
-  // Render current screen.
-  displayQueueRenderScreen(displayQueue[display_queue_index]);
-  // Increment next screen.
-  display_queue_index++;
-  // Reset screen increment to beginning when at end.
-  if (display_queue_index == displayQueue.size()) {
-    display_queue_index = 0;
+  if (sensor_readings_present) {
+    // Render current screen.
+    displayQueueRenderScreen(displayQueue[display_queue_index]);
+    // Increment next screen.
+    display_queue_index++;
+    // Reset screen increment to beginning when at end.
+    if (display_queue_index == displayQueue.size()) {
+      display_queue_index = 0;
+    }
   }
 }
 
