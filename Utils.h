@@ -978,7 +978,7 @@ String formatDate(const RtcDateTime& dt, unitSystem unit) {
     case USA:
       return rtcDateUsa(dt);
   }
-  return NULL;
+  return "";
 }
 
 String formatDate(const RtcDateTime& dt) {
