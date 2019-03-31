@@ -961,12 +961,7 @@ void setup() {
 
   // Display WiFi info on screen.
   // Previously: updateDisplay(DISPLAY_IPDISPLAY);
-  displayConsolePrint("OurWeather Connected", false);
-  displayConsolePrint("IP Address:", false);
-  IPAddress myIp2 = WiFi.localIP();
-  displayConsolePrint(
-      String(myIp2[0]) + "." + String(myIp2[1]) + "."
-          + String(myIp2[2]) + "." + String(myIp2[3]));
+  // Moved to WifiManager.
 
   // Now put PUBNUB Code up there
   // Previously: updateDisplay(DISPLAY_SDL2PUBNUBCODE);

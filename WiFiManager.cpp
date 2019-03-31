@@ -142,13 +142,11 @@ void WiFiManager::setupConfigPortal() {
   DEBUG_WM(F("HTTP server started"));
 
   // Previously: updateDisplay(DISPLAY_ACCESSPOINT);
-  delay(2000);
   Serial.println("OurWeather Setup");
-  displayConsolePrint("OurWeather AP", false);
-  displayConsolePrint(_apName, false);
+  displayConsolePrint("Config AP Started:", false);
+  displayConsolePrint(String("- ") + _apName, false);
   IPAddress ap_ip = WiFi.softAPIP();
-  displayConsolePrint(WiFiManager::toStringIp(ap_ip));
-
+  displayConsolePrint(String("- ") + WiFiManager::toStringIp(ap_ip));
 }
 
 boolean WiFiManager::autoConnect() {
@@ -168,8 +166,8 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(apPassword);
 
   // Previously: updateDisplay(DISPLAY_TRYING_AP);
-  displayConsolePrint("Trying WiFi AP", false);
-  displayConsolePrint(Wssid);
+  displayConsolePrint("Trying WiFi AP:", false);
+  displayConsolePrint(String("- ") + Wssid);
 
   // attempt to connect; should it fail, fall back to AP configuration
 
@@ -188,24 +186,25 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     DEBUG_WM(F("IP Address:"));
     DEBUG_WM(WiFi.localIP());
     //connected
+
+    displayConsolePrint("- Connected", false);
+    IPAddress ap_ip = WiFi.localIP();
+    displayConsolePrint(String("- ") + WiFiManager::toStringIp(ap_ip));
+
     return true;
   }
 
   // updateDisplay(DISPLAY_FAILING_AP);
-  displayConsolePrint("WiFi AP Failed", false);
-  displayConsolePrint(Wssid, false);
-  displayConsolePrint("Restarting OurWeather", false);
-  displayConsolePrint("Try again....");
-delay(3000);
+  displayConsolePrint(String("- ") + "WiFi AP Failed");
 
   blinkLED(5, 200);  // blink 5, Did not connect setting up AP mode
 
   // Previously: updateDisplay(DISPLAY_ACCESSPOINT);
-  Serial.println("OurWeather Setup");
-  displayConsolePrint("OurWeather AP", false);
-  displayConsolePrint(apName, false);
-  IPAddress ap_ip = WiFi.softAPIP();
-  displayConsolePrint(WiFiManager::toStringIp(ap_ip));
+//  Serial.println("OurWeather Setup");
+//  displayConsolePrint("OurWeather AP", false);
+//  displayConsolePrint(apName, false);
+//  IPAddress ap_ip = WiFi.softAPIP();
+//  displayConsolePrint(WiFiManager::toStringIp(ap_ip));
 
   return startConfigPortal(apName, apPassword);
 }
@@ -239,7 +238,6 @@ boolean WiFiManager::justConnect(char const *apName, char const *apPassword) {
     blinkLED(6, 200);  // blink 5, Did not connect setting up AP mode
 
     // Previously: updateDisplay(DISPLAY_FAILED_RECONNECT);
-    displayConsolePrint("Failed to reconnect to WiFI");
   }
 
   DEBUG_WM(F("Past the disconnect"));
@@ -455,7 +453,7 @@ void WiFiManager::setBreakAfterConfig(boolean shouldBreak) {
 /** Handle root or redirect to captive portal */
 void WiFiManager::handleRoot() {
   DEBUG_WM(F("Handle root"));
-  if (captivePortal()) { // If caprive portal redirect instead of displaying the page.
+  if (captivePortal()) { // If captive portal redirect instead of displaying the page.
     return;
   }
 
@@ -805,7 +803,7 @@ boolean WiFiManager::captivePortal() {
     server->sendHeader("Location",
         String("http://") + toStringIp(server->client().localIP()), true);
     server->send(302, "text/plain", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
-    server->client().stop(); // Stop is needed because we sent no content length
+    //server->client().stop(); // Stop is needed because we sent no content length
     return true;
   }
   return false;
