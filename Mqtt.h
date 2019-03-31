@@ -162,8 +162,8 @@ void mqttSetup() {
     // WXSolarPanelCurrent
     topics.push_back("WX/Solar/Current");
     topics_enabled.push_back(WXLink_Present);
-    // 0.00
-    topics.push_back("NotSet");
+    // Place holder for WX Solar Load Voltage.
+    topics.push_back("WX/Solar/Load/Voltage");
     topics_enabled.push_back(false);
     // WXLoadCurrent
     topics.push_back("WX/Load/Current");

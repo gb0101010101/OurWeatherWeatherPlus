@@ -1553,6 +1553,7 @@ void loop() {
     RestDataString += String(WXBatteryCurrent, 2) + ",";
     RestDataString += String(WXSolarPanelVoltage, 2) + ",";
     RestDataString += String(WXSolarPanelCurrent, 2) + ",";
+    // Place holder for WX Solar Load Voltage.
     RestDataString += "0.00,";
     RestDataString += String(WXLoadCurrent, 2) + ",";
 
