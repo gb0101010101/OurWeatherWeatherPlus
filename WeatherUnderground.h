@@ -6,13 +6,14 @@
 //
 
 int sendWeatherUndergroundData() {
+  Serial.print("WeatherUnderground: Begin");
   WiFiClient client;
   const char* host = "weatherstation.wunderground.com";
   const int httpPort = 80;
   unitSystem usa_units = USA;
 
   if (!client.connect(host, httpPort)) {
-    Serial.println("connection failed");
+    Serial.println("WU: connection failed");
     return 1;
   }
 
@@ -37,7 +38,7 @@ int sendWeatherUndergroundData() {
   //myURL += "&indoorhumidity%0.2f=" % HTUhumidity
   myURL += "&software=OurWeather";
 
-  Serial.print("Requesting URL: ");
+  Serial.print("WU URL: ");
   Serial.println(myURL);
 
   // This will send the request to the server
@@ -55,8 +56,10 @@ int sendWeatherUndergroundData() {
     WUResult = line;
     yield();
   }
-  Serial.print("WUResult=");
+  Serial.print("WU Result: ");
   Serial.println(WUResult);
+
+  client.stop();
 
   if (WUResult.indexOf("success") != -1) {
     Serial.println("WU Successful Write");
@@ -64,6 +67,5 @@ int sendWeatherUndergroundData() {
   } else {
     Serial.println("WU NOT Successful Write");
   }
-  client.stop();
   return 0;
 }
