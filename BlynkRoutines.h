@@ -7,7 +7,7 @@ void startBlynk() {
   Blynk.config(BlynkAuthCode.c_str());
 
   if (UseBlynk == false) {
-    // Setup a function to be called every 10 seconds
+    // Setup a function to be called every 10 seconds.
     Btimer.setInterval(10000L, myBTimerEvent);
   }
   UseBlynk = true;
@@ -59,7 +59,7 @@ void myBTimerEvent() {
   }
 #endif
 
-  // only 10 values a second
+  // Only 10 values a second.
   RtcDateTime now = Rtc.GetDateTime();
   String currentTimeString;
   currentTimeString = returnDateTime(now);

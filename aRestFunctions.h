@@ -10,10 +10,10 @@ void displayQueueScreens(int format);
 void displayConsoleClear();
 
 int ledControl(String command) {
-  // Get state from command
+  // Get state from command.
   int state = command.toInt();
 
-  // ESP8266 inverts sense (HIGH = off, LOW = ON)
+  // ESP8266 inverts sense (HIGH = off, LOW = ON).
   if (state == 0) {
     state = 1;
   } else {
@@ -30,6 +30,7 @@ int setWeatherPlusIDControl(String command) {
 }
 
 int resetWiFiAccessPoint(String command) {
+  // Example: http://192.168.1.NNN/resetWiFiAccessPoint?params=adminpassword
   Serial.print("Command =");
   Serial.println(command);
 
@@ -42,7 +43,6 @@ int resetWiFiAccessPoint(String command) {
     return 0;
   }
 
-  //http://192.168.1.134/resetWiFiAccessPoint?params=adminpassword
   return 1;
 }
 
@@ -62,6 +62,7 @@ int resetOurWeather(String command) {
 }
 
 int setAdminPassword(String command) {
+  // Example: http://192.168.1.NNN/setAdminPassword?params=oldpassword,newpassword
   Serial.print("Command =");
   Serial.println(command);
 
@@ -79,11 +80,11 @@ int setAdminPassword(String command) {
     return 0;
   }
 
-  //http://192.168.1.134/setAdminPassword?params=oldpassword,newpassword
   return 1;
 }
 
 int setWUSID(String command) {
+  // Example: http://192.168.1.NNN/setWUSID?params=AdminPassword,WUStationID
   Serial.print("Command =");
   Serial.println(command);
 
@@ -110,6 +111,7 @@ int setWUSID(String command) {
 }
 
 int setWUKEY(String command) {
+  // Example: http://192.168.1.NNN/setWUKEY?params=AdminPassword,WUStationID
   Serial.print("Command =");
   Serial.println(command);
 
@@ -133,6 +135,7 @@ int setWUKEY(String command) {
 void startBlynk();
 
 int setBAKEY(String command) {
+  // Example: http://192.168.1.NNN/setBAKEY?params=AdminPassword,BlynkKey
   Serial.print("Command =");
   Serial.println(command);
 
@@ -210,6 +213,7 @@ int updateOurWeather(String command) {
 
     // TODO: What was this supposed to display. Does not make sense.
     // updateDisplay(DISPLAY_UPDATE_FINISHED);
+
     t_httpUpdate_return ret = ESPhttpUpdate.update("www.switchdoc.com", 80,
         "/OurWeatherUpdater.php", WEATHERPLUSESP8266VERSION);
 
@@ -233,9 +237,11 @@ int updateOurWeather(String command) {
         break;
 
       case HTTP_UPDATE_OK:
-        Serial.println("[update] Update ok."); // may not called we reboot the ESP
+        // TODO: Fix comment: what is this doing?
+        // Original comment: May not called we reboot the ESP.
+        Serial.println("[update] Update ok.");
         // Previously: NO OUTPUT
-        // Showing output of updateDisplay(DISPLAY_UPDATE_FINISHED);
+        // Added output of updateDisplay(DISPLAY_UPDATE_FINISHED) which made most sense.
         displayConsolePrint("OurWeather Updated", false);
         displayConsolePrint("Wait 120 Seconds", false);
         displayConsolePrint("Unplug Power", false);
@@ -249,25 +255,25 @@ int updateOurWeather(String command) {
   return 0;
 }
 
-// connection commands
+// Connection commands.
 
 int resetToDefaults(String command) {
   return 1;
 }
 
 int enableCWOPControl(String command) {
-  // Get state from command
+  // Get state from command.
   int state = command.toInt();
   return 1;
 }
 
 int enableTwitterControl(String command) {
-  // Get state from command
+  // Get state from command.
   int state = command.toInt();
   return 1;
 }
 
-// Weather Controls
+// Weather Controls.
 int weatherSmallControl(String command) {
   WeatherDisplayMode = DISPLAY_WEATHER_SMALL;
   writeEEPROMState();
@@ -325,7 +331,7 @@ int usaUnitControl(String command) {
   return 1;
 }
 
-// RasPiConnect
+// RasPiConnect.
 int jsonCmd(String command) {
   Serial.println("in jsonCmd");
   return 1;

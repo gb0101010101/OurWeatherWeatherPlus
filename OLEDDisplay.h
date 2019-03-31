@@ -10,7 +10,7 @@
  *********************************************************************/
 #include "vector";
 
-// Cannot use ticker for OLED updates as yield()
+// Cannot use ESP8266ticker for OLED updates as yield()
 // in display.display() causes panic.
 // #include <Ticker.h>;
 // Ticker tickerQueueUpdate;
@@ -553,7 +553,7 @@ void displayQueueRenderScreen(displayScreenTimed displayScreen) {
     break;
 
     case kScreenDemoDateTime: {
-      // display date and time
+      // Display date and time.
       RtcDateTime now = Rtc.GetDateTime();
       lines.push_back(formatDate(now));
       lines.push_back(rtcTime(now));
@@ -585,28 +585,28 @@ void displayQueueNext() {
 
 void displayQueueStart() {
   display_queue_started = true;
-  //tickerQueueUpdate.attach_ms(display_queue_timeout, displayQueueNext);
+  // tickerQueueUpdate.attach_ms(display_queue_timeout, displayQueueNext);
 }
 
 void setupDisplayQueue(int format) {
   Serial.println('OLED: Queue Setup');
   displayQueueScreens(format);
   displayQueueStart();
-  //displayQueueDelay(5500);
+  // displayQueueDelay(5500);
 }
 
 void displayQueueDelay(int milliseconds) {
   if (display_queue_started) {
     Serial.println('OLED: Queue Delayed');
-    //tickerQueueUpdate.detach();
-    //tickerQueueDelay.attach_ms(milliseconds, displayQueueStart);
+    // tickerQueueUpdate.detach();
+    // tickerQueueDelay.attach_ms(milliseconds, displayQueueStart);
   }
 }
 
 #define LOGO16_GLCD_HEIGHT 16
 #define LOGO16_GLCD_WIDTH  16
 
-//static const unsigned char PROGMEM logo16_glcd_bmp[] =
+// static const unsigned char PROGMEM logo16_glcd_bmp[] =
 static const unsigned char logo16_glcd_bmp[] = { B00000000, B11000000,
     B00000001, B11000000, B00000001, B11000000, B00000011, B11100000, B11110011,
     B11100000, B11111110, B11111000, B01111110, B11111111, B00110011, B10011111,
@@ -617,7 +617,7 @@ static const unsigned char logo16_glcd_bmp[] = { B00000000, B11000000,
 void testdrawbitmap(const uint8_t *bitmap, uint8_t w, uint8_t h) {
   uint8_t icons[NUMFLAKES][3];
 
-  // initialize
+  // Initialize.
   for (uint8_t f = 0; f < NUMFLAKES; f++) {
     icons[f][XPOS] = random(display.width());
     icons[f][YPOS] = 0;
@@ -632,7 +632,7 @@ void testdrawbitmap(const uint8_t *bitmap, uint8_t w, uint8_t h) {
   }
 
   while (1) {
-    // draw each icon
+    // Draw each icon.
     for (uint8_t f = 0; f < NUMFLAKES; f++) {
       display.drawBitmap(icons[f][XPOS], icons[f][YPOS], logo16_glcd_bmp, w, h,
           WHITE);
@@ -640,13 +640,13 @@ void testdrawbitmap(const uint8_t *bitmap, uint8_t w, uint8_t h) {
     display.display();
     delay(200);
 
-    // then erase it + move it
+    // Then erase it + move it.
     for (uint8_t f = 0; f < NUMFLAKES; f++) {
       display.drawBitmap(icons[f][XPOS], icons[f][YPOS], logo16_glcd_bmp, w, h,
           BLACK);
-      // move it
+      // Move it.
       icons[f][YPOS] += icons[f][DELTAY];
-      // if its gone, reinit
+      // If its gone, reinit.
       if (icons[f][YPOS] > display.height()) {
         icons[f][XPOS] = random(display.width());
         icons[f][YPOS] = 0;
@@ -683,7 +683,7 @@ void testdrawcircle(void) {
 void testfillrect(void) {
   uint8_t color = 1;
   for (int16_t i = 0; i < display.height() / 2; i += 3) {
-    // alternate colors
+    // Alternate colors.
     display.fillRect(i, i, display.width() - i * 2, display.height() - i * 2, color % 2);
     display.display();
     color++;
@@ -816,12 +816,12 @@ void testscrolltext(void) {
 #endif
 
 void oledDisplaySetup() {
-  // by default, we'll generate the high voltage from the 3.3v line internally! (neat!)
+  // By default, we'll generate the high voltage from the 3.3v line internally! (neat!)
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C, false); // initialize with the I2C addr 0x3C (for the 128x64)
-  // init done
+  // Init done.
 
   // Show image buffer on the display hardware.
-  // Since the buffer is intialized with an Adafruit splashscreen
+  // Since the buffer is intialized with an Adafruit splashscreen.
   // internally, this will display the splashscreen.
   display.display();
   delay(2000);
@@ -829,7 +829,7 @@ void oledDisplaySetup() {
   // Clear the buffer.
   display.clearDisplay();
   /*
-   // draw a single pixel
+   // Draw a single pixel
    display.drawPixel(10, 10, WHITE);
    // Show the display buffer on the hardware.
    // NOTE: You _must_ call display after making any drawing commands

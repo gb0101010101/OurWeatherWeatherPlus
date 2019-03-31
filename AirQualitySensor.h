@@ -1,5 +1,5 @@
 int getAirQuality(void) {
-  // Values in this routine are for 16 bit ADC
+  // Values in this routine are for 16 bit ADC.
   int16_t sensor_value = adsAirQuality.readADC_SingleEnded(0);
   // int16_t sensor_value = adsAirQuality.readADC_SingleEnded(0);
   Serial.print("Sensor_Value=");
@@ -21,7 +21,7 @@ int getAirQuality(void) {
 
   currentAirQualitySensor = sensor_value;
 
-  // limit the conversion for the INT value
+  // Limit the conversion for the INT value.
   if (currentAirQualitySensor < 32000) {
     INTcurrentAirQualitySensor = currentAirQualitySensor;
   } else {

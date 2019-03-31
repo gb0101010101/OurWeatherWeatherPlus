@@ -9,7 +9,7 @@ static const int8_t AS3935_DISTANCE_OUT_OF_RANGE = -2;
 static const uint8_t AS3935_AFE_INDOOR = 0b10010;
 static const uint8_t AS3935_AFE_OUTDOOR = 0b01110;
 
-// register access macros - register address, bitmask
+// Register access macros - register address, bitmask.
 #define AS3935_AFE_GB    0x00, 0x3E
 #define AS3935_PWD        0x00, 0x01
 #define AS3935_NF_LEV   0x01, 0x70

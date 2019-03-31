@@ -38,7 +38,7 @@
 
 class Crc16 {
   private:
-    //Crc parameters
+    // Crc parameters.
     uint16_t _msbMask;
     uint16_t _mask;
     uint16_t _xorIn;
@@ -52,7 +52,7 @@ class Crc16 {
 
   public:
     inline Crc16() {
-      //Default to XModem parameters
+      // Default to XModem parameters.
       _reflectIn = false;
       _reflectOut = false;
       _polynomial = 0x1021;

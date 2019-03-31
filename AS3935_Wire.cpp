@@ -2,7 +2,7 @@
 #include "AS3935.h"
 
 /*
- a line-by-line port of https://github.com/pcfens/particle-as3935/
+ A line-by-line port of https://github.com/pcfens/particle-as3935/
  an exercise for me to write a library.
  */
 
@@ -44,8 +44,8 @@ void AS3935::begin(int sda, int scl) {
 
 /**
  Find the shift required to make the mask use the LSB.
- @param mask The mask to find the shift of
- @return The number of bit positions to shift the mask
+ @param mask The mask to find the shift of.
+ @return The number of bit positions to shift the mask.
  */
 uint8_t AS3935::_getShift(uint8_t mask) {
   uint8_t i = 0;
@@ -57,8 +57,8 @@ uint8_t AS3935::_getShift(uint8_t mask) {
 
 /**
  Read a byte from a register.
- @param reg The register address
- @return The value in the register
+ @param reg The register address.
+ @return The value in the register.
  */
 uint8_t AS3935::readRegister(uint8_t reg) {
   uint8_t v;
@@ -71,11 +71,11 @@ uint8_t AS3935::readRegister(uint8_t reg) {
 }
 
 /**
- Read a byte from a register, return a masked and shifted value
- @param reg The register address
- @param mask The mask to use when shifting contents
+ Read a byte from a register, return a masked and shifted value.
+ @param reg The register address.
+ @param mask The mask to use when shifting contents.
  @return An uint8_t with the right most bits containing the masked and
- shifted contents of the requested register
+ shifted contents of the requested register.
  */
 uint8_t AS3935::readRegisterWithMask(uint8_t reg, uint8_t mask) {
   uint8_t v;
@@ -84,10 +84,10 @@ uint8_t AS3935::readRegisterWithMask(uint8_t reg, uint8_t mask) {
 }
 
 /**
- Write a masked value to register reg, preserving other bits
- @param reg The register address
- @param mask The bitmask to mask
- @param value The value to write to the register
+ Write a masked value to register reg, preserving other bits.
+ @param reg The register address.
+ @param mask The bitmask to mask.
+ @param value The value to write to the register.
  */
 void AS3935::writeRegisterWithMask(uint8_t reg, uint8_t mask, uint8_t value) {
   uint8_t registerValue;
@@ -110,14 +110,14 @@ void AS3935::writeRegister(uint8_t reg, uint8_t value) {
 }
 
 /**
- Sets all registers in default mode
+ Sets all registers in default mode.
  */
 void AS3935::setDefault(void) {
   writeRegister(0x3c, 0x96);
 }
 
 /**
- Calibrates the internal RC Oscillators automatically
+ Calibrates the internal RC Oscillators automatically.
  */
 void AS3935::calibrateRCO(void) {
   writeRegister(0x3D, 0x96);
@@ -131,7 +131,7 @@ void AS3935::disableOscillators(void) {
 }
 
 /**
- Get interrupt reason
+ Get interrupt reason.
  @return one of AS3935_INT_STRIKE, AS3935_INT_DISTURBER, AS3935_INT_NOISE
  */
 uint8_t AS3935::getInterruptReason(void) {
@@ -206,14 +206,14 @@ int8_t AS3935::getDistance(void) {
 
 /**
  Returns bool whether or not current AFE setting is indoor.
- @return true if the setting is indoor, false if not
+ @return true if the setting is indoor, false if not.
  */
 bool AS3935::isIndoor() {
   return readRegisterWithMask(0x00, 0b11000001) == AS3935_AFE_INDOOR;
 }
 
 /**
- Set AFE setting to indoor mode
+ Set AFE setting to indoor mode.
  @return true or false whether if setting to indoor mode succeeded.
  */
 bool AS3935::setIndoor() {
@@ -232,7 +232,7 @@ bool AS3935::setIndoor(bool enable) {
 
 /**
  Returns bool whether or not current AFE setting is outdoor.
- @return true if the setting is outdoor, false if not
+ @return true if the setting is outdoor, false if not.
  */
 bool AS3935::isOutdoor() {
   return readRegisterWithMask(0x00, 0b11000001) == AS3935_AFE_OUTDOOR;
@@ -264,7 +264,7 @@ void AS3935::enableDisturbers() {
   writeRegisterWithMask(AS3935_MASK_DIST, 0);
 }
 /**
- Get minimum number of lightning
+ Get minimum number of lightning.
  @return uint8_t number of minimum number of lightning, one of 1, 5, 9, or
  16.
  */
@@ -289,7 +289,7 @@ uint8_t AS3935::getMinimumLightning(void) {
 }
 
 /**
- Set minimum number of lightning to trigger an event
+ Set minimum number of lightning to trigger an event.
  @param n Minimum number of lightnings, one of 1, 5, 9, or 16.
  @return bool whether or not setting the value succeeded.
  */
@@ -316,7 +316,7 @@ void AS3935::clearStats(void) {
 
 /**
  Get noise floor level from AS3935.
- @return The current noise floor level from the register
+ @return The current noise floor level from the register.
  */
 uint8_t AS3935::getNoiseFloor(void) {
   return readRegisterWithMask(0x01, 0b01110000);
@@ -325,7 +325,7 @@ uint8_t AS3935::getNoiseFloor(void) {
 /**
  Set noise floor level from AS3935.
  @param level The noise floor level, from 0 to 7, to set.
- @return true or false whether if setting the level is succeeded
+ @return true or false whether if setting the level is succeeded.
  */
 bool AS3935::setNoiseFloor(int level) {
   if (level < 0 || level > 7) {
@@ -348,8 +348,7 @@ bool AS3935::setSpikeRejection(int level) {
 }
 
 /**
- Increase noise floor level by one. When the level raeches to the maximum
- value, 7, further call will not increase the level.
+ Increase noise floor level by one with maximum value (7)
  @return The noise floor level after the change.
  */
 uint8_t AS3935::increaseNoiseFloor(void) {
@@ -359,8 +358,7 @@ uint8_t AS3935::increaseNoiseFloor(void) {
 }
 
 /**
- Decrease noise floor level by one. When the level raeches to the minimum
- value, 0, further call will not decrease the level.
+ Decrease noise floor level by one with minimum value (0).
  @return The noise floor level after the change.
  */
 uint8_t AS3935::descreseNoiseFloor(void) {
@@ -379,7 +377,7 @@ uint16_t AS3935::setWatchdogThreshold(uint16_t wdth) {
 }
 
 void AS3935::reset() {
-  //write to 0x3c, value 0x96
+  // Write to 0x3c: value 0x96.
   Serial.println("-------Reset-------");
   writeRegister((uint8_t) 0x3c, (uint8_t) 0x96);
 
@@ -387,10 +385,10 @@ void AS3935::reset() {
 }
 
 /**
- Set internal capacitor values, from 0 to 120pF in steps of 8pf. Interrupts
- are disabled while calibrating.
+ Set internal capacitor values, from 0 to 120pF in steps of 8pf.
+ Interrupts are disabled while calibrating.
  @param cap Integer, from 0 to 15.
- @return the value of the internal capacitor
+ @return the value of the internal capacitor.
  */
 uint8_t AS3935::setTuningCapacitor(uint8_t cap) {
   if (cap <= 15 || cap >= 0) {

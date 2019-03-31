@@ -36,7 +36,7 @@
   typedef uint8_t PortMask;
 #endif
 
-//#include <SPI.h>
+// #include <SPI.h>
 #include "OWMAdafruit_GFX.h"
 
 /* For the Adafruit_GFX library to work with the ESP8266, please be sure to include the "#elif defined ESP8266" line in Adafruit_GFX.cpp
@@ -55,8 +55,8 @@
 #define INVERSE 2
 
 #define SSD1306_I2C_ADDRESS   0x3D	// 011110+SA0+RW - 0x3C or 0x3D
-// Address for 128x32 is 0x3C
-// Address for 128x64 is 0x3D (default) or 0x3C (if SA0 is grounded)
+// Address for 128x32 is 0x3C.
+// Address for 128x64 is 0x3D (default) or 0x3C (if SA0 is grounded).
 
 /*=========================================================================
  SSD1306 Displays
@@ -66,9 +66,7 @@
  sized framebuffer, etc.
 
  SSD1306_128_64  128x64 pixel display
-
  SSD1306_128_32  128x32 pixel display
-
  SSD1306_96_16
 
  -----------------------------------------------------------------------*/
