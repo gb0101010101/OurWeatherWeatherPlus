@@ -43,18 +43,18 @@ class RtcDateTime {
     uint32_t TotalSeconds() const;
     uint64_t TotalSeconds64() const;
 
-    // add seconds
+    // Add seconds.
     void operator +=(uint32_t seconds) {
       RtcDateTime after = RtcDateTime(TotalSeconds() + seconds);
       *this = after;
     }
 
-    // allows for comparisons to just work (==, <, >, <=, >=, !=)
+    // Allows for comparisons to just work (==, <, >, <=, >=, !=).
     operator uint32_t() const {
       return TotalSeconds();
     }
 
-    // Epoch32 support
+    // Epoch32 support.
     uint32_t Epoch32Time() const {
       return TotalSeconds() + c_Epoch32OfOriginYear;
     }
@@ -62,7 +62,7 @@ class RtcDateTime {
       _initWithSecondsFrom2000<uint32_t>(time - c_Epoch32OfOriginYear);
     }
 
-    // Epoch64 support
+    // Epoch64 support.
     uint64_t Epoch64Time() const {
       return TotalSeconds64() + c_Epoch32OfOriginYear;
     }

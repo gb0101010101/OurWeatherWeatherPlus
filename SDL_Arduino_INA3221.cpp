@@ -29,13 +29,13 @@
 void SDL_Arduino_INA3221::wireWriteRegister(uint8_t reg, uint16_t value) {
   Wire.beginTransmission(INA3221_i2caddr);
 #if ARDUINO >= 100
-  Wire.write(reg);                       // Register
-  Wire.write((value >> 8) & 0xFF);       // Upper 8-bits
-  Wire.write(value & 0xFF);              // Lower 8-bits
+  Wire.write(reg);                       // Register.
+  Wire.write((value >> 8) & 0xFF);       // Upper 8-bits.
+  Wire.write(value & 0xFF);              // Lower 8-bits.
 #else
-  Wire.send(reg);                        // Register
-  Wire.send(value >> 8);// Upper 8-bits
-  Wire.send(value & 0xFF);// Lower 8-bits
+  Wire.send(reg);                        // Register.
+  Wire.send(value >> 8);// Upper 8-bits.
+  Wire.send(value & 0xFF);// Lower 8-bits.
 #endif
   Wire.endTransmission();
 }
@@ -48,27 +48,27 @@ void SDL_Arduino_INA3221::wireWriteRegister(uint8_t reg, uint16_t value) {
 void SDL_Arduino_INA3221::wireReadRegister(uint8_t reg, uint16_t *value) {
   Wire.beginTransmission(INA3221_i2caddr);
 #if ARDUINO >= 100
-  Wire.write(reg);                       // Register
+  Wire.write(reg);                       // Register.
 #else
-  Wire.send(reg);                        // Register
+  Wire.send(reg);                        // Register.
 #endif
   Wire.endTransmission();
 
-  delay(1); // Max 12-bit conversion time is 586us per sample
+  delay(1); // Max 12-bit conversion time is 586us per sample.
 
   Wire.requestFrom(INA3221_i2caddr, (uint8_t) 2);
 #if ARDUINO >= 100
-  // Shift values to create properly formed integer
+  // Shift values to create properly formed integer.
   *value = ((Wire.read() << 8) | Wire.read());
 #else
-  // Shift values to create properly formed integer
+  // Shift values to create properly formed integer.
   *value = ((Wire.receive() << 8) | Wire.receive());
 #endif
 }
 
 //
 void SDL_Arduino_INA3221::INA3221SetConfig(void) {
-  // Set Config register to take into account the settings above
+  // Set Config register to take into account the settings above.
   uint16_t config = INA3221_CONFIG_ENABLE_CHAN1 |
   INA3221_CONFIG_ENABLE_CHAN2 |
   INA3221_CONFIG_ENABLE_CHAN3 |
@@ -83,7 +83,7 @@ void SDL_Arduino_INA3221::INA3221SetConfig(void) {
 
 /**************************************************************************/
 /*! 
- @brief  Instantiates a new SDL_Arduino_INA3221 class
+ @brief  Instantiates a new SDL_Arduino_INA3221 class.
  */
 /**************************************************************************/
 SDL_Arduino_INA3221::SDL_Arduino_INA3221(uint8_t addr, float shuntresistor) {
@@ -98,7 +98,7 @@ SDL_Arduino_INA3221::SDL_Arduino_INA3221(uint8_t addr, float shuntresistor) {
 /**************************************************************************/
 void SDL_Arduino_INA3221::begin() {
   Wire.begin();
-  // Set chip to known config values to start
+  // Set chip to known config values to start.
   INA3221SetConfig();
 
   Serial.print("shut resistor=");
@@ -118,7 +118,7 @@ int16_t SDL_Arduino_INA3221::getBusVoltage_raw(int channel) {
 //  Serial.print("BusVoltage_raw=");
 //  Serial.println(value,HEX);
 
-  // Shift to the right 3 to drop CNVR and OVF and multiply by LSB
+  // Shift to the right 3 to drop CNVR and OVF and multiply by LSB.
   return (int16_t) (value);
 }
 
@@ -137,7 +137,7 @@ int16_t SDL_Arduino_INA3221::getShuntVoltage_raw(int channel) {
 
 /**************************************************************************/
 /*! 
- @brief  Gets the shunt voltage in mV (so +-168.3mV)
+ @brief  Gets the shunt voltage in mV (so +-168.3mV).
  */
 /**************************************************************************/
 float SDL_Arduino_INA3221::getShuntVoltage_mV(int channel) {
@@ -148,7 +148,7 @@ float SDL_Arduino_INA3221::getShuntVoltage_mV(int channel) {
 
 /**************************************************************************/
 /*! 
- @brief  Gets the shunt voltage in volts
+ @brief  Gets the shunt voltage in volts.
  */
 /**************************************************************************/
 float SDL_Arduino_INA3221::getBusVoltage_V(int channel) {
@@ -159,7 +159,7 @@ float SDL_Arduino_INA3221::getBusVoltage_V(int channel) {
 /**************************************************************************/
 /*! 
  @brief  Gets the current value in mA, taking into account the
- config settings and current LSB
+ config settings and current LSB.
  */
 /**************************************************************************/
 float SDL_Arduino_INA3221::getCurrent_mA(int channel) {

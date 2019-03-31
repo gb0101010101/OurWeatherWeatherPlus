@@ -18,12 +18,12 @@ RtcDateTime::RtcDateTime(uint32_t secondsFrom2000) {
 uint8_t StringToUint8(const char* pString) {
   uint8_t value = 0;
 
-  // skip leading 0 and spaces
+  // Skip leading 0 and spaces.
   while ('0' == *pString || *pString == ' ') {
     pString++;
   }
 
-  // calculate number until we hit non-numeral char
+  // Calculate number until we hit non-numeral char.
   while ('0' <= *pString && *pString <= '9') {
     value *= 10;
     value += *pString - '0';
@@ -34,7 +34,7 @@ uint8_t StringToUint8(const char* pString) {
 }
 
 RtcDateTime::RtcDateTime(const char* date, const char* time) {
-  // sample input: date = "Dec 26 2009", time = "12:34:56"
+  // Sample input: date = "Dec 26 2009", time = "12:34:56"
   _yearFrom2000 = StringToUint8(date + 9);
   // Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
   Serial.print("date=");

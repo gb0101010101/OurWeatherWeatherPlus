@@ -3,20 +3,17 @@
 // SwitchDoc Labs, LLC
 //
 
-//
-//
-
 #define WEATHERPLUSESP8266VERSION "035G2"
 #define WEATHERPLUSPUBNUBPROTOCOL "OURWEATHER035"
 
-// define DEBUGPRINT to print out lots of debugging information for WeatherPlus.
+// Define DEBUGPRINT to print out lots of debugging information for WeatherPlus.
 #undef DEBUGPRINT
 
 #undef PUBNUB_DEBUG
 #undef DEBUGBLYNK
 
 #define BLYNK_NO_BUILTIN
-#define BLYNK_PRINT Serial // Defines the object that is used for printing
+#define BLYNK_PRINT Serial // Defines the object that is used for printing.
 #undef BLYNK_DEBUG
 #define BLYNK_USE_128_VPINS
 #include <BlynkSimpleEsp8266.h>
@@ -24,12 +21,12 @@
 // Change this to undef if you don't have the OLED present.
 #define OLED_Present
 
-// BOF preprocessor bug prevent - insert on top of your arduino-code
+// BOF preprocessor bug prevent - insert on top of your arduino-code.
 #if 1
 __asm volatile ("nop");
 #endif
 
-// Board options
+// Board options.
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
@@ -47,25 +44,25 @@ bool AS3935_Present = false;
 bool AirQuality_Present = false;
 bool WXLink_Present = false;
 bool SunAirPlus_Present = false;
-// Whether readings from sensor are available
+// Whether readings from sensor are available.
 bool sensor_readings_present = false;
 
-// WiFi
+// WiFi.
 #include <ESP8266WiFi.h>
-//needed for library
+//needed for library.
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
-#include "WiFiManager.h"          //https://github.com/tzapu/WiFiManager
+#include "WiFiManager.h"          // https://github.com/tzapu/WiFiManager
 
-//gets called when WiFiManager enters configuration mode
+// Gets called when WiFiManager enters configuration mode.
 
-//void configModeCallback (WiFiManager *myWiFiManager)
+// void configModeCallback(WiFiManager *myWiFiManager);
 void configModeCallback() {
   Serial.println("Entered config mode");
   Serial.println(WiFi.softAPIP());
 }
 
-// OTA updated
+// OTA updated.
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
@@ -79,13 +76,13 @@ int pubNubEnabled;
 String SDL2PubNubCode = "";
 String SDL2PubNubCode_Sub = "";
 
-// Blynk Codes
+// Blynk Codes.
 String BlynkAuthCode = "";
 bool UseBlynk = false;
 
 BlynkTimer Btimer;
 
-// Attach virtual serial terminal to Virtual Pin
+// Attach virtual serial terminal to Virtual Pin.
 WidgetTerminal statusTerminal(V32);
 
 #define PUBLISHINTERVALSECONDS 30
@@ -94,7 +91,7 @@ WidgetTerminal statusTerminal(V32);
 
 #include "PubNub.h"
 
-// parsing function
+// Parsing function.
 String getValue(String data, char separator, int index) {
   int found = 0;
   int strIndex[] = { 0, -1 };
@@ -113,16 +110,17 @@ char channel1[] = "OWIOT1";
 char uuid[] = WEATHERPLUSPUBNUBPROTOCOL;
 
 #include <Wire.h>
-#include <Arduino.h> //needed for Serial.println
+// TODO: Arduino.h should probably be top line item.
+#include <Arduino.h> // Needed for Serial.println
 
-// debug the REST library
+// Debug the REST library.
 #define DEBUG_MODE 1
 
 #include "MaREST.h"
 
 #include <string.h>
 
-// Display modes
+// Display modes.
 // Kept legacy defines for EEPROM.
 #define DISPLAY_WEATHER_SMALL 2
 #define DISPLAY_WEATHER_MEDIUM 3
@@ -150,7 +148,7 @@ char uuid[] = WEATHERPLUSPUBNUBPROTOCOL;
 
 #define DEBUG
 
-// Rest Interface
+// Rest Interface.
 
 #define PREFIX ""
 
@@ -158,8 +156,9 @@ String RestTimeStamp;
 String RestDataString;
 String Version;
 
-//----------------------------------------------------------------------
-//Local WiFi
+// -----------
+//  Local WiFi
+// -----------
 
 int WiFiSetupFlag = 0;
 
@@ -176,22 +175,22 @@ IPAddress myConnectedMask;
 
 //----------------------------------------------------------------------
 
-int blinkPin = 0;                // pin to blink led at each reading
-// Create an instance of the server
+int blinkPin = 0;                // Pin to blink led at each reading.
+// Create an instance of the server.
 
-// Create aREST instance
+// Create aREST instance.
 aREST rest = aREST();
-// commands are functions that get called by the webserver framework
-// they can read any posted data from client, and they output to server
+// Commands are functions that get called by the webserver framework
+// they can read any posted data from client, and they output to server.
 
 #include "elapsedMillis.h"
 
-elapsedMillis timeElapsed; //declare global if you don't want it reset every time loop
-elapsedMillis timeElapsed300Seconds; //declare global if you don't want it reset every time loop
+elapsedMillis timeElapsed; // Declare global if you don't want it reset every time loop.
+elapsedMillis timeElapsed300Seconds; // Declare global if you don't want it reset every time loop.
 elapsedMillis timeScreen;
 
-// BMP180 / BMP280 Sensor
-// Both are stored in BMP180 variables
+// BMP180 / BMP280 Sensor.
+// Both are stored in BMP180 variables.
 #include "MAdafruit_BMP280.h"
 #include "MAdafruit_BMP085.h"
 Adafruit_BMP280 bme;
@@ -206,11 +205,11 @@ float BMP180_Altitude;
 bool BMP180Found;
 bool BMP280Found;
 
-int EnglishOrMetric;   // 0 = UK , 1 = SI, 2 = USA
+int EnglishOrMetric;   // 0 = UK , 1 = SI, 2 = USA.
 
 int WeatherDisplayMode;
 
-// DS3231 Library functions
+// DS3231 Library functions.
 #include "RtcDS3231.h"
 RtcDS3231 Rtc;
 
@@ -222,20 +221,20 @@ float AM2315_Dewpoint;
 #include "SDL_ESP8266_HR_AM2315.h"
 
 SDL_ESP8266_HR_AM2315 am2315;
-float dataAM2315[2]; //Array to hold data returned by sensor.  [0,1] => [Humidity, Temperature]
+float dataAM2315[2]; // Array to hold data returned by sensor. [0,1] => [Humidity, Temperature].
 
-boolean AOK;  // 1=successful read
+boolean AOK;  // 1 = Successful read.
 
 const char *monthName[12] = {
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
 
-// ThunderBoard AS3935 from SwitchDoc Labs
+// ThunderBoard AS3935 from SwitchDoc Labs.
 #include "AS3935.h"
 AS3935 as3935(0x02, 3);
 
-// lightning state variables as3935
+// Lightning state variables as3935.
 String as3935_LastLightning = "";
 int as3935_LastLightningDistance = 0;
 String as3935_LastEvent = "";
@@ -270,7 +269,7 @@ void printAS3935Registers() {
 }
 
 int parseOutAS3935Parameters() {
-  // check for bad string
+  // Check for bad string.
   if (as3935_Params.indexOf(",") == -1) {
     as3935_Params = "2,1,7,0,3,3";
   }
@@ -307,7 +306,7 @@ int parseOutAS3935Parameters() {
     return 2;
   }
 
-  // OK, if we are here then all data is good
+  // OK, if we are here then all data is good.
   Value = getValue(as3935_Params, ',', 0);
   as3935_NoiseFloor = Value.toInt();
   Value = getValue(as3935_Params, ',', 1);
@@ -325,11 +324,11 @@ int parseOutAS3935Parameters() {
 }
 
 void setAS3935Parameters() {
-  // set to 1/2 - middle - you can calibrate on an Arduino UNO and use the value from there (pf/8)
+  // Set to 1/2 - middle - you can calibrate on an Arduino UNO and use the value from there (pf/8).
   as3935.setTuningCapacitor(as3935_TuneCap);
-  // lightning state variables as3935
-  // first let's turn on disturber indication and print some register values from AS3935
-  // tell AS3935 we are indoors, for outdoors use setOutdoors() function
+  // Lightning state variables as3935.
+  // First let's turn on disturber indication and print some register values from AS3935.
+  // Tell AS3935 we are indoors, for outdoors use setOutdoors() function.
   if (as3935_Indoor == true) {
     as3935.setIndoor();
   } else {
@@ -343,10 +342,11 @@ void setAS3935Parameters() {
   Serial.println(as3935_NoiseFloor);
 #endif
 
-  // can't calibrate because IRQ is polled and not through an Interrupt line on ESP8266
+  // Can't calibrate because IRQ is polled and not through an Interrupt line on ESP8266.
   // AS3935.calibrate();
 
-  // turn on indication of distrubers, once you have AS3935 all tuned, you can turn those off with disableDisturbers()
+  // Turn on indication of distrubers, once you have AS3935 all tuned, you can turn those
+  // off with disableDisturbers().
 
   if (as3935_DisturberDetection == true) {
     as3935.enableDisturbers();
@@ -360,9 +360,9 @@ void setAS3935Parameters() {
   as3935.setSpikeRejection(as3935_SpikeDetection);
   as3935.setWatchdogThreshold(as3935_WatchdogThreshold);
 
-  // end set parameters
+  // End set parameters.
 
-  // set up as3935 REST variable
+  // Set up as3935 REST variable.
   as3935_Params = String(as3935_NoiseFloor) + ",";
   as3935_Params += String(as3935_Indoor) + ",";
   as3935_Params += String(as3935_TuneCap) + ",";
@@ -373,19 +373,19 @@ void setAS3935Parameters() {
   printAS3935Registers();
 }
 
-// Station Name
+// Station Name.
 String stationName;
 String adminPassword;
 
-// Health Indications for WeatherPlus
+// Health Indications for WeatherPlus.
 int heapSize;
 
-// WeatherUnderground
+// WeatherUnderground.
 String WeatherUnderground_StationID;
 String WeatherUnderground_StationKey;
 int lastMessageID;
 
-// WeatherRack
+// WeatherRack.
 float windSpeedMin;
 float windSpeedMax;
 float windGustMin;
@@ -405,21 +405,21 @@ int lastDay;
 float startOfDayRain;
 
 #include "SDL_RasPiGraphLibrary.h"
-// setup the RasPiConnect Graph Arrays
+// Setup the RasPiConnect Graph Arrays.
 SDL_RasPiGraphLibrary windSpeedGraph(10, SDL_MODE_LABELS);
 SDL_RasPiGraphLibrary windGustGraph(10, SDL_MODE_LABELS);
 SDL_RasPiGraphLibrary windDirectionGraph(10, SDL_MODE_LABELS);
 
-char windSpeedBuffer[150];  // wind speed graph
-char windGustBuffer[150];  // wind speed graph
-char windDirectionBuffer[150];  // wind speed graph
+char windSpeedBuffer[150];      // Wind speed graph.
+char windGustBuffer[150];       // Wind speed graph.
+char windDirectionBuffer[150];  // Wind speed graph.
 
-// WeatherRack
-// LED connected to digital GPIO 0
+// WeatherRack.
+// LED connected to digital GPIO 0.
 int WpinLED = 0;
-// Anenometer connected to GPIO 14
+// Anenometer connected to GPIO 14.
 int pinAnem = 14;
-// Rain Bucket connected to  GPIO 12
+// Rain Bucket connected to  GPIO 12.
 int pinRain = 12;
 
 #include "OWMAdafruit_ADS1015.h"
@@ -436,19 +436,20 @@ int INTcurrentAirQualitySensor;
 #include "AirQualitySensor.h"
 #include "SDL_Weather_80422.h"
 
-//SDL_Weather_80422 weatherStation(pinAnem, pinRain, 0, 0, A0, SDL_MODE_INTERNAL_AD );
+// SDL_Weather_80422 weatherStation(pinAnem, pinRain, 0, 0, A0, SDL_MODE_INTERNAL_AD );
 SDL_Weather_80422 weatherStation(pinAnem, pinRain, 0, 0, A0, SDL_MODE_I2C_ADS1015);
 
 // SDL_MODE_I2C_ADS1015
 
-// RasPiConnect
+// RasPiConnect.
 
 long messageCount;
 
 static uint8_t mac[] = LOCALMAC;
 static uint8_t ip[] = LOCALIP;
 
-// this is our current command object structure.  It is only valid inside void jsonCmd
+// This is our current command object structure.
+// It is only valid inside void jsonCmd.
 typedef struct {
     char ObjectID[40];
     char ObjectFlags[40];
@@ -462,9 +463,9 @@ typedef struct {
 
 char *md5str;
 
-char ST1Text[40];   // used in ST-1 Send text control
+char ST1Text[40];   // Used in ST-1 Send text control.
 
-char bubbleStatus[40];   // What to send to the Bubble status
+char bubbleStatus[40];   // What to send to the Bubble status.
 
 #include "RainFunctions.h"
 
@@ -473,18 +474,18 @@ float lastRain;
 
 #include "WeatherUnderground.h"
 
-// OLED Constants
+// OLED Constants.
 #define NUMFLAKES 10
 #define XPOS 0
 #define YPOS 1
 #define DELTAY 2
 
-// aREST functions
+// aREST functions.
 #include "aRestFunctions.h"
 
 #include "SDL2PubNub.h"
 
-// SunAirPlus
+// SunAirPlus.
 float BatteryVoltage;
 float BatteryCurrent;
 float LoadVoltage;
@@ -492,9 +493,9 @@ float LoadCurrent;
 float SolarPanelVoltage;
 float SolarPanelCurrent;
 
-// WXLink Support
+// WXLink Support.
 
-// Crc 16 library (XModem)
+// Crc 16 library (XModem).
 #include "Crc16.h"
 Crc16 crc;
 
@@ -513,12 +514,13 @@ bool WXLastMessageGood;
 
 SDL_Arduino_INA3221 SunAirPlus;
 
-// the three channels of the INA3221 named for SunAirPlus Solar Power Controller channels (www.switchdoc.com)
+// Three channels of the INA3221 named for SunAirPlus
+// Solar Power Controller channels (www.switchdoc.com).
 #define LIPO_BATTERY_CHANNEL 1
 #define SOLAR_CELL_CHANNEL 2
 #define OUTPUT_CHANNEL 3
 
-// OLED Display
+// OLED Display.
 #include "OWMAdafruit_GFX.h"
 #include "ESP_SSD1306.h"
 
@@ -530,47 +532,48 @@ ESP_SSD1306 display(OLED_RESET);
 
 #include "OLEDDisplay.h"
 
-// MQTT
+// MQTT.
 #include "Mqtt.h"
 
-// validate temperature from AM2315 - Fixes the rare +16 degrees C issue
+// Validate temperature from AM2315 - Fixes the rare +16 degrees C issue.
 bool invalidTemperatureFound;
 
 float validateTemperature(float incomingTemperature) {
-  // check for large jump in temperature.
+  // Check for large jump in temperature.
   if (incomingTemperature > AM2315_Temperature + 15.0) {
-    // OK, we may have an invalid temperature.  Make sure this is not a startup (current humidity will be 0.0 if startup)
+    // OK, we may have an invalid temperature.
+    // Make sure this is not a startup (current humidity will be 0.0 if startup).
     if (AM2315_Humidity < 0.1) {
-      // we are in startup phase, so accept temperature
+      // We are in startup phase, so accept temperature.
       invalidTemperatureFound = false;
       return incomingTemperature;
     } else {
-      // we have an issue with a bad read (typically a +32 degrees C increase)
-      // so send last good temperature back and flag a bad temperature
+      // We have an issue with a bad read (typically a +32 degrees C increase).
+      // Send last good temperature back and flag a bad temperature.
       invalidTemperatureFound = true;
       return AM2315_Temperature;
     }
   }
-  // check for large decrease in temperature
+  // Check for large decrease in temperature.
   if (incomingTemperature < AM2315_Temperature - 15.0) {
     // OK, we may have an invalid temperature.
-    // Make sure this is not a startup (current humidity will be 0.0 if startup)
+    // Make sure this is not a startup (current humidity will be 0.0 if startup).
     if (AM2315_Humidity < 0.1) {
-      // we are in startup phase, so accept temperature
+      // We are in startup phase, so accept temperature.
       invalidTemperatureFound = false;
       return incomingTemperature;
     } else {
-      // we have an issue with a bad read (typically a +32 degrees C increase)
-      // so send last good temperature back and flag a bad temperature
+      // We have an issue with a bad read (typically a +32 degrees C increase).
+      // Send last good temperature back and flag a bad temperature.
       invalidTemperatureFound = true;
       return AM2315_Temperature;
     }
   }
   invalidTemperatureFound = false;
-  return incomingTemperature; // good temperature
+  return incomingTemperature; // Good temperature.
 }
 
-//scan for I2C Addresses
+// Scan for I2C Addresses.
 bool scanAddressForI2CBus(byte from_addr) {
   byte error;
 
@@ -596,7 +599,7 @@ void setup() {
 
   invalidTemperatureFound = false;
 
-  // WiFi reset loop fix - erase the WiFi saved area
+  // WiFi reset loop fix - erase the WiFi saved area.
 
   WiFi.persistent(false);
 
@@ -608,14 +611,14 @@ void setup() {
   WeatherUnderground_StationKey = "YYYY";
 
   adminPassword = "admin";
-  altitude_meters = 637.0;  // default to 611
+  altitude_meters = 637.0;        // Default to 611.
 
-  pinMode(blinkPin, OUTPUT);        // pin that will blink every reading
-  digitalWrite(blinkPin, HIGH);  // High of this pin is LED OFF
+  pinMode(blinkPin, OUTPUT);      // Pin that will blink every reading.
+  digitalWrite(blinkPin, HIGH);   // High of this pin is LED OFF.
 
-  Serial.begin(115200);           // set up Serial library at 9600 bps
+  Serial.begin(115200);           // Set up Serial library at 9600 bps.
 
-  // Setup DS3231 RTC
+  // Setup DS3231 RTC.
 
   //--------RTC SETUP ------------
   Rtc.Begin();
@@ -631,14 +634,14 @@ void setup() {
 
   if (!Rtc.IsDateTimeValid()) {
     // Common Cuases:
-    //    1) first time you ran and the device wasn't running yet
-    //    2) the battery on the device is low or even missing
+    //    1) First time you ran and the device wasn't running yet.
+    //    2) Battery on the device is low or even missing.
 
     Serial.println("RTC lost confidence in the DateTime!");
 
-    // following line sets the RTC to the date & time this sketch was compiled
+    // Following line sets the RTC to the date & time this sketch was compiled
     // it will also reset the valid flag internally unless the Rtc device is
-    // having an issue
+    // having an issue.
 
     Rtc.SetDateTime(compiled);
   }
@@ -668,8 +671,8 @@ void setup() {
         "RTC is the same as compile time! (not expected but all is fine)");
   }
 
-  // never assume the Rtc was last configured by you, so
-  // just clear them to your needed state
+  // Never assume the Rtc was last configured by you,
+  // so just clear them to your needed state.
   Rtc.Enable32kHzPin(false);
   Rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone);
 
@@ -705,9 +708,8 @@ void setup() {
       user_units = USA;
   }
 
-  // now set up thunderboard AS3935
-
-  // reset all internal register values to defaults
+  // Set up Thunderboard AS3935.
+  // Reset all internal register values to defaults.
   as3935.reset();
 
   int noiseFloor = as3935.getNoiseFloor();
@@ -728,10 +730,10 @@ void setup() {
     setAS3935Parameters();
   }
 
-  // Set up Wifi
+  // Set up Wifi.
   const char APpassphrase[] = "OurWeather";
 
-  // Append the last two bytes of the MAC (HEX'd) to string to make unique
+  // Append the last two bytes of the MAC (HEX'd) to string to make unique.
   uint8_t mac[WL_MAC_ADDR_LENGTH];
   WiFi.softAPmacAddress(mac);
   String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX)
@@ -739,25 +741,26 @@ void setup() {
   macID.toUpperCase();
   APssid = "OurWeather - " + macID;
 
-  //WiFiManager
-  //Local intialization. Once its business is done, there is no need to keep it around
+  // WiFiManager.
+  // Local intialization. Once its business is done, there is no need to keep it around.
   WiFiManager wifiManager;
   wifiManager.setDebugOutput(true);
-  //reset saved settings
-  //wifiManager.resetSettings();
+  // Reset saved settings
+  // wifiManager.resetSettings();
 
-  //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
+  // Set callback that gets called when connecting to previous
+  // WiFi fails, and enters Access Point mode.
   wifiManager.setAPCallback(configModeCallback);
-  //fetches ssid and pass and tries to connect
-  //if it does not connect it starts an access point with the specified name
+  // Fetches ssid and pass and tries to connect.
+  // If it does not connect it starts an access point with the specified name.
   wifiManager.setTimeout(600);
-  //and goes into a blocking loop awaiting configuration
+  // Goes into a blocking loop awaiting configuration.
   if (!wifiManager.autoConnect(APssid.c_str())) {
     Serial.println("failed to connect and hit timeout");
     blinkLED(4, 300);  // blink 4, failed to connect
-    //reset and try again, or maybe put it to deep sleep
-    //ESP.reset();
-    //delay(1000);
+    // reset and try again, or maybe put it to deep sleep
+    // ESP.reset();
+    // delay(1000);
   }
 
   if (WiFi.status() == WL_CONNECTED) {
@@ -804,11 +807,11 @@ void setup() {
   rest.variable("WindDirectionMax", &windDirectionMax);
   rest.variable("AirQualitySensor", &INTcurrentAirQualitySensor);
 
-  // as3935 rest variables
+  // as3935 rest variables.
   rest.variable("ThunderBoardLast", &as3935_FullString);
   rest.variable("ThunderBoardParams", &as3935_Params);
 
-  // Handle REST calls
+  // Handle REST calls.
   WiFiClient client = server.available();
   if (client) {
     while (!client.available()) {
@@ -819,13 +822,13 @@ void setup() {
     }
   }
 
-  // health indications for device
+  // Health indications for device.
   rest.variable("ESP8266HeapSize", &heapSize);
 
-  // Function to be exposed
+  // Function to be exposed.
   rest.function("arduino", jsonCmd); // For RasPiConnect - ArduinoConnect
 
-  // auxillary functions
+  // Auxillary functions.
   rest.function("led", ledControl);
   rest.function("setID", setWeatherPlusIDControl);
   rest.function("resetOurWeather", resetOurWeather);
@@ -835,18 +838,18 @@ void setup() {
   rest.function("setBAKEY", setBAKEY);
 
   rest.function("setAdminPassword", setAdminPassword);
-  //rest.function("rebootOurWeather",   rebootOurWeather);
+  // rest.function("rebootOurWeather",   rebootOurWeather);
   rest.function("setDateTime", setDateTime);
   rest.function("resetToDefaults", resetToDefaults);
 
   rest.function("resetWiFiAccessPoint", resetWiFiAccessPoint);
   rest.function("updateOurWeather", updateOurWeather);
 
-  // external interfaces
+  // External interfaces.
   rest.function("enableCWOP", enableCWOPControl);
   rest.function("enableTwitter", enableTwitterControl);
 
-  // weather functions
+  // Weather functions.
   rest.function("WeatherSmall", weatherSmallControl);
   rest.function("WeatherMedium", weatherMediumControl);
   rest.function("WeatherLarge", weatherLargeControl);
@@ -855,14 +858,14 @@ void setup() {
   rest.function("MetricUnits", metricUnitControl);
   rest.function("UsaUnits", usaUnitControl);
 
-  // PubNub
+  // PubNub.
   rest.function("EnablePubNub", enableDisableSDL2PubNub);
   rest.function("SendPubNubState", sendStateSDL2PubNub);
 
-  // Thunderboard functions AS3935
+  // Thunderboard functions AS3935.
   rest.function("setThunderBoardParams", setThunderBoardParams);
 
-  // Give name and ID to device
+  // Give name and ID to device.
   rest.set_id("1");
   rest.set_name("OurWeather");
 
@@ -884,7 +887,7 @@ void setup() {
   Serial.print("Free Sketch Space on OurWeather:");
   Serial.println(ESP.getFreeSketchSpace());
 
-  // test for SunAirPlus_Present
+  // Test for SunAirPlus_Present.
   SunAirPlus_Present = false;
 
   LoadVoltage = SunAirPlus.getBusVoltage_V(OUTPUT_CHANNEL);
@@ -897,7 +900,7 @@ void setup() {
     Serial.println("SunAirPlus Present");
   }
 
-  // test for WXLink Present
+  // Test for WXLink Present.
   WXLink_Present = false;
   WXLink_Present = scanAddressForI2CBus(0x08);
   WXLastMessageGood = false;
@@ -957,13 +960,13 @@ void setup() {
   myConnectedMask = WiFi.subnetMask();
   Serial.println(WiFi.subnetMask());
 
-  //blinkIPAddress();
+  // blinkIPAddress();
 
   // Display WiFi info on screen.
   // Previously: updateDisplay(DISPLAY_IPDISPLAY);
   // Moved to WifiManager.
 
-  // Now put PUBNUB Code up there
+  // Now put PUBNUB Code up there.
   // Previously: updateDisplay(DISPLAY_SDL2PUBNUBCODE);
   if (pubNubEnabled == 1) {
     displayConsolePrint("Alexa enabled", false);
@@ -975,10 +978,9 @@ void setup() {
 
   timeElapsed = 0;
 
-  // BMP180
-  /* Initialise the sensor */
+  // BMP180 - Initialise the sensor.
   if (!bmp.begin()) {
-    /* There was a problem detecting the BM180 ... check your connections */
+    // There was a problem detecting the BM180.
     Serial.println("No BMP180 detected ");
     BMP180Found = false;
   } else {
@@ -986,8 +988,7 @@ void setup() {
     BMP180Found = true;
   }
 
-  // BMP280
-  /* Initialise the sensor */
+  // BMP280 - Initialise the sensor.
   if (!bme.begin()) {
     Serial.println("No BMP280 detected ");
     BMP280Found = false;
@@ -996,8 +997,7 @@ void setup() {
     BMP280Found = true;
   }
 
-  // AM2315
-  // setup AM2315
+  // AM2315 Setup.
   AM2315_Temperature = 0.0;
   AM2315_Humidity = 0.0;
   AM2315_Dewpoint = 0.0;
@@ -1005,8 +1005,8 @@ void setup() {
   AOK = am2315.readData(dataAM2315);
   if (AOK) {
     Serial.println("AM2315 Detected...");
-    //Serial.print("Hum: "); Serial.println(dataAM2315[1]);
-    //Serial.print("TempF: "); Serial.println(dataAM2315[0]);
+    // Serial.print("Hum: "); Serial.println(dataAM2315[1]);
+    // Serial.print("TempF: "); Serial.println(dataAM2315[0]);
     AM2315_Temperature = dataAM2315[1];
     AM2315_Humidity = dataAM2315[0];
     AM2315_Dewpoint = AM2315_Temperature - ((100.0 - AM2315_Humidity) / 5.0);
@@ -1022,9 +1022,9 @@ void setup() {
 
   if (UseBlynk == true) {
     Blynk.config(BlynkAuthCode.c_str());
-    // Setup a function to be called every 10 seconds
+    // Setup a function to be called every 10 seconds.
     Btimer.setInterval(10000L, myBTimerEvent);
-    // Every second
+    // Every second.
     Blynk.connect();
 
 #ifdef DEBUGBLYNK
@@ -1035,8 +1035,8 @@ void setup() {
     }
 #endif
 
-    // Clear the terminal content
-    //statusTerminal.clear();
+    // Clear the terminal content.
+    // statusTerminal.clear();
     writeToStatusLine(
         (String) "OurWeather Version V" + (String) WEATHERPLUSESP8266VERSION
             + " Started");
@@ -1044,7 +1044,7 @@ void setup() {
     writeToBlynkStatusTerminal(
         (String) "OurWeather Version V" + (String) WEATHERPLUSESP8266VERSION
             + " Started");
-    // Print out the presents
+    // Print out the presents.
     if (SunAirPlus_Present) {
       writeToBlynkStatusTerminal("SunAirPlus Present");
     } else {
@@ -1095,7 +1095,7 @@ void setup() {
         writeToBlynkStatusTerminal("Units set to USA");
         break;
     }
-  } // end UseBlynk
+  } // End UseBlynk
 
   if (WiFi_Present) {
     mqttSetup();
@@ -1104,7 +1104,7 @@ void setup() {
 #ifdef OLED_Present
     setupDisplayQueue(WeatherDisplayMode);
 #endif
-} // end setup
+} // End setup
 
 //
 //
@@ -1112,15 +1112,15 @@ void setup() {
 //
 //
 void loop() {
-  // put your main code here, to run repeatedly:
-  //Serial.println("Starting Main Loop");
-  // Handle REST calls
+  // Put your main code here, to run repeatedly:
+  // Serial.println("Starting Main Loop");
+  // Handle REST calls.
   WiFiClient client = server.available();
 
   int timeout;
   timeout = 0;
   if (client) {
-    // Thank you to MAKA69 for this suggestion
+    // Thank you to MAKA69 for this suggestion.
     while (!client.available()) {
       Serial.print(".");
       delay(1);

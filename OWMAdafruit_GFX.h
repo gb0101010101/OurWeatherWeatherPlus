@@ -73,18 +73,19 @@ class Adafruit_GFX: public Print {
 
     uint8_t getRotation(void) const;
 
-    // get current cursor position (get rotation safe maximum values, using: width() for x, height() for y)
+    // Get current cursor position
+    // (get rotation safe maximum values, using: width() for x, height() for y)
     int16_t getCursorX(void) const;
     int16_t getCursorY(void) const;
 
   protected:
-    const int16_t WIDTH, HEIGHT; // This is the 'raw' display w/h - never changes
-    int16_t _width, _height, // Display w/h as modified by current rotation
+    const int16_t WIDTH, HEIGHT; // This is the 'raw' display w/h - never changes.
+    int16_t _width, _height, // Display w/h as modified by current rotation.
         cursor_x, cursor_y;
     uint16_t textcolor, textbgcolor;
     uint8_t textsize, rotation;
-    boolean wrap,   // If set, 'wrap' text at right edge of display
-        _cp437; // If set, use correct CP437 charset (default is off)
+    boolean wrap,   // If set, 'wrap' text at right edge of display.
+        _cp437; // If set, use correct CP437 charset (default is off).
     GFXfont *gfxFont;
 };
 

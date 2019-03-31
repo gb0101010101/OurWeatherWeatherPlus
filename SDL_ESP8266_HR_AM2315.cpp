@@ -50,12 +50,12 @@ SDL_ESP8266_HR_AM2315::SDL_ESP8266_HR_AM2315() {
 #endif
 }
 
-// constructors
+// Constructors.
 int delayByCPU(long delaycount);
 int I2C_ClearBus();
 uint16_t am2315_crc16(unsigned char *ptr, unsigned char len);
 
-// define read return
+// Define read retur.n
 #define GOODREAD 0
 #define CRCERROR 1
 #define BADTEMPERATURE 2
@@ -68,10 +68,10 @@ boolean SDL_ESP8266_HR_AM2315::readData(float *dataArray) {
 
 #define REPEATCOUNT 7
 
-  // OK now, we have a bad read, for any reason - repeat up to REPEATCOUNT times
+  // OK now, we have a bad read, for any reason - repeat up to REPEATCOUNT times.
 
   if (returnValue != GOODREAD) {
-    // this is for all error issues
+    // This is for all error issues.
     int count;
     for (count = 0; count < REPEATCOUNT; count++) {
       returnValue = internalReadData(dataArray);
@@ -83,7 +83,7 @@ boolean SDL_ESP8266_HR_AM2315::readData(float *dataArray) {
             highBadReadCount = count;
           }
 
-          // now set high and low
+          // Now set high and low.
           if (dataArray[1] > highTemp) {
             highTemp = dataArray[1];
           }
@@ -113,21 +113,21 @@ boolean SDL_ESP8266_HR_AM2315::readData(float *dataArray) {
         default:
           break;
 
-      } // end of switch
-      // we have fallen through loop - restore last good temperature and continue
-    } // end of For Loop
+      } // End of switch.
+      // We have fallen through loop - restore last good temperature and continue.
+    } // End of For Loop.
 
     dataArray[1] = lastGoodTemp;
     oldDataReads++;
 
     return true;
-  }  // end of Not GOODREAD clause
+  }  // End of Not GOODREAD clause.
 
-  // ah, good reads
+  // Ah, good reads.
   goodReads++;
   highBadReadCount = 0;
 
-  // now set high and low
+  // Set high and low.
   if (dataArray[1] > highTemp) {
     highTemp = dataArray[1];
   }
@@ -142,12 +142,12 @@ boolean SDL_ESP8266_HR_AM2315::readData(float *dataArray) {
 int SDL_ESP8266_HR_AM2315::internalReadData(float * dataArray) {
   uint8_t reply[10];
 
-  //ETS_UART_INTR_DISABLE();
+  // ETS_UART_INTR_DISABLE();
   noInterrupts();
   ETS_INTR_LOCK();
 
-  //Wire.begin(4, 5);   // some ESP8266 devices require 5, 4 instead of 4,5
-  Wire.begin(5, 4);   // some ESP8266 devices require 5, 4 instead of 4,5
+  // Wire.begin(4, 5);   // Some ESP8266 devices require 5, 4 instead of 4,5.
+  Wire.begin(5, 4);   // Some ESP8266 devices require 5, 4 instead of 4,5.
 
   Wire.setClock(400000L);
 
@@ -155,13 +155,13 @@ int SDL_ESP8266_HR_AM2315::internalReadData(float * dataArray) {
   Wire.write(AM2315_READREG);
   Wire.endTransmission();
 
-  //delay(50);
+  // delay(50);
   delayByCPU(50);
 
   Wire.beginTransmission(AM2315_I2CADDR);
   Wire.write(AM2315_READREG);
-  Wire.write(0x00);  // start at address 0x0
-  Wire.write(4);  // request 4 bytes data
+  Wire.write(0x00);  // Start at address 0x0.
+  Wire.write(4);  // Request 4 bytes data.
   Wire.endTransmission();
 
   delayByCPU(50);
@@ -169,7 +169,7 @@ int SDL_ESP8266_HR_AM2315::internalReadData(float * dataArray) {
   Wire.requestFrom(AM2315_I2CADDR, 8);
   for (uint8_t i = 0; i < 8; i++) {
     reply[i] = Wire.read();
-    //Serial.println(reply[i], HEX);
+    // Serial.println(reply[i], HEX);
   }
 
   interrupts();
@@ -185,7 +185,7 @@ int SDL_ESP8266_HR_AM2315::internalReadData(float * dataArray) {
 
   long randomNumber;
 
-  // make one out of 10 has a bad CRC error
+  // Make one out of 10 has a bad CRC error.
   randomNumber = random(0, 10);
   if (randomNumber == 0)
   calcCRC++;
@@ -198,7 +198,7 @@ int SDL_ESP8266_HR_AM2315::internalReadData(float * dataArray) {
 
 #endif
   if (calcCRC != sentCRC) {
-    // bad CRC
+    // Bad CRC.
     badReadPresent = true;
 
     for (uint8_t i = 0; i < 8; i++) {
@@ -217,7 +217,7 @@ int SDL_ESP8266_HR_AM2315::internalReadData(float * dataArray) {
     humidity += reply[3];
     humidity /= 10;
 
-    // check for negative temperature
+    // Check for negative temperature.
     bool negative;
     negative = false;
 
@@ -239,7 +239,7 @@ int SDL_ESP8266_HR_AM2315::internalReadData(float * dataArray) {
 
     long randomNumber;
 
-    // make one out of 10 has a bad Temperature Spike
+    // Make one out of 10 has a bad Temperature Spike.
     randomNumber = random(0, 10);
 
     if (randomNumber == 0)
@@ -247,17 +247,17 @@ int SDL_ESP8266_HR_AM2315::internalReadData(float * dataArray) {
 
 #endif
 
-    // leave in C
-    //  dataArray[1] = (temp * 1.8)+32;
+    // Leave in C.
+    // dataArray[1] = (temp * 1.8)+32;
     dataArray[1] = temp;
 
-    //  if we have a previous read, then check band
+    // If we have a previous read, then check band.
     if (firstGoodRead == true) {
 
 #define TEMPERATUREBAND 14.0
 
       if (lastGoodTemp > (TEMPERATUREBAND + temp)) {
-        // too high compared to last good value
+        // Too high compared to last good value.
         for (uint8_t i = 0; i < 8; i++) {
           lastBadRead[i] = reply[i];
         }
@@ -267,7 +267,7 @@ int SDL_ESP8266_HR_AM2315::internalReadData(float * dataArray) {
         return BADTEMPERATURE;
       }
       if (lastGoodTemp < (temp - TEMPERATUREBAND)) {
-        // too low compared to last good value
+        // Too low compared to last good value.
         for (uint8_t i = 0; i < 8; i++) {
           lastBadRead[i] = reply[i];
         }
@@ -336,7 +336,7 @@ int delayByCPU(long delaycount) {
   long j;
 
   for (i = 0; i < delaycount * 166; i++) {
-    //Serial.println("outside loop");
+    // Serial.println("outside loop");
     for (j = 0; j < 1000; j++) {
       for (index = 0; index < COUNT; index++) {
         test = 30.4 + i;

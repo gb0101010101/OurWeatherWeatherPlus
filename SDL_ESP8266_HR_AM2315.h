@@ -62,7 +62,7 @@ class SDL_ESP8266_HR_AM2315 {
     boolean badReadPresent;
     float lastGoodTemp;
 
-    // check CRC
+    // Check CRC.
     uint16_t calcCRC;
     uint16_t sentCRC;
 };

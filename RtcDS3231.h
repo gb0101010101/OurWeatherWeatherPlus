@@ -7,7 +7,7 @@
 #include "RtcDateTime.h"
 #include "RtcTemperature.h"
 
-// seconds accuracy
+// Seconds accuracy.
 enum DS3231AlarmOneControl {
   // bit order:  A1M4  DY/DT  A1M3  A1M2  A1M1
   DS3231AlarmOneControl_HoursMinutesSecondsDayOfMonthMatch = 0x00,
@@ -65,7 +65,7 @@ class DS3231AlarmOne {
     DS3231AlarmOneControl _flags;
 };
 
-// minutes accuracy
+// Minutes accuracy.
 enum DS3231AlarmTwoControl {
   // bit order:  A2M4  DY/DT  A2M3  A2M2
   DS3231AlarmTwoControl_HoursMinutesDayOfMonthMatch = 0x00,
@@ -161,7 +161,7 @@ class RtcDS3231 {
     static DS3231AlarmOne GetAlarmOne();
     static DS3231AlarmTwo GetAlarmTwo();
     // Latch must be called after an alarm otherwise it will not
-    // trigger again
+    // trigger again.
     static DS3231AlarmFlag LatchAlarmsTriggeredFlags();
 
     static void ForceTemperatureCompensationUpdate(bool block);

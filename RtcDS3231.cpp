@@ -12,10 +12,10 @@
 #define Write(x) write(static_cast<uint8_t>(x))
 #define Read(x) read(x)
 
-//I2C Slave Address  
+// I2C Slave Address  .
 #define DS3231_ADDRESS 0x68  
 
-//DS3231 Register Addresses
+// DS3231 Register Addresses.
 #define DS3231_REG_TIMEDATE   0x00
 #define DS3231_REG_ALARMONE   0x07
 #define DS3231_REG_ALARMTWO   0x0B
@@ -26,7 +26,7 @@
 
 #define DS3231_REG_TEMP       0x11
 
-// DS3231 Control Register Bits
+// DS3231 Control Register Bits.
 #define DS3231_A1IE  0
 #define DS3231_A2IE  1
 #define DS3231_INTCN 2
@@ -38,7 +38,7 @@
 #define DS3231_AIEMASK (_BV(DS3231_A1IE) | _BV(DS3231_A2IE))
 #define DS3231_RSMASK (_BV(DS3231_RS1) | _BV(DS3231_RS2))
 
-// DS3231 Status Register Bits
+// DS3231 Status Register Bits.
 #define DS3231_A1F      0
 #define DS3231_A2F      1
 #define DS3231_BSY      2
@@ -71,18 +71,18 @@ void RtcDS3231::SetIsRunning(bool isRunning) {
 }
 
 void RtcDS3231::SetDateTime(const RtcDateTime& dt) {
-  // clear the invalid flag
+  // Clear the invalid flag.
   uint8_t status = getReg(DS3231_REG_STATUS);
-  status &= ~_BV(DS3231_OSF); // clear the flag
+  status &= ~_BV(DS3231_OSF); // Clear the flag.
   setReg(DS3231_REG_STATUS, status);
 
-  // set the date time
+  // Set the date time.
   Wire.beginTransmission(DS3231_ADDRESS);
   Wire.Write(DS3231_REG_TIMEDATE);
 
   Wire.Write(Uint8ToBcd(dt.Second()));
   Wire.Write(Uint8ToBcd(dt.Minute()));
-  Wire.Write(Uint8ToBcd(dt.Hour())); // 24 hour mode only
+  Wire.Write(Uint8ToBcd(dt.Hour())); // 24 hour mode only.
 
   uint8_t year = dt.Year() - 2000;
   uint8_t centuryFlag = 0;
@@ -110,14 +110,14 @@ RtcDateTime RtcDS3231::GetDateTime() {
   uint8_t minute = BcdToUint8(Wire.Read());
   uint8_t hour = BcdToBin24Hour(Wire.Read());
 
-  Wire.Read();  // throwing away day of week as we calculate it
+  Wire.Read();  // Throwing away day of week as we calculate it.
 
   uint8_t dayOfMonth = BcdToUint8(Wire.Read());
   uint8_t monthRaw = Wire.Read();
   uint16_t year = BcdToUint8(Wire.Read()) + 2000;
 
   if (monthRaw & _BV(7)) {
-    // century wrap flag
+    // Century wrap flag.
     year += 100;
   }
   uint8_t month = BcdToUint8(monthRaw & 0x7f);
@@ -132,8 +132,8 @@ RtcTemperature RtcDS3231::GetTemperature() {
 
   Wire.requestFrom(DS3231_ADDRESS, 2);
   int8_t degrees = Wire.Read();
-  // fraction is just the upper bits
-  // representing 1/4 of a degree
+  // Fraction is just the upper bits.
+  // Representing 1/4 of a degree.
   uint8_t fract = (Wire.Read() >> 6) * 25;
 
   return RtcTemperature(degrees, fract);
@@ -154,21 +154,21 @@ void RtcDS3231::Enable32kHzPin(bool enable) {
 void RtcDS3231::SetSquareWavePin(DS3231SquareWavePinMode pinMode) {
   uint8_t creg = getReg(DS3231_REG_CONTROL);
 
-  // clear all relevant bits to a known "off" state
+  // Clear all relevant bits to a known "off" state.
   creg &= ~(DS3231_AIEMASK | _BV(DS3231_BBSQW));
-  creg |= _BV(DS3231_INTCN);  // set INTCN to disables SQW
+  creg |= _BV(DS3231_INTCN);  // Set INTCN to disables SQW.
 
   switch (pinMode) {
     case DS3231SquareWavePin_ModeNone:
       break;
 
     case DS3231SquareWavePin_ModeBatteryBackup:
-      creg |= _BV(DS3231_BBSQW); // set battery backup flag
-      creg &= ~_BV(DS3231_INTCN); // clear INTCN to enable SQW
+      creg |= _BV(DS3231_BBSQW); // Set battery backup flag.
+      creg &= ~_BV(DS3231_INTCN); // Clear INTCN to enable SQW.
       break;
 
     case DS3231SquareWavePin_ModeClock:
-      creg &= ~_BV(DS3231_INTCN); // clear INTCN to enable SQW
+      creg &= ~_BV(DS3231_INTCN); // Clear INTCN to enable SQW.
       break;
 
     case DS3231SquareWavePin_ModeAlarmOne:
@@ -190,8 +190,8 @@ void RtcDS3231::SetSquareWavePin(DS3231SquareWavePinMode pinMode) {
 void RtcDS3231::SetSquareWavePinClockFrequency(DS3231SquareWaveClock freq) {
   uint8_t creg = getReg(DS3231_REG_CONTROL);
 
-  creg &= ~DS3231_RSMASK; // Set to 0
-  creg |= (freq & DS3231_RSMASK); // Set freq bits
+  creg &= ~DS3231_RSMASK; // Set to 0.
+  creg |= (freq & DS3231_RSMASK); // Set freq bits.
 
   setReg(DS3231_REG_CONTROL, creg);
 }
@@ -273,18 +273,18 @@ DS3231AlarmTwo RtcDS3231::GetAlarmTwo() {
 DS3231AlarmFlag RtcDS3231::LatchAlarmsTriggeredFlags() {
   uint8_t sreg = getReg(DS3231_REG_STATUS);
   uint8_t alarmFlags = (sreg & DS3231_AIFMASK);
-  sreg &= ~DS3231_AIFMASK; // clear the flags
+  sreg &= ~DS3231_AIFMASK; // Clear the flags.
   setReg(DS3231_REG_STATUS, sreg);
   return (DS3231AlarmFlag) alarmFlags;
 }
 
 void RtcDS3231::ForceTemperatureCompensationUpdate(bool block) {
   uint8_t creg = getReg(DS3231_REG_CONTROL);
-  creg |= _BV(DS3231_CONV); // Write CONV bit
+  creg |= _BV(DS3231_CONV); // Write CONV bit.
   setReg(DS3231_REG_CONTROL, creg);
 
   while (block && (creg & _BV(DS3231_CONV)) != 0) {
-    // Block until CONV is 0
+    // Block until CONV is 0.
     creg = getReg(DS3231_REG_CONTROL);
   }
 }
@@ -302,7 +302,7 @@ uint8_t RtcDS3231::getReg(uint8_t regAddress) {
   Wire.Write(regAddress);
   Wire.endTransmission();
 
-  // control register
+  // control register.
   Wire.requestFrom(DS3231_ADDRESS, 1);
 
   uint8_t regValue = Wire.Read();
