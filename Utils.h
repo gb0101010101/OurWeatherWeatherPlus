@@ -648,7 +648,7 @@ typedef enum {
 unitSystem user_units = USA;
 
 /**
- * Calculate dewpoint from temperature (Celcius) and humidity.
+ * Calculate dewpoint from temperature (Celcius) and humidity (percentage).
  */
 float calculateDewpoint(float temperatureC, float humidityPercent) {
   float dewpoint = NAN;
@@ -656,6 +656,17 @@ float calculateDewpoint(float temperatureC, float humidityPercent) {
     dewpoint = temperatureC - ((100.0 - humidityPercent) / 5.0);
   }
   return dewpoint;
+}
+
+float calculateWindChill(float temperature_c, const float wind_speed_kph) {
+  float windchill = 0.0;
+
+  if (wind_speed_kph > 4.82803 && temperature_c < 10) {
+    windchill = 13.12 + (0.6215 * temperature_c)
+        - (11.37 * pow(wind_speed_kph, 0.16))
+        + (0.3965 * temperature_c * pow(wind_speed_kph, 0.16));
+  }
+  return windchill;
 }
 
 /**
