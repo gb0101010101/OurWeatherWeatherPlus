@@ -146,8 +146,8 @@ int SDL_ESP8266_HR_AM2315::internalReadData(float * dataArray) {
   noInterrupts();
   ETS_INTR_LOCK();
 
-  // Wire.begin(4, 5);   // Some ESP8266 devices require 5, 4 instead of 4,5.
-  Wire.begin(5, 4);   // Some ESP8266 devices require 5, 4 instead of 4,5.
+  // Some ESP8266 devices require 5, 4 instead of 4,5.
+  Wire.begin(5, 4);
 
   Wire.setClock(400000L);
 
@@ -160,8 +160,10 @@ int SDL_ESP8266_HR_AM2315::internalReadData(float * dataArray) {
 
   Wire.beginTransmission(AM2315_I2CADDR);
   Wire.write(AM2315_READREG);
-  Wire.write(0x00);  // Start at address 0x0.
-  Wire.write(4);  // Request 4 bytes data.
+  // Start at address 0x0.
+  Wire.write(0x00);
+  // Request 4 bytes data.
+  Wire.write(4);
   Wire.endTransmission();
 
   delayByCPU(50);
@@ -279,7 +281,6 @@ int SDL_ESP8266_HR_AM2315::internalReadData(float * dataArray) {
     }
 
     // Now we have passed the spike with good CRC problem, so we have goodness.
-
     firstGoodRead = true;
     lastGoodTemp = temp;
 
