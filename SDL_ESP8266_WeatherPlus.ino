@@ -628,7 +628,7 @@ void setup() {
 
   RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
   Serial.println("--------");
-  printDateTime(compiled);
+  Serial.println(formatDateTime(compiled));
   Serial.println("--------");
   Serial.println();
 
