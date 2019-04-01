@@ -1009,7 +1009,7 @@ void setup() {
     // Serial.print("TempF: "); Serial.println(dataAM2315[0]);
     AM2315_Temperature = dataAM2315[1];
     AM2315_Humidity = dataAM2315[0];
-    AM2315_Dewpoint = AM2315_Temperature - ((100.0 - AM2315_Humidity) / 5.0);
+    AM2315_Dewpoint = calculateDewpoint(AM2315_Temperature, AM2315_Humidity);
     AM2315_Present = true;
   } else {
     Serial.println("AM2315 Sensor not found, check wiring & pullups!");
@@ -1179,7 +1179,7 @@ void loop() {
       // Temperature in Celcius.
       AM2315_Temperature = dataAM2315[1];
       AM2315_Humidity = dataAM2315[0];
-      AM2315_Dewpoint = AM2315_Temperature - ((100.0 - AM2315_Humidity) / 5.0);
+      AM2315_Dewpoint = calculateDewpoint(AM2315_Temperature, AM2315_Humidity);
 
       Serial.println("Temperature: " + formatTemperatureString(AM2315_Temperature, 1, true));
       Serial.println("Humidity: " + formatHumidityString(AM2315_Humidity, 0, true));
@@ -1461,7 +1461,7 @@ void loop() {
         AM2315_Humidity = convert4BytesToFloat(buffer, 29);
 
         // Calculate dewpoint.
-        AM2315_Dewpoint = AM2315_Temperature - ((100.0 - AM2315_Humidity) / 5.0);
+        AM2315_Dewpoint = calculateDewpoint(AM2315_Temperature, AM2315_Humidity);
 
         // Read charge data.
         WXLoadCurrent = convert4BytesToFloat(buffer, 41);

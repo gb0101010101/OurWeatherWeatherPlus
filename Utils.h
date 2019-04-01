@@ -715,6 +715,17 @@ typedef enum {
 unitSystem user_units = USA;
 
 /**
+ * Calculate dewpoint from temperature (Celcius) and humidity.
+ */
+float calculateDewpoint(float temperatureC, float humidityPercent) {
+  float dewpoint = NAN;
+  if (!isnan(temperatureC) && humidityPercent >=0 && humidityPercent <=100) {
+    dewpoint = temperatureC - ((100.0 - humidityPercent) / 5.0);
+  }
+  return dewpoint;
+}
+
+/**
  * Convert temperature from Celcius to Farenheit.
  */
 float convertCtoF(float celcius) {
@@ -922,7 +933,11 @@ String formatPressureString(float pa, int decimals = 1, bool show_unit = false) 
  * Format humidity string using unit system.
  */
 String formatHumidityString(float humidity, int decimals = 1, bool show_unit = false) {
-  String output = formatFloatString(humidity, decimals);
+  String output = "nan";
+  if (!isnan(humidity)) {
+    output = formatFloatString(humidity, decimals);
+  }
+
   if (show_unit) {
     output += " %";
   }

@@ -29,11 +29,14 @@
 //#include <util/delay.h>
 
 SDL_ESP8266_HR_AM2315::SDL_ESP8266_HR_AM2315() {
+
   // intialize statistics
   goodReads = 0;
   badReads = 0;
+  highBadReadCount = 0;
   badCRCReads = 0;
   badSpikeReads = 0;
+  badMessageReads = 0;
   oldDataReads = 0;
   highTemp = -1000.0;
   lowTemp = 1000.0;
@@ -42,8 +45,15 @@ SDL_ESP8266_HR_AM2315::SDL_ESP8266_HR_AM2315() {
   for (int i = 0; i < 10; i++) {
     lastBadRead[i] = 0;
   }
-
   firstGoodRead = false;
+
+  // Private.
+  humidity = -1;
+  temp =-1;
+  badReadPresent = false;
+  lastGoodTemp = -1;
+  sentCRC = 0;
+  calcCRC = 0;
 
 #ifdef AM2315DEBUG
   randomSeed(analogRead(0));
@@ -52,7 +62,6 @@ SDL_ESP8266_HR_AM2315::SDL_ESP8266_HR_AM2315() {
 
 // Constructors.
 int delayByCPU(long delaycount);
-int I2C_ClearBus();
 uint16_t am2315_crc16(unsigned char *ptr, unsigned char len);
 
 // Define read retur.n
@@ -171,7 +180,7 @@ int SDL_ESP8266_HR_AM2315::internalReadData(float * dataArray) {
   Wire.requestFrom(AM2315_I2CADDR, 8);
   for (uint8_t i = 0; i < 8; i++) {
     reply[i] = Wire.read();
-    // Serial.println(reply[i], HEX);
+//    Serial.println(reply[i], HEX);
   }
 
   interrupts();
@@ -190,13 +199,13 @@ int SDL_ESP8266_HR_AM2315::internalReadData(float * dataArray) {
   // Make one out of 10 has a bad CRC error.
   randomNumber = random(0, 10);
   if (randomNumber == 0)
-  calcCRC++;
+  _calcCRC++;
 
   Serial.print("calCRC=");
-  Serial.println(calcCRC, HEX);
+  Serial.println(_calcCRC, HEX);
 
   Serial.print("sentCRC=");
-  Serial.println(sentCRC, HEX);
+  Serial.println(_sentCRC, HEX);
 
 #endif
   if (calcCRC != sentCRC) {
@@ -214,6 +223,11 @@ int SDL_ESP8266_HR_AM2315::internalReadData(float * dataArray) {
   }
 
   if ((reply[0] == AM2315_READREG) && (reply[1] == 4)) {
+//    Serial.print("Humidity Read:");
+//    Serial.print(" Reply2: ");
+//    Serial.print(reply[2]);
+//    Serial.print(" Reply3: ");
+//    Serial.print(reply[3]);
     humidity = reply[2];
     humidity *= 256;
     humidity += reply[3];
@@ -286,6 +300,8 @@ int SDL_ESP8266_HR_AM2315::internalReadData(float * dataArray) {
 
     return GOODREAD;
   } else {
+
+
     dataArray[0] = NAN;
     dataArray[1] = NAN;
 
