@@ -63,10 +63,13 @@ int sendWeatherUndergroundData() {
   client.stop();
 
   if (WUResult.indexOf("success") != -1) {
-    Serial.println("WU Successful Write");
+    Serial.println("WU: Data send successful.");
+    return 1;
+  } else if(WUResult.indexOf("INVALIDPASSWORDID") != -1) {
+    Serial.println("WU: Station Key and/or ID are incorrect.");
     return 1;
   } else {
-    Serial.println("WU NOT Successful Write");
+    Serial.println("WU: Data send failed.");
   }
   return 0;
 }
