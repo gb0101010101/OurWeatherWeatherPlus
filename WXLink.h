@@ -236,8 +236,7 @@ bool readWXLink() {
       badWXLinkReads = 0;
       return true;
     }
-      break;
-// TODO: Delete unreachable break points.
+
     case 1:
       Serial.println("Bad Message - No Start Bytes");
       Serial.print("badWXLinkReads=");
@@ -251,23 +250,19 @@ bool readWXLink() {
         badWXLinkReads++;
       }
       return false;
-      break;
 
     case 2:
       Serial.println("Bad Message - buffer length incorrect");
       return false;
-      break;
 
     case 3:
       Serial.println("Bad Message - Bad Checksum");
       return false;
-      break;
 
     default:
       Serial.print("Bad Message - Unknown Return Code =");
       Serial.println(interpretResult);
       return false;
-      break;
   }
 
   int i;
