@@ -127,42 +127,42 @@ class WiFiManager {
     boolean autoConnect(char const *apName, char const *apPassword = NULL);
     boolean justConnect(char const *apName, char const *apPassword = NULL);
 
-    //if you want to always start the config portal, without trying to connect first
+    // If you want to always start the config portal, without trying to connect first.
     boolean startConfigPortal(char const *apName, char const *apPassword = NULL);
 
-    // get the AP name of the config portal, so it can be used in the callback
+    // Get the AP name of the config portal, so it can be used in the callback.
     String getConfigPortalSSID();
 
     void resetSettings();
 
     void blinkLED(int timesToBlink, int delayBetweenBlinks);
 
-    //sets timeout before webserver loop ends and exits even if there has been no setup.
-    //usefully for devices that failed to connect at some point and got stuck in a webserver loop
-    //in seconds setConfigPortalTimeout is a new name for setTimeout
+    // Sets timeout before webserver loop ends and exits even if there has been no setup.
+    // Usefully for devices that failed to connect at some point and got stuck in a webserver loop.
+    // In seconds setConfigPortalTimeout is a new name for setTimeout.
     void setConfigPortalTimeout(unsigned long seconds);
     void setTimeout(unsigned long seconds);
 
-    //sets timeout for which to attempt connecting, usefull if you get a lot of failed connects
+    // Sets timeout for which to attempt connecting, usefull if you get a lot of failed connects.
     void setConnectTimeout(unsigned long seconds);
 
     void setDebugOutput(boolean debug);
-    //defaults to not showing anything under 8% signal quality if called
+    // Defaults to not showing anything under 8% signal quality if called.
     void setMinimumSignalQuality(int quality = 8);
-    //sets a custom ip /gateway /subnet configuration
+    // Sets a custom ip /gateway /subnet configuration.
     void setAPStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
-    //sets config for a static IP
+    // Sets config for a static IP.
     void setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
-    // called when AP mode and config portal is started
+    // Called when AP mode and config portal is started.
     // void setAPCallback( void (*func)(WiFiManager*) );
     void setAPCallback(void (*func)(void));
-    //called when settings have been changed and connection was successful
+    // Called when settings have been changed and connection was successful.
     void setSaveConfigCallback(void (*func)(void));
-    //adds a custom parameter
+    // Adds a custom parameter.
     void addParameter(WiFiManagerParameter *p);
-    //if this is set, it will exit after config, even if connection is unsucessful.
+    // If this is set, it will exit after config, even if connection is unsucessful.
     void setBreakAfterConfig(boolean shouldBreak);
-    //if this is set, try WPS setup when starting (this will delay config portal for up to 2 mins)
+    // If this is set, try WPS setup when starting (this will delay config portal for up to 2 mins).
     //TODO
     //if this is set, customise style
     void setCustomHeadElement(const char* element);
@@ -226,10 +226,10 @@ class WiFiManager {
     void handle204();
     boolean captivePortal();
 
-    // DNS server
+    // DNS server.
     const byte DNS_PORT = 53;
 
-    //helpers
+    // Helpers.
     int getRSSIasQuality(int RSSI);
     boolean isIp(String str);
     String toStringIp(IPAddress ip);

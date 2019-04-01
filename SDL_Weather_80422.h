@@ -14,12 +14,14 @@
 #define SDL_MODE_INTERNAL_AD 0
 #define SDL_MODE_I2C_ADS1015 1
 
-// sample mode means return immediately.  THe wind speed is averaged at sampleTime or when you ask, whichever is longer
+// Sample mode means return immediately.
+// The wind speed is averaged at sampleTime or when you ask, whichever is longer.
 #define SDL_MODE_SAMPLE 0
 // Delay mode means to wait for sampleTime and the average after that time.
 #define SDL_MODE_DELAY 1
 
-// Note:  If you are using the SDL_MODE_I2C_ADS105, then A0 port is not used.  Hardwired to ADC-1 on ADS1015
+// Note:  If you are using the SDL_MODE_I2C_ADS105, then A0 port is not used.
+// Hardwired to ADC-1 on ADS1015.
 
 #include "Arduino.h"
 

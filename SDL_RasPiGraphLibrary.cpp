@@ -13,23 +13,23 @@ SDL_RasPiGraphLibrary::SDL_RasPiGraphLibrary(int maxItemCount, int Mode) {
 
   _currentItemCount = 0;
   _maxItemCount = maxItemCount;
-  // set up the value array
-  // calculate the size of the buffer to be able to store the number of elements
-  // allocate enough memory for "newelements" number of elements
+  // Set up the value array.
+  // Calculate the size of the buffer to be able to store the number of elements.
+  // Allocate enough memory for "newelements" number of elements.
 
   _myFloatArray = (float *) malloc(_maxItemCount * sizeof(float));
 }
 
 int SDL_RasPiGraphLibrary::add_value(float value) {
   if (_currentItemCount == _maxItemCount) {
-    // we need to remove the first and add the last
+    // We need to remove the first and add the last.
     int i;
     for (i = 1; i < _currentItemCount; i++) {
       _myFloatArray[i - 1] = _myFloatArray[i];
     }
     _myFloatArray[_currentItemCount - 1] = value;
   } else {
-    // just add it on
+    // Just add it on.
     _myFloatArray[_currentItemCount] = value;
     _currentItemCount++;
   }
@@ -49,7 +49,6 @@ void SDL_RasPiGraphLibrary::getRasPiString(char returnRasPiString[], char *buffe
     sprintf(tempString, "%s^^", floatString);
 
     strcat(returnRasPiString, tempString);
-
 //    Serial.print("returnRasPiString =");
 //    Serial.println(returnRasPiString);
   }
@@ -58,7 +57,7 @@ void SDL_RasPiGraphLibrary::getRasPiString(char returnRasPiString[], char *buffe
     returnRasPiString[strlen(returnRasPiString) - 2] = '\0';
   }
 
-  // now add the labels
+  // Now add the labels.
   strcat(returnRasPiString, "||");
 
   for (i = 0; i < _currentItemCount; i++) {

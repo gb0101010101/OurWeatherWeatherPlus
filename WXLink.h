@@ -5,7 +5,8 @@
 #define RXDEBUG
 
 void resetWXLink() {
-  // assumes that WXLink Reset Pin is connected to WeatherPlus GPIO Pin #13 (also used with lightning detector)
+  // Assumes that WXLink Reset Pin is connected to WeatherPlus GPIO Pin #13.
+  // Pin 13 also used with lightning detector.
   Serial.println("Reseting WXLink");
 
   digitalWrite(13, 0);
@@ -72,8 +73,8 @@ float convert4BytesToFloat(byte *buffer, int bufferStart) {
 
 int interpretBuffer(byte *buffer, int buflen) {
   if (!((buffer[0] == 0xAB) && (buffer[1] == 0x66))) {
-    // start bytes are not in buffer - reject
-    return 1; // no start bytes
+    // Start bytes are not in buffer - reject.
+    return 1; // No start bytes.
   }
 
 #ifdef RXDEBUG
@@ -81,10 +82,11 @@ int interpretBuffer(byte *buffer, int buflen) {
 #endif
 
   if (buflen != 64) {
-    return 2; // buflen wrong
+    // Buffer length wrong.
+    return 2;
   }
 
-  // calculate checksum
+  // Calculate checksum.
   unsigned short checksumValue;
   checksumValue = crc.XModemCrc(buffer, 0, 59);
 
@@ -98,12 +100,12 @@ int interpretBuffer(byte *buffer, int buflen) {
 #endif
 
   if ((checksumValue >> 8) != buffer[61]) {
-    // bad checksum
-    return 3;  // bad checksum
+    // Bad checksum.
+    return 3;
   }
   if ((checksumValue & 0xFF) != buffer[62]) {
-    // bad checksum
-    return 3;  // bad checksum
+    // Bad checksum.
+    return 3;
   }
 
 #ifdef RXDEBUG
@@ -168,17 +170,20 @@ int interpretBuffer(byte *buffer, int buflen) {
   return 0;
 }
 
-// function to clear buffer array
+/**
+ * Clear buffer array
+ */
 void clearBufferArray(int buflen) {
   for (int i = 0; i < buflen; i++) {
-    buffer[i] = NULL; // clear all index of array with command NULL
+    // Clear all index of array by setting to NULL
+    buffer[i] = NULL;
   }
 }
 
 bool readWXLink() {
   Wire.setClock(100000L);
-  // only set variables if we read it correctly
-  // request block 0
+  // Only set variables if we read it correctly.
+  // Request block 0.
 
   Wire.beginTransmission(0x08);
   delay(10);
@@ -199,7 +204,7 @@ bool readWXLink() {
     delay(10);
   }
 
-  // Now request Block 1
+  // Request Block 1.
   Wire.beginTransmission(0x08);
   delay(10);
   Wire.write(0x01);
@@ -219,7 +224,7 @@ bool readWXLink() {
 #ifdef RXDEBUG
   Serial.print("bufferCount = ");
   Serial.println(bufferCount);
-  //  printBuffer(buffer, bufferCount);
+//  printBuffer(buffer, bufferCount);
 #endif
 
   int badWXLinkReads = 0;
@@ -232,13 +237,13 @@ bool readWXLink() {
       return true;
     }
       break;
-
+// TODO: Delete unreachable break points.
     case 1:
       Serial.println("Bad Message - No Start Bytes");
-      // only reset on three bad reads in a row
-
       Serial.print("badWXLinkReads=");
       Serial.println(badWXLinkReads);
+
+      // Only reset on three bad reads in a row.
       if (badWXLinkReads == 2) {
         resetWXLink();
         badWXLinkReads = 0;
@@ -267,9 +272,9 @@ bool readWXLink() {
 
   int i;
   bufferCount = 0;
-  // digitalWrite(LED, HIGH);
-  //delay(100);
-  //digitalWrite(LED, LOW);
+//  digitalWrite(LED, HIGH);
+//  delay(100);
+//  digitalWrite(LED, LOW);
 
   return false;
 }

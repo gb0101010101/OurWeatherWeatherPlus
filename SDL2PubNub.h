@@ -30,7 +30,7 @@ String urlencode(String str) {
       encodedString += '%';
       encodedString += code0;
       encodedString += code1;
-      //encodedString+=code2;
+//      encodedString+=code2;
     }
     yield();
   }
@@ -51,11 +51,12 @@ String myURLEncode(String urlChars) {
 }
 
 void GETpublishPubNubMessage(String message) {
-  // test a send to PubNub
+  // Test send to PubNub.
   Serial.println("Before WL_CONNECTED");
-  if (WiFi.status() == WL_CONNECTED) { //Check WiFi connection status
-
-    HTTPClient http;  //Declare an object of class HTTPClient
+  // Check WiFi connection status.
+  if (WiFi.status() == WL_CONNECTED) {
+    // Declare an object of class HTTPClient.
+    HTTPClient http;
     Serial.println("Ready to send");
     Serial.print("Pub Key=");
     Serial.println(SDL2PubNubCode);
@@ -73,34 +74,39 @@ void GETpublishPubNubMessage(String message) {
     sendString = sendString + channel1;
     sendString = sendString + "/0/";
     sendString = sendString + myURLEncode(message);
-    //sendString = sendString + "{%22FullDataString%22:%20%225.80,99%22}";
-    //sendString = sendString + message;
-    //sendString = sendString + urlencode(message);
+//    sendString = sendString + "{%22FullDataString%22:%20%225.80,99%22}";
+//    sendString = sendString + message;
+//    sendString = sendString + urlencode(message);
 
     Serial.println(sendString);
 
-    http.begin(sendString);  //Specify request destination
+    // Specify data to send.
+    http.begin(sendString);
 
-    int httpCode = http.GET();                                //Send the request
+    // Send the request.
+    int httpCode = http.GET();
     Serial.print("httpCode = ");
     Serial.println(httpCode);
-    if (httpCode > 0) { //Check the returning code
-      String payload = http.getString();   //Get the request response payload
-      Serial.println(payload);                     //Print the response payload
+
+    // Check the returning code.
+    if (httpCode > 0) {
+      // Get the request response payload.
+      String payload = http.getString();
+      // Print the response payload.
+      Serial.println(payload);
     }
 
-    http.end();   //Close connection
+    // Close connection.
+    http.end();
   }
 }
 
-// send our JSON message to PubNub
+// Send our JSON message to PubNub.
 void publishPubNubMessage(String message) {
   WiFiClient *client;
 
-  //Publish
   Serial.println("publishing a message");
 
-  // Message 2
 #ifdef DEBUG
   Serial.println(message);
   Serial.print("Size=");
@@ -114,15 +120,16 @@ void publishPubNubMessage(String message) {
   Serial.println(SDL2PubNubCode_Sub);
 #endif
 
+  // Publish
   message = myURLEncode(message);
   client = PubNub.publish(channel1, message.c_str());
 
   delay(5000);
 
   if (!client) {
-    Serial.println("publishing error");
+    Serial.println("Publishing error");
     delay(1000);
-    // bad conenction for whatever reason.  Redo the connection
+    // Bad conenction for whatever reason.  Redo the connection.
     return;
   }
 
@@ -137,14 +144,14 @@ void publishPubNubMessage(String message) {
 
   client->stop();
   Serial.println("---");
-  //client->flush();
-  //client->stop();
-
-  //Subscribe
-  //returnMessage = myBridge.connect(channel);
-
-  //Serial.print("returnMessage=");
-  //Serial.println(returnMessage);
+//  client->flush();
+//  client->stop();
+//
+//  // Subscribe
+//  returnMessage = myBridge.connect(channel);
+//
+//  Serial.print("returnMessage=");
+//  Serial.println(returnMessage);
 }
 
 int sendStateSDL2PubNub(String command) {
@@ -154,10 +161,11 @@ int sendStateSDL2PubNub(String command) {
     sentPassword = getValue(command, ',', 0);
 
     if (sentPassword == adminPassword) {
-      String SendString = "{\"FullDataString\": \"" + RestDataString + "\"}"; //Send the request
-      // publish it
-      // GETpublishPubNubMessage(SendString);
+      // Generate the request string.
+      String SendString = "{\"FullDataString\": \"" + RestDataString + "\"}";
+      // Publish it.
       publishPubNubMessage(SendString);
+//      GETpublishPubNubMessage(SendString);
     } else {
       return 0;
     }
@@ -167,7 +175,7 @@ int sendStateSDL2PubNub(String command) {
   return 0;
 }
 
-// Enable PubNub
+// Enable PubNub.
 int enableDisableSDL2PubNub(String command) {
   Serial.print("Command =");
   Serial.println(command);
@@ -191,7 +199,7 @@ int enableDisableSDL2PubNub(String command) {
   } else
     return 0;
 
-  // Get state from command
+  // Get state from command.
   return 1;
 }
 
@@ -228,7 +236,7 @@ int setThunderBoardParams(String command) {
       } else {
         as3935_Params = command;
         int error;
-        // execute and set them!
+        // Execute and set them.
         error = parseOutAS3935Parameters();
 
         if (error == 2) {

@@ -18,13 +18,14 @@ int sendWeatherUndergroundData() {
   }
 
   String myURL;
-  // = "/weatherstation/updateweatherstation.php?ID=KWALIBER14&PASSWORD=20mqkah7&dateutc=now&winddir=180&windspeedmph=3.45&humidity=14&tempf=91.04&rainin=0.00&baromin=27.83&indoortempf=32.00&indoorhumidity0.00=&software=OurWeather";
+  // Sample "/weatherstation/updateweatherstation.php?ID=KWALIBER14&PASSWORD=20mqkah7&dateutc=now&winddir=180&windspeedmph=3.45&humidity=14&tempf=91.04&rainin=0.00&baromin=27.83&indoortempf=32.00&indoorhumidity0.00=&software=OurWeather";
+  // Setup base URL.
   myURL = "/weatherstation/updateweatherstation.php?";
   myURL += "ID=" + WeatherUnderground_StationID;
   myURL += "&PASSWORD=" + WeatherUnderground_StationKey;
   myURL += "&dateutc=now";
 
-  // now weather station variables
+  // Add weather station variables.
   myURL += "&winddir=" + String(currentWindDirection);
   myURL += "&windspeedmph=" + formatWindspeedString(currentWindSpeed, usa_units, 2);
   myURL += "&windgustmph=" + formatWindspeedString(currentWindGust, usa_units, 2);
@@ -35,13 +36,13 @@ int sendWeatherUndergroundData() {
   myURL += "&dailyrainin=" + formatRainfallString(rainCalendarDay, usa_units, 2);
   myURL += "&baromin=" + formatPressureString(BMP180_Pressure, usa_units, 2);
   myURL += "&indoortempf=" + formatTemperatureString(BMP180_Temperature, usa_units, 2);
-  //myURL += "&indoorhumidity%0.2f=" % HTUhumidity
+//  myURL += "&indoorhumidity%0.2f=" % HTUhumidity
   myURL += "&software=OurWeather";
 
   Serial.print("WU URL: ");
   Serial.println(myURL);
 
-  // This will send the request to the server
+  // Send the request to the Weather Underground.
   client.print(
       String("GET ") + myURL + " HTTP/1.1\r\n" + "Host: " + host + "\r\n"
           + "Connection: close\r\n\r\n");
@@ -49,7 +50,7 @@ int sendWeatherUndergroundData() {
 
   String WUResult;
 
-  // Read all the lines of the reply from server and print them to Serial
+  // Read all the lines of the reply from server and print them to Serial.
   while (client.available()) {
     String line = client.readStringUntil('\r');
     Serial.print(line);

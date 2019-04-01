@@ -1,4 +1,4 @@
-// EEPROM Preferences
+// EEPROM Preferences.
 void readEEPROMState();
 
 #define READ_CODE 165
@@ -38,12 +38,12 @@ void writeEEPROMState() {
   // now put altitude in
   int tempAltitude;
   tempAltitude = altitude_meters * 10.0;
-  // Serial.print("tempAltitude>>8=");
-  // Serial.println(tempAltitude >> 8);
+//  Serial.print("tempAltitude>>8=");
+//  Serial.println(tempAltitude >> 8);
 
   EEPROM.write(99 + 34 + 1, tempAltitude >> 8);
-  // Serial.print("tempAltitud& 0xFFe=");
-  // Serial.println(tempAltitude & 0xFF);
+//  Serial.print("tempAltitud& 0xFFe=");
+//  Serial.println(tempAltitude & 0xFF);
 
   EEPROM.write(99 + 34 + 2, tempAltitude & 0xFF);
 
@@ -75,18 +75,17 @@ void writeEEPROMState() {
   }
   EEPROM.write(i, '\0');
 
-  // setup AS3935 parameter string  -31 characters assumed
+  // Setup AS3935 parameter string - 31 characters assumed.
   for (i = 318; i < as3935_Params.length() + 318; i++) {
     EEPROM.write(i, as3935_Params[i - 318]);
   }
   EEPROM.write(i, '\0');
 
-  // write out BlynkAuthCode
+  // Write out BlynkAuthCode.
   for (i = 349; i < BlynkAuthCode.length() + 349; i++) {
     EEPROM.write(i, BlynkAuthCode[i - 349]);
   }
   EEPROM.write(i, '\0');
-
 
   EEPROM.commit();
 
@@ -189,8 +188,8 @@ void readEEPROMState() {
 
     altitude_meters = float(tempAltitude) / 10.0;
 
-    //EEPROM.write(i + 1, tempAltitude >> 8);
-    //EEPROM.write(i + 2, tempAltitude && 0xFF);
+//    EEPROM.write(i + 1, tempAltitude >> 8);
+//    EEPROM.write(i + 2, tempAltitude && 0xFF);
 
     adminPassword = "";
     for (i = 136; i < 136 + 34; ++i) {
@@ -247,7 +246,7 @@ void readEEPROMState() {
       SDL2PubNubCode_Sub = "XX";
     }
 
-    // now read params list for AS3935
+    // Read params list for AS3935.
     String tempString;
     tempString = "";
     for (i = 318; i < 318 + 31; i++) {
@@ -263,7 +262,7 @@ void readEEPROMState() {
       as3935_Params = tempString;
     }
 
-    // now read Blynk Authorization Code
+    // Read Blynk Authorization Code.
     BlynkAuthCode = "";
 
     for (i = 349; i < 349 + 43; i++) {
@@ -288,7 +287,7 @@ void readEEPROMState() {
     EnglishOrMetric = 0;
     WeatherDisplayMode = DISPLAY_WEATHER_LARGE;
     stationName = "";
-    altitude_meters = 637.0;  // default to 611
+    altitude_meters = 637.0;  // Default is 611.
 
     adminPassword = "admin";
     WeatherUnderground_StationID = "";
@@ -370,7 +369,7 @@ String returnDirectionFromDegrees(int degrees) {
   if (degrees == 337)
     return "NNW";
 
-  return "XX";  // return previous value if not found
+  return "XX";  // Return previous value if not found.
 }
 
 void updateAllWeatherVariables() {
@@ -382,8 +381,8 @@ void updateAllWeatherVariables() {
 
   if (BMP180Found) {
     /* Display the results (barometric pressure is measure in hPa) */
-    //BMP180_Pressure = bmp.readPressure();
-    // Put Alitude in Meters
+//    BMP180_Pressure = bmp.readPressure();
+    // Put Alitude in Meters.
     BMP180_Pressure = bmp.readSealevelPressure(altitude_meters);
     /* Display atmospheric pressue in hPa */
     Serial.print("Pressure:    ");
@@ -405,7 +404,7 @@ void updateAllWeatherVariables() {
      For example, for Paris, France you can check the current mean
      pressure and sea level at: http://bit.ly/16Au8ol                   */
 
-    /* First we get the current temperature from the BMP085 */
+    // Get the current temperature from the BMP085.
     float temperature;
     temperature = bmp.readTemperature();
     Serial.print("Temperature: ");
@@ -414,8 +413,8 @@ void updateAllWeatherVariables() {
 
     BMP180_Temperature = temperature;
 
-    /* Then convert the atmospheric pressure, and SLP to altitude         */
-    /* Update this next line with the current SLP for better results      */
+    // Convert the atmospheric pressure, and SLP to altitude.
+    // Update with the current SLP for better results.
     float seaLevelPressure = SENSORS_PRESSURE_SEALEVELHPA;
     float altitude;
     altitude = bmp.readAltitude(BMP180_Pressure);
@@ -427,12 +426,13 @@ void updateAllWeatherVariables() {
   }
 
   if (BMP280Found) {
-    /* Display the results (barometric pressure is measure in hPa) */
-    //BMP180_Pressure = bmp.readPressure();
+    // Display the results
+    // Barometric pressure is measure in hPa.
+//    BMP180_Pressure = bmp.readPressure();
     // Put Alitude in Meters
     BMP180_Pressure = bme.readSealevelPressure(altitude_meters);
 
-    /* Display atmospheric pressue in hPa */
+    // Display atmospheric pressue in hPa.
     Serial.print("Pressure:    ");
     Serial.print(BMP180_Pressure / 100.0);
     Serial.println(" hPa");
@@ -452,7 +452,7 @@ void updateAllWeatherVariables() {
      For example, for Paris, France you can check the current mean
      pressure and sea level at: http://bit.ly/16Au8ol                   */
 
-    /* First we get the current temperature from the BMP085 */
+    // Get the current temperature from the BMP085.
     float temperature;
     temperature = bme.readTemperature();
     Serial.print("Temperature: ");
@@ -461,8 +461,8 @@ void updateAllWeatherVariables() {
 
     BMP180_Temperature = temperature;
 
-    /* Then convert the atmospheric pressure, and SLP to altitude         */
-    /* Update this next line with the current SLP for better results      */
+    // Convert the atmospheric pressure, and SLP to altitude.
+    // Update with the current SLP for better results.
     float seaLevelPressure = SENSORS_PRESSURE_SEALEVELHPA;
     float altitude;
     altitude = bme.readAltitude(SENSORS_PRESSURE_SEALEVELHPA);
@@ -496,7 +496,8 @@ void updateAllWeatherVariables() {
   windDirectionMin = windDirectionGraph.returnMinValue();
   windDirectionMax = windDirectionGraph.returnMaxValue();
 
-  // Handle REST calls
+  // TODO: Why is this REST Call here?
+  // Handle REST calls.
   WiFiClient client = server.available();
   if (client) {
     while (!client.available()) {
@@ -528,7 +529,7 @@ void blinkIPAddress() {
   int lowOct;
   lowOct = LIP[3];
 
-  // now do the blink
+  // Blink LED.
   int check100;
   int check10;
   int check1;
@@ -560,16 +561,19 @@ void blinkIPAddress() {
   }
 }
 
+// TODO: Merge with date time formats.
 void printDigits(int digits) {
-  // utility function for digital clock display: prints an leading 0
+  // Utility function for digital clock display.
+  // Print digits with leading 0.
   if (digits < 10) {
     Serial.print('0');
   }
   Serial.print(digits);
 }
 
+// TODO: Merge with date time formats.
 void digitalClockDisplay() {
-  // digital clock display of the time
+  // Digital clock display of the time.
   Serial.print(hour());
   printDigits(minute());
   printDigits(second());
@@ -581,7 +585,7 @@ void digitalClockDisplay() {
   Serial.print(year());
   Serial.println();
 }
-
+// TODO: Merge with date time formats.
 void return2Digits(char returnString[], char *buffer2, int digits) {
   if (digits < 10) {
     sprintf(returnString, "0%i", digits);
@@ -590,7 +594,7 @@ void return2Digits(char returnString[], char *buffer2, int digits) {
   }
   strcpy(returnString, buffer2);
 }
-
+// TODO: Merge with date time formats.
 void buildTimeString(char returnString[], char *buffer2, tmElements_t convertTime) {
   char myBuffer[5];
   sprintf(myBuffer, "%i-", tmYearToCalendar(convertTime.Year));
@@ -617,7 +621,7 @@ void buildTimeString(char returnString[], char *buffer2, tmElements_t convertTim
 }
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
-
+// TODO: Merge with date time formats.
 void printDateTime(const RtcDateTime& dt) {
   char datestring[20];
 
@@ -625,7 +629,7 @@ void printDateTime(const RtcDateTime& dt) {
       dt.Month(), dt.Day(), dt.Year(), dt.Hour(), dt.Minute(), dt.Second());
   Serial.print(datestring);
 }
-
+// TODO: Merge with date time formats.
 String returnDateTime(const RtcDateTime& dt) {
   char datestring[20];
 
@@ -696,7 +700,7 @@ float returnPercentLeftInBattery(float currentVoltage, float maxVolt) {
   return 0;
 }
 
-// Unit measurement system
+// Unit measurement system.
 typedef enum {
   SI,
   UK,
@@ -735,14 +739,23 @@ float convertMmtoIn(float mm) {
   return mm / 25.4;
 }
 
+/**
+ * Convert Kilometers per Hour to Miles per Hour.
+ */
 float convertKphtoMph(float kph) {
   return kph / 1.609344;
 }
 
+/**
+ * Convert Meters to Feet.
+ */
 float convertMtoFt(float meters) {
   return meters * 3.28084;
 }
 
+/**
+ * Convert temperature using measuremenet system.
+ */
 float convertTemperature(float celcius, unitSystem units) {
   switch (units) {
     case SI:
@@ -759,6 +772,9 @@ float convertTemperature(float celcius) {
   return convertTemperature(celcius, user_units);
 }
 
+/**
+ * Convert pressure using measuremenet system.
+ */
 float convertPressure(float pa, unitSystem units) {
   switch (units) {
     case SI:
@@ -775,6 +791,9 @@ float convertPressure(float pa) {
   return convertPressure(pa, user_units);
 }
 
+/**
+ * Convert rainfall using measuremenet system.
+ */
 float convertRainfall(float millimeters, unitSystem units) {
   switch (units) {
     case SI:
@@ -791,6 +810,9 @@ float convertRainfall(float millimeters) {
   return convertRainfall(millimeters, user_units);
 }
 
+/**
+ * Convert windspeed using measuremenet system.
+ */
 float convertWindSpeed(float kph, unitSystem units) {
   switch (units) {
     case SI:
@@ -807,6 +829,9 @@ float convertWindSpeed(float kph) {
   return convertWindSpeed(kph, user_units);
 }
 
+/**
+ * Convert altitude using measuremenet system.
+ */
 float convertAltitude(float meters, unitSystem units) {
   switch (units) {
     case SI:
@@ -823,6 +848,9 @@ float convertAltitude(float meters) {
   return convertAltitude(meters, user_units);
 }
 
+/**
+ * Format float value rounding to specified decimals.
+ */
 String formatFloatString(float value, int decimals = 1) {
   if (decimals > 0) {
     value *= pow(10, decimals);
@@ -832,6 +860,9 @@ String formatFloatString(float value, int decimals = 1) {
   return String(value, decimals);
 }
 
+/**
+ * Format temperature string using unit system.
+ */
 String formatTemperatureString(float celcius, unitSystem unit, int decimals = 1, bool show_unit = false) {
   String output;
   switch (unit) {
@@ -858,6 +889,9 @@ String formatTemperatureString(float celcius, int decimals = 1, bool show_unit =
   return formatTemperatureString(celcius, user_units, decimals, show_unit);
 }
 
+/**
+ * Format pressure string using unit system.
+ */
 String formatPressureString(float pa, unitSystem unit, int decimals = 1, bool show_unit = false) {
   String output;
   switch (unit) {
@@ -884,6 +918,9 @@ String formatPressureString(float pa, int decimals = 1, bool show_unit = false) 
   return formatPressureString(pa, user_units, decimals, show_unit);
 }
 
+/**
+ * Format humidity string using unit system.
+ */
 String formatHumidityString(float humidity, int decimals = 1, bool show_unit = false) {
   String output = formatFloatString(humidity, decimals);
   if (show_unit) {
@@ -892,6 +929,9 @@ String formatHumidityString(float humidity, int decimals = 1, bool show_unit = f
   return output;
 }
 
+/**
+ * Format altitude string using unit system.
+ */
 String formatAltitudeString(float meters, unitSystem unit, int decimals = 1, bool show_unit = false) {
   String output;
   switch (unit) {
@@ -918,6 +958,9 @@ String formatAltitudeString(float meters, int decimals = 1, bool show_unit = fal
   return formatAltitudeString(meters, user_units, decimals, show_unit);
 }
 
+/**
+ * Format wind speed string using unit system.
+ */
 String formatWindspeedString(float kph, unitSystem unit, int decimals = 1, bool show_unit = false) {
   String output;
   switch (unit) {
@@ -944,6 +987,9 @@ String formatWindspeedString(float kph, int decimals = 1, bool show_unit = false
   return formatWindspeedString(kph, user_units, decimals, show_unit);
 }
 
+/**
+ * Format rain fall string using unit system.
+ */
 String formatRainfallString(float mm, unitSystem unit, int decimals = 1, bool show_unit = false) {
   String output;
   switch (unit) {
@@ -970,6 +1016,9 @@ String formatRainfallString(float mm, int decimals = 1, bool show_unit = false) 
   return formatRainfallString(mm, user_units, decimals, show_unit);
 }
 
+/**
+ * Format date string using unit system.
+ */
 String formatDate(const RtcDateTime& dt, unitSystem unit) {
   switch (unit) {
     case SI:

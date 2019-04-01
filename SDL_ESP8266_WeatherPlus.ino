@@ -1208,7 +1208,7 @@ void loop() {
     if (BMP180Found) {
       /* Display the results (barometric pressure is measure in hPa) */
       //BMP180_Pressure = bmp.readPressure();
-      // Put Altitude in Meters
+      // Put Altitude in Meters.
       BMP180_Pressure = bmp.readSealevelPressure(altitude_meters);
       /* Display atmospheric pressure in hPa */
       Serial.println("Pressure: " + formatPressureString(BMP180_Pressure, 1, true));
@@ -1334,7 +1334,7 @@ void loop() {
     }
     Serial.println("---------------");
 
-    // if SunAirPlus present, read charge data
+    // If SunAirPlus present, read charge data.
 
     if (SunAirPlus_Present) {
       LoadVoltage = SunAirPlus.getBusVoltage_V(OUTPUT_CHANNEL);
@@ -1380,12 +1380,13 @@ void loop() {
     }
     Serial.println("---------------");
 
-    // read variables from WXLink
+    // Read variables from WXLink.
 
     if (WXLink_Present) {
       if (readWXLink() == true) {
         WXLastMessageGood = true;
-        blinkLED(2, 200);  // blink 2 for good message
+        // Blink 2 for good message.
+        blinkLED(2, 200);
       } else {
         WXLastMessageGood = false;
       }
@@ -1423,8 +1424,8 @@ void loop() {
       windDirectionMin = windDirectionGraph.returnMinValue();
       windDirectionMax = windDirectionGraph.returnMaxValue();
     } else {
-      // WXLink is PRESENT, take from WXLink
-      // if bad WX Message, don't change
+      // WXLink is PRESENT, take data from WXLink.
+      // If bad WX Message, don't change.
       if (WXLastMessageGood == true) {
         currentWindSpeed = convert4BytesToFloat(buffer, 9);
         currentWindGust = convert4BytesToFloat(buffer, 21);
@@ -1454,7 +1455,7 @@ void loop() {
         windDirectionMin = windDirectionGraph.returnMinValue();
         windDirectionMax = windDirectionGraph.returnMaxValue();
 
-        // Now overwrite outside temp/humidity
+        // Now overwrite outside temp/humidity.
         AM2315_Temperature = validateTemperature(
             convert4BytesToFloat(buffer, 25));
         AM2315_Humidity = convert4BytesToFloat(buffer, 29);
@@ -1462,9 +1463,7 @@ void loop() {
         // Calculate dewpoint.
         AM2315_Dewpoint = AM2315_Temperature - ((100.0 - AM2315_Humidity) / 5.0);
 
-        // set up solar status and message ID for screen
-
-        // if WXLINK present, read charge data
+        // Read charge data.
         WXLoadCurrent = convert4BytesToFloat(buffer, 41);
 
         WXBatteryVoltage = convert4BytesToFloat(buffer, 33);
@@ -1475,24 +1474,23 @@ void loop() {
 
         WXMessageID = convert4BytesToLong(buffer, 57);
 
-        /*   Serial.println("");
-         Serial.print("WXLIPO_Battery Load Voltage:  "); Serial.print(WXBatteryVoltage); Serial.println(" V");
-         Serial.print("WXLIPO_Battery Current:       "); Serial.print(WXBatteryCurrent); Serial.println(" mA");
-         Serial.println("");
+//       Serial.println("");
+//       Serial.print("WXLIPO_Battery Load Voltage:  "); Serial.print(WXBatteryVoltage); Serial.println(" V");
+//       Serial.print("WXLIPO_Battery Current:       "); Serial.print(WXBatteryCurrent); Serial.println(" mA");
+//       Serial.println("");
+//
+//       Serial.print("WXSolar Panel Voltage:   "); Serial.print(WXSolarPanelVoltage); Serial.println(" V");
+//       Serial.print("WXSolar Panel Current:   "); Serial.print(WXSolarPanelCurrent); Serial.println(" mA");
+//       Serial.println("");
+//
+//       Serial.print("WXLoad Current:   "); Serial.print(WXLoadCurrent); Serial.println(" mA");
+//       Serial.println("");
 
-         Serial.print("WXSolar Panel Voltage:   "); Serial.print(WXSolarPanelVoltage); Serial.println(" V");
-         Serial.print("WXSolar Panel Current:   "); Serial.print(WXSolarPanelCurrent); Serial.println(" mA");
-         Serial.println("");
-
-         Serial.print("WXLoad Current:   "); Serial.print(WXLoadCurrent); Serial.println(" mA");
-         Serial.println("");
-         */
       }
     }
 
     Serial.print("Wind Speed: Min: " + formatWindspeedString(windSpeedMin, 2, true));
     Serial.println(" Max: " + formatWindspeedString(windSpeedMax, 2, true));
-
 
 #ifdef DEBUGPRINT
     Serial.print("windSpeedBuffer=");
@@ -1564,10 +1562,10 @@ void loop() {
     }
     invalidTemperatureFound = false;
 
-    // Restart WiFi in case of connected, then lost connection
+    // Check WiFi and restart in case of lost connection.
     if (WiFi_Present == true) {
       if (WiFi.status() != WL_CONNECTED) {
-        //Restart Access Point with the specified name
+        // Restart Access Point with the specified name.
         WiFiManager wifiManager;
         wifiManager.setDebugOutput(true);
         Serial.println("--->Restarting Connection connect and setting");
@@ -1585,11 +1583,12 @@ void loop() {
         wifiManager.setSTAStaticIPConfig(myConnectedIp, myConnectedGateWay,
             myConnectedMask);
 
-        //and goes into a blocking loop awaiting configuration
+        // And goes into a blocking loop awaiting configuration.
         if (!wifiManager.justConnect(APssid.c_str())) {
           Serial.println("->Restarting Connection but hit timeout");
           Serial.println("->Failed Restarting Connection but hit timeout");
-          blinkLED(4, 300);  // blink 4, failed to connect
+          // Blink LED 4 times = failed to connect.
+          blinkLED(4, 300);
         } else {
           Serial.println("->Connection Restarted");
         }
@@ -1605,12 +1604,12 @@ void loop() {
     RestDataString += String(pubNubEnabled) + ",";
 
     if (AS3935_Present == true) {
-      // Now check for Lightning ThunderBoard AS3935
+      // Now check for Lightning ThunderBoard AS3935.
       Serial.println("---------------");
       Serial.println("ThunderBoard AS3935 Lightning Detector");
       Serial.println("---------------");
 
-      // first step is to find out what caused interrupt
+      // First step is to find out what caused interrupt.
       int strokeDistance = 0.0;
       int irqSource = 0;
 
@@ -1624,7 +1623,10 @@ void loop() {
       if (irqSource > 0) {
         printAS3935Registers();
         as3935_LastReturnIRQ = irqSource;
-        // returned value is bitmap field, bit 0 - noise level too high, bit 2 - disturber detected, and finally bit 3 - lightning!
+        // Returned value is bitmap field:
+        //  - bit 0 - noise level too high.
+        //  - bit 2 - disturbance detected.
+        //  - bit 3 - lightning!
         if (irqSource & 0b0001) {
           Serial.println(
               "INT_NH Interrupt: Noise level too high, try adjusting noise floor");
@@ -1642,10 +1644,11 @@ void loop() {
           as3935_LastEventTimeStamp = returnDateTime(now);
         }
         if (irqSource & 0b1000) {
-          // need to find how far that lightning stroke, function returns approximate distance in kilometers,
-          // where value 1 represents storm in detector's near victinity, and 63 - very distant, out of range stroke
-          // everything in between is just distance in kilometers
-
+          // Need to find how far that lightning strike.
+          // Function returns approximate distance in kilometers,
+          // where value 1 represents storm in detector's near victinity,
+          // and 63 - very distant, out of range stroke
+          // everything in between is just distance in kilometers.
           strokeDistance = as3935.getDistance();
 
           as3935_LastEvent = "Lightning detected";
@@ -1658,7 +1661,7 @@ void loop() {
           as3835_LightningCountSinceBootup++;
 
           Serial.print(
-              "INT_L Interrupt: Lightning Detected.  Stroke Distance:");
+              "INT_L Interrupt: Lightning Detected. Stroke Distance:");
           Serial.print(strokeDistance);
           Serial.println(" km");
           writeToBlynkStatusTerminal(
@@ -1677,7 +1680,7 @@ void loop() {
       }
     }
 
-    //  Lightning REST variable
+    //  Lightning REST variables.
     as3935_FullString = "";
     as3935_FullString += as3935_LastLightning + ",";
     as3935_FullString += as3935_LastLightningTimeStamp + ",";
@@ -1686,7 +1689,7 @@ void loop() {
     as3935_FullString += as3935_LastEventTimeStamp + ",";
     as3935_FullString += String(as3835_LightningCountSinceBootup);
 
-    // Lighting Rest
+    // Lighting Rest.
     RestDataString += as3935_LastLightning + ",";
     RestDataString += as3935_LastLightningTimeStamp + ",";
     RestDataString += String(as3935_LastLightningDistance) + ",";
@@ -1701,7 +1704,7 @@ void loop() {
       mqttSend(RestDataString);
     }
 
-    // 5 minutes
+    // End of 5 minute interval.
     if (timeElapsed300Seconds > 300000) {
       String lastBootTimeString;
       lastBootTimeString = returnDateTime(lastBoot);
@@ -1711,7 +1714,7 @@ void loop() {
 
       timeElapsed300Seconds = 0;
 
-      // update rain
+      // Update rain.
       add60MinuteRainReading(rainTotal - lastRain);
       lastRain = rainTotal;
 
@@ -1728,7 +1731,7 @@ void loop() {
       bool dataStale;
       dataStale = false;
 
-      // check for stale data from WXLink
+      // Check for stale data from WXLink.
       if (WXLink_Present) {
         if (lastMessageID != WXMessageID) {
           dataStale = false;
@@ -1758,7 +1761,7 @@ void loop() {
         }
         if (dataStale == false) {
           if (sendWeatherUndergroundData() == 0) {
-            // Failed - try again
+            // Failed - try again.
             sendWeatherUndergroundData();
           }
         }
@@ -1766,18 +1769,18 @@ void loop() {
 
       delay(2000);
 
-      // send data up to PubNub
+      // Send data up to PubNub.
       if (pubNubEnabled == 1) {
         String SendString = "{\"FullDataString\": \"" + RestDataString + "\"}"; //Send the request
-        // publish it
         publishPubNubMessage(SendString);
       }
     }
+
     // Update of displays no longer needed. See OLEDDisplay.h for new method.
 
     if (WXLink_Present) {
       Serial.println("Checking WXLInk Pin.");
-      // check to see if pin 5 is stuck high (SCL is at 0) - then we are hung.
+      // Check to see if pin 5 is stuck high (SCL is at 0) - then we are hung.
       int SCL, SDA;
 
       SCL = digitalRead(4);
@@ -1795,7 +1798,8 @@ void loop() {
 
   if (UseBlynk) {
     Blynk.run();
-    Btimer.run(); // Initiates BlynkTimer
+    // Initiates BlynkTimer.
+    Btimer.run();
   }
 
   if (timeScreen > display_queue_timeout) {
