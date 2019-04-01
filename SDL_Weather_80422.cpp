@@ -279,16 +279,16 @@ float SDL_Weather_80422::current_wind_speed() {
 float SDL_Weather_80422::get_wind_gust() {
   unsigned long latestTime;
 
-  if (_shortestWindTime2 = 0xffffffff) {
+  if (_shortestWindTime2 == 0xffffffff) {
     _shortestWindTime2 = _shortestWindTime;
   }
-  if (_shortestWindTime3 = 0xffffffff) {
+  if (_shortestWindTime3 == 0xffffffff) {
     _shortestWindTime3 = _shortestWindTime2;
   }
-  if (_shortestWindTime4 = 0xffffffff) {
+  if (_shortestWindTime4 == 0xffffffff) {
     _shortestWindTime4 = _shortestWindTime3;
   }
-  if (_shortestWindTime5 = 0xffffffff) {
+  if (_shortestWindTime5 == 0xffffffff) {
     _shortestWindTime5 = _shortestWindTime4;
   }
 
@@ -305,11 +305,9 @@ float SDL_Weather_80422::get_wind_gust() {
   double time = latestTime / 1000000.0; // in microseconds
 
   float returnTime;
-
+  returnTime = (1 / (time)) * WIND_FACTOR;
 #ifdef ESP8266
   returnTime = ((1 / (time)) * WIND_FACTOR) * ESP8266_Factor;
-#else
-  returnTime = (1 / (time)) * WIND_FACTOR;
 #endif
 
   if (returnTime < _currentWindSpeed) {
