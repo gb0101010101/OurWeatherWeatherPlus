@@ -1121,6 +1121,7 @@ void loop() {
   timeout = 0;
   if (client) {
     // Thank you to MAKA69 for this suggestion.
+    Serial.println("Restarting wifi client");
     while (!client.available()) {
       Serial.print(".");
       delay(1);
