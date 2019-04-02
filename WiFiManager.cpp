@@ -706,8 +706,12 @@ void WiFiManager::handleWifiSave() {
   // Set clock if requested.
   if ((_time.length() == 8) && (_date.length() == 11)) {
     RtcDateTime compiled = RtcDateTime(_date.c_str(), _time.c_str());
-    DEBUG_WM("Updating DateTime in RTC");
-    Rtc.SetDateTime(compiled);
+    if (compiled.IsValid()) {
+      DEBUG_WM("Updating DateTime in RTC");
+      Rtc.SetDateTime(compiled);
+    } else {
+      DEBUG_WM("DateTime entered not valid. Not updating RTC.");
+    }
   } else {
     DEBUG_WM("Not updating DateTime in RTC");
   }
