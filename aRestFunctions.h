@@ -187,14 +187,16 @@ int setDateTime(String command) {
   if (_password == adminPassword) {
     if ((_time.length() > 0) && (_date.length() > 0)) {
       RtcDateTime compiled = RtcDateTime(_date.c_str(), _time.c_str());
-      Serial.println("Updating DateTime in RTC");
-      Serial.println(compiled);
-      Rtc.SetDateTime(compiled);
-    } else {
-      Serial.println("Not updating DateTime in RTC");
-      return 2;
+      if (compiled.IsValid()) {
+        Serial.println("Updating DateTime in RTC");
+        Serial.println(compiled);
+        Rtc.SetDateTime(compiled);
+        return 1;
+      }
     }
-    return 1;
+    // Password valid but date/time is not.
+    Serial.println("Provided date/time is not valid. Not updating.");
+    return 2;
   } else {
     return 0;
   }

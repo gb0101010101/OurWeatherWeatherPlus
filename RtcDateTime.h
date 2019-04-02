@@ -70,6 +70,67 @@ class RtcDateTime {
       _initWithSecondsFrom2000<uint64_t>(time - c_Epoch32OfOriginYear);
     }
 
+    bool IsValid() const {
+      if (_month < 1 || _month > 12) {
+        return false;
+      }
+      if (_yearFrom2000 < 0 || _yearFrom2000 > 1000) {
+        return false;
+      }
+
+      // Check days in month
+      switch (_month) {
+        case 1:
+        case 3:
+        case 5:
+        case 7:
+        case 8:
+        case 10:
+        case 12:
+          // 31 days.
+          if (_dayOfMonth < 1 || _dayOfMonth > 31) {
+            return false;
+          }
+          break;
+
+        case 4:
+        case 6:
+        case 9:
+        case 11:
+          // 30 days.
+          if (_dayOfMonth < 1 || _dayOfMonth > 31) {
+            return false;
+          }
+          break;
+
+        case 2:
+          if (_dayOfMonth == 29) {
+            // Possible leap year date.
+            int year = 2000 + _yearFrom2000;
+            if (!((year % 4 == 0) && (year % 100 != 0) || (year % 400 == 0))) {
+              // Year is not a leap year.
+              return false;
+            }
+          } else if (_dayOfMonth < 1 || _dayOfMonth > 28) {
+            return false;
+          }
+          break;
+      }
+
+      if (_second > 59) {
+        return false;
+      }
+      if (_minute > 59) {
+        return false;
+      }
+      if (_hour > 23) {
+        return false;
+      }
+
+      // Everything valid so return true.
+      return true;
+    }
+
   protected:
     uint8_t _yearFrom2000;
     uint8_t _month;
