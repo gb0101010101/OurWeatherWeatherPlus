@@ -495,18 +495,6 @@ void updateAllWeatherVariables() {
   windGustMax = windGustGraph.returnMaxValue();
   windDirectionMin = windDirectionGraph.returnMinValue();
   windDirectionMax = windDirectionGraph.returnMaxValue();
-
-  // TODO: Why is this REST Call here?
-  // Handle REST calls.
-  WiFiClient client = server.available();
-  if (client) {
-    while (!client.available()) {
-      delay(1);
-    }
-    if (client.available()) {
-      rest.handle(client);
-    }
-  }
 }
 
 void blinkLED(int timesToBlink, int delayBetweenBlinks) {
