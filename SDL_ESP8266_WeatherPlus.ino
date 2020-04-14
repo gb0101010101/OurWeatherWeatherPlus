@@ -214,21 +214,19 @@ int WeatherDisplayMode;
 #include "RtcDS3231.h"
 RtcDS3231 Rtc;
 
-// AM2315
 float AM2315_Temperature;
 float AM2315_Humidity;
 float AM2315_Dewpoint;
+boolean AOK;  // 1 = AM2315 Successful read.
+int SOK;  // 0 = SHT30 Successful read.
 
+// AM2315
 #include "SDL_ESP8266_HR_AM2315.h"
-
 SDL_ESP8266_HR_AM2315 am2315;
 float dataAM2315[2]; // Array to hold data returned by sensor. [0,1] => [Humidity, Temperature].
 
-boolean AOK;  // 1 = Successful read.
-
 // SHT30
 #include "WEMOS_SHT3X.h"
-
 SHT3X sht30(0x44);
 
 const char *monthName[12] = {
@@ -1022,12 +1020,10 @@ void setup() {
   }
 
   // Check for SHT30
-  int sht30_success;
-
-  sht30_success = sht30.get();
-  Serial.print("sht30_success=");
-  Serial.println(sht30_success);
-  if (sht30_success == 0) {
+  SOK = sht30.get();
+  Serial.print("SOK=");
+  Serial.println(SOK);
+  if (SOK == 0) {
     SHT30_Present = true;
     Serial.println("SHT30 Found");
     Serial.print("SHT30Temp=");
@@ -1233,11 +1229,10 @@ void loop() {
 #endif
       } else {
         if (SHT30_Present) {
-          int sht30_success;
-          sht30_success = sht30.get();
-          Serial.print("sht30_success=");
-          Serial.println(sht30_success);
-          if (sht30_success == 0) {
+          SOK = sht30.get();
+          Serial.print("SOK=");
+          Serial.println(SOK);
+          if (SOK == 0) {
             Serial.println("SHT30 Found");
             Serial.print("SHT30Temp=");
             Serial.println(sht30.cTemp);
