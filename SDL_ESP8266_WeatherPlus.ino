@@ -1009,8 +1009,8 @@ void setup() {
   AOK = am2315.readData(dataAM2315);
   if (AOK) {
     Serial.println("AM2315 Detected...");
-    Serial.print("Hum: "); Serial.println(dataAM2315[1]);
-    Serial.print("TempF: "); Serial.println(dataAM2315[0]);
+    Serial.print("AM2315 Temperature: "); Serial.println(dataAM2315[0]);
+    Serial.print("AM2315 Humidity: "); Serial.println(dataAM2315[1]);
     AM2315_Temperature = dataAM2315[1];
     AM2315_Humidity = dataAM2315[0];
     AM2315_Dewpoint = calculateDewpoint(AM2315_Temperature, AM2315_Humidity);
@@ -1021,15 +1021,14 @@ void setup() {
 
   // Check for SHT30
   SOK = sht30.get();
-  Serial.print("SOK=");
-  Serial.println(SOK);
   if (SOK == 0) {
+    Serial.println("SHT30 Detected...");
+    Serial.print("SHT30 Temperature"); Serial.println(sht30.cTemp);
+    Serial.print("SHT30 Humidity"); Serial.println(sht30.humidity);
+    AM2315_Temperature = sht30.cTemp;
+    AM2315_Humidity = sht30.humidity;
+    AM2315_Dewpoint = calculateDewpoint(AM2315_Temperature, AM2315_Humidity);
     SHT30_Present = true;
-    Serial.println("SHT30 Found");
-    Serial.print("SHT30Temp=");
-    Serial.println(sht30.cTemp);
-    Serial.print("SHT30Humid=");
-    Serial.println(sht30.humidity);
   } else {
     Serial.println("SHT30 Not Found");
     SHT30_Present = false;
@@ -1230,20 +1229,18 @@ void loop() {
       } else {
         if (SHT30_Present) {
           SOK = sht30.get();
+#ifdef DEBUGPRINT
           Serial.print("SOK=");
           Serial.println(SOK);
-          if (SOK == 0) {
-            Serial.println("SHT30 Found");
-            Serial.print("SHT30Temp=");
-            Serial.println(sht30.cTemp);
-            Serial.print("SHT30Humid=");
-            Serial.println(sht30.humidity);
+#endif
+          // Temperature in Celcius.
+          AM2315_Temperature = sht30.cTemp;
+          AM2315_Humidity = sht30.humidity;
+          AM2315_Dewpoint = calculateDewpoint(AM2315_Temperature, AM2315_Humidity);
 
-            // Now set the old AM2315 variables
-            AM2315_Temperature = sht30.cTemp;
-            AM2315_Humidity = sht30.humidity;
-            AM2315_Dewpoint = calculateDewpoint(AM2315_Temperature, AM2315_Humidity);
-          }
+          Serial.println("Temperature: " + formatTemperatureString(AM2315_Temperature, 1, true));
+          Serial.println("Humidity: " + formatHumidityString(AM2315_Humidity, 0, true));
+          Serial.println("Dewpoint: " + formatTemperatureString(AM2315_Dewpoint, 1, true));
         }
       }
     } else {
