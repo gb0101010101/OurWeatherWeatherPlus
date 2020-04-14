@@ -372,6 +372,28 @@ String returnDirectionFromDegrees(int degrees) {
   return "XX";  // Return previous value if not found.
 }
 
+/**
+ * Calculate dewpoint from temperature (Celcius) and humidity (percentage).
+ */
+float calculateDewpoint(float temperatureC, float humidityPercent) {
+  float dewpoint = NAN;
+  if (!isnan(temperatureC) && humidityPercent >=0 && humidityPercent <=100) {
+    dewpoint = temperatureC - ((100.0 - humidityPercent) / 5.0);
+  }
+  return dewpoint;
+}
+
+float calculateWindChill(float temperature_c, const float wind_speed_kph) {
+  float windchill = 0.0;
+
+  if (wind_speed_kph > 4.82803 && temperature_c < 10) {
+    windchill = 13.12 + (0.6215 * temperature_c)
+        - (11.37 * pow(wind_speed_kph, 0.16))
+        + (0.3965 * temperature_c * pow(wind_speed_kph, 0.16));
+  }
+  return windchill;
+}
+
 void updateAllWeatherVariables() {
   heapSize = ESP.getFreeHeap();
 
@@ -392,7 +414,7 @@ void updateAllWeatherVariables() {
 
       AM2315_Temperature = sht30.cTemp;
       AM2315_Humidity = sht30.humidity;
-      dewpoint =  AM2315_Temperature - ((100.0 - AM2315_Humidity) / 5.0);
+      AM2315_Dewpoint = calculateDewpoint(AM2315_Temperature, AM2315_Humidity);
     }
   }
 
@@ -651,28 +673,6 @@ typedef enum {
 } outputFormat;
 
 unitSystem user_units = USA;
-
-/**
- * Calculate dewpoint from temperature (Celcius) and humidity (percentage).
- */
-float calculateDewpoint(float temperatureC, float humidityPercent) {
-  float dewpoint = NAN;
-  if (!isnan(temperatureC) && humidityPercent >=0 && humidityPercent <=100) {
-    dewpoint = temperatureC - ((100.0 - humidityPercent) / 5.0);
-  }
-  return dewpoint;
-}
-
-float calculateWindChill(float temperature_c, const float wind_speed_kph) {
-  float windchill = 0.0;
-
-  if (wind_speed_kph > 4.82803 && temperature_c < 10) {
-    windchill = 13.12 + (0.6215 * temperature_c)
-        - (11.37 * pow(wind_speed_kph, 0.16))
-        + (0.3965 * temperature_c * pow(wind_speed_kph, 0.16));
-  }
-  return windchill;
-}
 
 /**
  * Convert temperature from Celcius to Farenheit.

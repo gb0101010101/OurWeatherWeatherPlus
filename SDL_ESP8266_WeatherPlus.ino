@@ -1105,7 +1105,7 @@ void setup() {
       writeToBlynkStatusTerminal("SHT30 Not Present");
     }
 
-    if (AS3935Present) {
+    if (AS3935_Present) {
       writeToBlynkStatusTerminal("AS3935 ThunderBoard Present");
     } else {
       writeToBlynkStatusTerminal("AS3935 ThunderBoard Not Present");
@@ -1203,7 +1203,7 @@ void loop() {
     } else {
       Serial.println("AM2315 Not Present");
     }
-    println("---------------");
+    Serial.println("---------------");
     Serial.println();
     Serial.println("---------------");
     if (SHT30_Present) {
