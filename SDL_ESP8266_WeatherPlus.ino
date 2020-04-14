@@ -1031,7 +1031,6 @@ void setup() {
     SHT30_Present = true;
   } else {
     Serial.println("SHT30 Not Found");
-    SHT30_Present = false;
   }
 
   if (WiFi_Present == true) {
