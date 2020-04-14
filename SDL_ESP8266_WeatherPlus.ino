@@ -40,6 +40,7 @@ extern "C" {
 // Sensor presence variables.
 bool WiFi_Present = false;
 bool AM2315_Present = false;
+bool SHT30_Present = false;
 bool AS3935_Present = false;
 bool AirQuality_Present = false;
 bool WXLink_Present = false;
@@ -218,8 +219,6 @@ float AM2315_Temperature;
 float AM2315_Humidity;
 float AM2315_Dewpoint;
 
-bool AM2315_Present = false;
-
 #include "SDL_ESP8266_HR_AM2315.h"
 
 SDL_ESP8266_HR_AM2315 am2315;
@@ -231,7 +230,6 @@ boolean AOK;  // 1 = Successful read.
 #include "WEMOS_SHT3X.h"
 
 SHT3X sht30(0x44);
-bool SHT30_Present = false;
 
 const char *monthName[12] = {
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -1041,7 +1039,7 @@ void setup() {
     SHT30_Present = false;
   }
 
-  if (WiFiPresent == true) {
+  if (WiFi_Present == true) {
     PubNub.begin(SDL2PubNubCode.c_str(), SDL2PubNubCode_Sub.c_str());
     Serial.println("PubNub set up");
   }
@@ -1198,7 +1196,6 @@ void loop() {
     RestTimeStamp = currentTimeString;
 
     RestDataString = "";
-
 
     Serial.println("---------------");
     if (AM2315_Present) {
