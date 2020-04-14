@@ -217,7 +217,7 @@ RtcDS3231 Rtc;
 float AM2315_Temperature;
 float AM2315_Humidity;
 float AM2315_Dewpoint;
-boolean AOK;  // 1 = AM2315 Successful read.
+bool AOK;  // 1 = AM2315 Successful read.
 int SOK;  // 0 = SHT30 Successful read.
 
 // AM2315
