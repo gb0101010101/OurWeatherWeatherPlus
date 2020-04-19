@@ -74,10 +74,10 @@ void mqttSetup() {
     // Populate topics vector.
     // AM2315_Temperature
     topics.push_back("AM2315/Temperature");
-    topics_enabled.push_back(AM2315_Present);
+    topics_enabled.push_back(AM2315_Present || SHT30_Present);
     // AM2315_Humidity
     topics.push_back("AM2315/Humidity");
-    topics_enabled.push_back(AM2315_Present);
+    topics_enabled.push_back(AM2315_Present || SHT30_Present);
     // BMP180_Temperature
     topics.push_back("BMP180/Temperature");
     topics_enabled.push_back(BMP180Found || BMP280Found);
@@ -170,7 +170,7 @@ void mqttSetup() {
     topics_enabled.push_back(WXLink_Present);
     // invalidTemperatureFound
     topics.push_back("Debug/TemperatureValid");
-    topics_enabled.push_back(AM2315_Present);
+    topics_enabled.push_back(AM2315_Present || SHT30_Present);
     // WXLastMessageGood
     topics.push_back("Debug/WXMessageValid");
     topics_enabled.push_back(WXLink_Present);
