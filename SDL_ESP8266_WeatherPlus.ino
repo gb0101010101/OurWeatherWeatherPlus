@@ -1,10 +1,10 @@
 // Filename WeatherPlus.ino
-// Version 035 December 2018
+// Version 036 August 2019
 // SwitchDoc Labs, LLC
 //
 
-#define WEATHERPLUSESP8266VERSION "035G2"
-#define WEATHERPLUSPUBNUBPROTOCOL "OURWEATHER035"
+#define WEATHERPLUSESP8266VERSION "036G2"
+#define WEATHERPLUSPUBNUBPROTOCOL "OURWEATHER036"
 
 // Define DEBUGPRINT to print out lots of debugging information for WeatherPlus.
 #undef DEBUGPRINT
@@ -40,6 +40,7 @@ extern "C" {
 // Sensor presence variables.
 bool WiFi_Present = false;
 bool AM2315_Present = false;
+bool SHT30_Present = false;
 bool AS3935_Present = false;
 bool AirQuality_Present = false;
 bool WXLink_Present = false;
@@ -213,17 +214,20 @@ int WeatherDisplayMode;
 #include "RtcDS3231.h"
 RtcDS3231 Rtc;
 
-// AM2315
 float AM2315_Temperature;
 float AM2315_Humidity;
 float AM2315_Dewpoint;
+bool AOK;  // 1 = AM2315 Successful read.
+int SOK;  // 0 = SHT30 Successful read.
 
+// AM2315
 #include "SDL_ESP8266_HR_AM2315.h"
-
 SDL_ESP8266_HR_AM2315 am2315;
 float dataAM2315[2]; // Array to hold data returned by sensor. [0,1] => [Humidity, Temperature].
 
-boolean AOK;  // 1 = Successful read.
+// SHT30
+#include "WEMOS_SHT3X.h"
+SHT3X sht30(0x44);
 
 const char *monthName[12] = {
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -1005,14 +1009,28 @@ void setup() {
   AOK = am2315.readData(dataAM2315);
   if (AOK) {
     Serial.println("AM2315 Detected...");
-    // Serial.print("Hum: "); Serial.println(dataAM2315[1]);
-    // Serial.print("TempF: "); Serial.println(dataAM2315[0]);
+    Serial.print("AM2315 Temperature: "); Serial.println(dataAM2315[0]);
+    Serial.print("AM2315 Humidity: "); Serial.println(dataAM2315[1]);
     AM2315_Temperature = dataAM2315[1];
     AM2315_Humidity = dataAM2315[0];
     AM2315_Dewpoint = calculateDewpoint(AM2315_Temperature, AM2315_Humidity);
     AM2315_Present = true;
   } else {
-    Serial.println("AM2315 Sensor not found, check wiring & pullups!");
+    Serial.println("AM2315 Sensor not found");
+  }
+
+  // Check for SHT30
+  SOK = sht30.get();
+  if (SOK == 0) {
+    Serial.println("SHT30 Detected...");
+    Serial.print("SHT30 Temperature"); Serial.println(sht30.cTemp);
+    Serial.print("SHT30 Humidity"); Serial.println(sht30.humidity);
+    AM2315_Temperature = sht30.cTemp;
+    AM2315_Humidity = sht30.humidity;
+    AM2315_Dewpoint = calculateDewpoint(AM2315_Temperature, AM2315_Humidity);
+    SHT30_Present = true;
+  } else {
+    Serial.println("SHT30 Not Found");
   }
 
   if (WiFi_Present == true) {
@@ -1073,6 +1091,12 @@ void setup() {
       writeToBlynkStatusTerminal("AM2315 Present");
     } else {
       writeToBlynkStatusTerminal("AM2315 Not Present");
+    }
+
+    if (SHT30_Present) {
+      writeToBlynkStatusTerminal("SHT30 Present");
+    } else {
+      writeToBlynkStatusTerminal("SHT30 Not Present");
     }
 
     if (AS3935_Present) {
@@ -1168,29 +1192,58 @@ void loop() {
     RestDataString = "";
 
     Serial.println("---------------");
-    Serial.println("AM2315");
+    if (AM2315_Present) {
+      Serial.println("AM2315");
+    } else {
+      Serial.println("AM2315 Not Present");
+    }
+    Serial.println("---------------");
+    Serial.println();
+    Serial.println("---------------");
+    if (SHT30_Present) {
+      Serial.println("SHT30");
+    } else {
+      Serial.println("SHT30 Not Present");
+    }
     Serial.println("---------------");
 
     if (!WXLink_Present) {
-      AOK = am2315.readData(dataAM2315);
+      if (AM2315_Present) {
+        AOK = am2315.readData(dataAM2315);
 #ifdef DEBUGPRINT
-      Serial.print("AOK=");
-      Serial.println(AOK);
+        Serial.print("AOK=");
+        Serial.println(AOK);
 #endif
-      // Temperature in Celcius.
-      AM2315_Temperature = dataAM2315[1];
-      AM2315_Humidity = dataAM2315[0];
-      AM2315_Dewpoint = calculateDewpoint(AM2315_Temperature, AM2315_Humidity);
+        // Temperature in Celcius.
+        AM2315_Temperature = dataAM2315[1];
+        AM2315_Humidity = dataAM2315[0];
+        AM2315_Dewpoint = calculateDewpoint(AM2315_Temperature, AM2315_Humidity);
 
-      Serial.println("Temperature: " + formatTemperatureString(AM2315_Temperature, 1, true));
-      Serial.println("Humidity: " + formatHumidityString(AM2315_Humidity, 0, true));
-      Serial.println("Dewpoint: " + formatTemperatureString(AM2315_Dewpoint, 1, true));
-
+        Serial.println("Temperature: " + formatTemperatureString(AM2315_Temperature, 1, true));
+        Serial.println("Humidity: " + formatHumidityString(AM2315_Humidity, 0, true));
+        Serial.println("Dewpoint: " + formatTemperatureString(AM2315_Dewpoint, 1, true));
 #ifdef DEBUGPRINT
-      am2315.printStatistics();
+        am2315.printStatistics();
 #endif
+      } else {
+        if (SHT30_Present) {
+          SOK = sht30.get();
+#ifdef DEBUGPRINT
+          Serial.print("SOK=");
+          Serial.println(SOK);
+#endif
+          // Temperature in Celcius.
+          AM2315_Temperature = sht30.cTemp;
+          AM2315_Humidity = sht30.humidity;
+          AM2315_Dewpoint = calculateDewpoint(AM2315_Temperature, AM2315_Humidity);
+
+          Serial.println("Temperature: " + formatTemperatureString(AM2315_Temperature, 1, true));
+          Serial.println("Humidity: " + formatHumidityString(AM2315_Humidity, 0, true));
+          Serial.println("Dewpoint: " + formatTemperatureString(AM2315_Dewpoint, 1, true));
+        }
+      }
     } else {
-      Serial.println("WXLink Present - AM2315 local read overruled");
+      Serial.println("WXLink Present - AM2315/SHT30 local read overruled");
     }
 
     RestDataString += formatTemperatureString(AM2315_Temperature, 2) + ",";

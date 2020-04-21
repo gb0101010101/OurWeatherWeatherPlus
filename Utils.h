@@ -372,12 +372,48 @@ String returnDirectionFromDegrees(int degrees) {
   return "XX";  // Return previous value if not found.
 }
 
+/**
+ * Calculate dewpoint from temperature (Celcius) and humidity (percentage).
+ */
+float calculateDewpoint(float temperatureC, float humidityPercent) {
+  float dewpoint = NAN;
+  if (!isnan(temperatureC) && humidityPercent >=0 && humidityPercent <=100) {
+    dewpoint = temperatureC - ((100.0 - humidityPercent) / 5.0);
+  }
+  return dewpoint;
+}
+
+float calculateWindChill(float temperature_c, const float wind_speed_kph) {
+  float windchill = 0.0;
+
+  if (wind_speed_kph > 4.82803 && temperature_c < 10) {
+    windchill = 13.12 + (0.6215 * temperature_c)
+        - (11.37 * pow(wind_speed_kph, 0.16))
+        + (0.3965 * temperature_c * pow(wind_speed_kph, 0.16));
+  }
+  return windchill;
+}
+
 void updateAllWeatherVariables() {
   heapSize = ESP.getFreeHeap();
 
-  AOK = am2315.readData(dataAM2315);
-  AM2315_Temperature = dataAM2315[1];
-  AM2315_Humidity = dataAM2315[0];
+  if (AM2315_Present) {
+    AOK = am2315.readData(dataAM2315);
+    AM2315_Temperature = dataAM2315[1];
+    AM2315_Humidity = dataAM2315[0];
+  }
+
+  if (SHT30_Present) {
+    SOK = sht30.get();
+    Serial.print("SOK=");
+    Serial.println(SOK);
+    if (SOK == 0) {
+      // Now set the old AM2315 variables
+      AM2315_Temperature = sht30.cTemp;
+      AM2315_Humidity = sht30.humidity;
+      AM2315_Dewpoint = calculateDewpoint(AM2315_Temperature, AM2315_Humidity);
+    }
+  }
 
   if (BMP180Found) {
     /* Display the results (barometric pressure is measure in hPa) */
@@ -634,28 +670,6 @@ typedef enum {
 } outputFormat;
 
 unitSystem user_units = USA;
-
-/**
- * Calculate dewpoint from temperature (Celcius) and humidity (percentage).
- */
-float calculateDewpoint(float temperatureC, float humidityPercent) {
-  float dewpoint = NAN;
-  if (!isnan(temperatureC) && humidityPercent >=0 && humidityPercent <=100) {
-    dewpoint = temperatureC - ((100.0 - humidityPercent) / 5.0);
-  }
-  return dewpoint;
-}
-
-float calculateWindChill(float temperature_c, const float wind_speed_kph) {
-  float windchill = 0.0;
-
-  if (wind_speed_kph > 4.82803 && temperature_c < 10) {
-    windchill = 13.12 + (0.6215 * temperature_c)
-        - (11.37 * pow(wind_speed_kph, 0.16))
-        + (0.3965 * temperature_c * pow(wind_speed_kph, 0.16));
-  }
-  return windchill;
-}
 
 /**
  * Convert temperature from Celcius to Farenheit.
